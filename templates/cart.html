@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}My Cart – GadgetHub PH{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <h1 class="cart-page-title mb-0">My Cart</h1>
+    <span style="background:var(--primary); color:#fff; border-radius:50px;
+                 padding:0.2rem 0.8rem; font-size:0.85rem; font-weight:700;">
+      <span id="cart-count">{{ cart_items|length }}</span> items
+    </span>
+  </div>
+
+  {% if cart_items %}
+    <div class="row g-4">
+
+      <!-- Cart Items -->
+      <div class="col-lg-8">
+        <div class="d-flex flex-column gap-3" id="cart-items-container">
+          {% for item in cart_items %}
+            <div class="cart-item" id="cart-item-{{ item.id }}">
+
+              <!-- Image -->
+              <img
+                src="{{ item.product.image_url }}"
+                alt="{{ item.product.name }}"
+                class="cart-item-img">
+
+              <!-- Info -->
+              <div class="cart-item-info">
+                <div class="cart-item-category">{{ item.product.category }}</div>
+                <div class="cart-item-name">{{ item.product.name }}</div>
+                <div class="cart-item-price">₱{{ "%.2f"|format(item.product.price_float) }} each</div>
+              </div>
+
+              <!-- Qty -->
+              <div class="cart-qty-control">
+                <button onclick="updateQty({{ item.id }}, -1)">−</button>
+                <span id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                <button onclick="updateQty({{ item.id }}, 1)">+</button>
+              </div>
+
+              <!-- Subtotal -->
+              <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">
+                ₱{{ "%.2f"|format(item.subtotal) }}
+              </div>
+
+              <!-- Remove -->
+              <button class="btn-remove" onclick="removeItem({{ item.id }})"
+                      title="Remove item">
+                <i class="bi bi-trash3"></i>
+              </button>
+
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Continue Shopping -->
+        <div class="mt-4">
+          <a href="{{ url_for('shop.index') }}" class="btn-outline-custom">
+            <i class="bi bi-arrow-left"></i> Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="order-summary">
+          <h3>Order Summary</h3>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong id="cart-total">₱{{ "%.2f"|format(cart_total) }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <strong style="color:var(--accent2)">FREE</strong>
+          </div>
+          <div class="summary-row">
+            <span>Tax</span>
+            <strong>₱0.00</strong>
+          </div>
+
+          <div class="summary-total">
+            <span>Total</span>
+            <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
+          </div>
+
+          <div class="d-grid mt-4">
+            <a href="{{ url_for('orders.checkout') }}"
+               id="checkout-btn"
+               class="btn-primary-custom justify-content-center">
+              <i class="bi bi-bag-check"></i> Proceed to Checkout
+            </a>
+          </div>
+
+          <p class="text-center mt-3" style="font-size:0.78rem; color:var(--text-muted)">
+            <i class="bi bi-lock-fill"></i> Secure checkout · Free nationwide shipping
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  {% else %}
+    <!-- Empty Cart -->
+    <div class="empty-cart">
+      <div class="empty-cart-icon">🛒</div>
+      <h3>Your cart is empty</h3>
+      <p>Looks like you haven't added anything yet.</p>
+      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom mt-3 d-inline-flex">
+        <i class="bi bi-grid-fill"></i> Start Shopping
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+{% endblock %}

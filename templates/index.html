@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}GadgetHub PH – Tech Accessories{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <div class="hero-tag">🇵🇭 Free Shipping Nationwide</div>
+        <h1>
+          Level Up Your<br>
+          <span class="highlight">Tech Setup</span>
+        </h1>
+        <p>
+          Earbuds, chargers, powerbanks &amp; accessories — curated for
+          every budget, delivered fast anywhere in the Philippines.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="#products" class="btn-primary-custom">
+            <i class="bi bi-grid-fill"></i> Shop Now
+          </a>
+          <a href="{{ url_for('shop.index', category='earbuds') }}" class="btn-outline-custom">
+            🎧 Top Picks
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong>500+</strong>
+            <span>Happy Customers</span>
+          </div>
+          <div class="hero-stat">
+            <strong>12</strong>
+            <span>Products</span>
+          </div>
+          <div class="hero-stat">
+            <strong>4</strong>
+            <span>Categories</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-block text-center mt-4 mt-lg-0">
+        <img
+          src="https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=600&q=80"
+          alt="Tech Accessories"
+          style="border-radius:24px; max-height:380px; width:100%; object-fit:cover;
+                 box-shadow: 0 30px 80px rgba(124,92,252,0.3);"
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Flash ─────────────────────────────────────────────────── -->
+<div class="container flash-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<!-- ── Category + Search Bar ────────────────────────────────── -->
+<div class="container">
+  <div class="category-bar">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+      <!-- Pills -->
+      <div class="category-pills">
+        <a href="{{ url_for('shop.index') }}"
+           class="category-pill {% if not current_category %}active{% endif %}">
+          All
+        </a>
+        {% for cat in categories %}
+          <a href="{{ url_for('shop.index', category=cat) }}"
+             class="category-pill {% if current_category == cat %}active{% endif %}">
+            {% if cat == 'earbuds' %}🎧{% elif cat == 'chargers' %}⚡{% elif cat == 'powerbanks' %}🔋{% else %}📱{% endif %}
+            {{ cat|capitalize }}
+          </a>
+        {% endfor %}
+      </div>
+
+      <!-- Search -->
+      <form method="GET" action="{{ url_for('shop.index') }}" class="search-wrap">
+        {% if current_category %}
+          <input type="hidden" name="category" value="{{ current_category }}">
+        {% endif %}
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" name="q" value="{{ search }}" placeholder="Search products…">
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Product Grid ───────────────────────────────────────────── -->
+<div class="container pb-5" id="products">
+
+  <!-- Result header -->
+  <div class="section-head">
+    <h2>
+      {% if search %}
+        Results for "{{ search }}"
+      {% elif current_category %}
+        {{ current_category|capitalize }}
+      {% else %}
+        All Products
+      {% endif %}
+      <span style="color:var(--text-muted); font-size:1rem; font-weight:400">
+        ({{ products.total }})
+      </span>
+    </h2>
+  </div>
+
+  {% if products.items %}
+    <div class="row g-4">
+      {% for product in products.items %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="product-card">
+
+            <!-- Image -->
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+              <div class="product-img-wrap">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+
+                {% if product.stock == 0 %}
+                  <span class="product-badge badge-out">Out of Stock</span>
+                {% elif product.stock <= 5 %}
+                  <span class="product-badge badge-stock-low">Only {{ product.stock }} left</span>
+                {% else %}
+                  <span class="product-badge badge-new">In Stock</span>
+                {% endif %}
+              </div>
+            </a>
+
+            <!-- Body -->
+            <div class="product-body">
+              <div class="product-category">{{ product.category }}</div>
+              <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                <div class="product-name">{{ product.name }}</div>
+              </a>
+
+              <!-- Stars -->
+              <div class="product-rating">
+                <span class="stars">
+                  {% for i in range(1, 6) %}
+                    {% if i <= product.average_rating|int %}★{% else %}☆{% endif %}
+                  {% endfor %}
+                </span>
+                <span class="rating-count">({{ product.review_count }})</span>
+              </div>
+
+              <!-- Price + Cart -->
+              <div class="product-footer">
+                <div class="product-price">
+                  <small>₱</small>{{ "%.2f"|format(product.price_float) }}
+                </div>
+                <button
+                  class="btn-add-cart"
+                  onclick="addToCart({{ product.id }}, this)"
+                  {% if product.stock == 0 %}disabled{% endif %}>
+                  {% if product.stock == 0 %}
+                    Sold Out
+                  {% else %}
+                    <i class="bi bi-cart-plus"></i> Add
+                  {% endif %}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if products.pages > 1 %}
+      <nav class="d-flex justify-content-center mt-5">
+        <ul class="pagination gap-1">
+          {% if products.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+          {% endif %}
+          {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+              <li class="page-item {% if p == products.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}">{{ p }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+          {% if products.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <!-- Empty state -->
+    <div class="text-center py-5">
+      <div style="font-size:4rem; margin-bottom:1rem">🔍</div>
+      <h3 style="color:var(--text-muted)">No products found</h3>
+      <p style="color:var(--text-muted)">Try a different search or category.</p>
+      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom mt-3">
+        View All Products
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

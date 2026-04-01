@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}My Orders – GadgetHub PH{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  {% if order %}
+  <!-- ── Single Order Detail ─────────────────────────────────── -->
+  <div class="mb-4">
+    <a href="{{ url_for('orders.order_history') }}"
+       style="color:var(--primary); font-size:0.9rem;">
+      ← Back to My Orders
+    </a>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+      <h1 class="cart-page-title mb-0">Order #{{ "%04d"|format(order.id) }}</h1>
+      <p style="color:var(--text-muted); font-size:0.88rem;">
+        Placed on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+      </p>
+    </div>
+    <span class="order-status-badge status-{{ order.status }}">
+      {{ order.status|upper }}
+    </span>
+  </div>
+
+  <div class="row g-4">
+    <!-- Items -->
+    <div class="col-lg-8">
+      <div style="background:var(--card-bg); border:1px solid var(--border);
+                  border-radius:var(--radius); padding:1.5rem;">
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1.2rem;">
+          Order Items
+        </h4>
+        {% for item in order.items %}
+          <div style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0;
+                      border-bottom:1px solid var(--border);">
+            <img src="{{ item.product.image_url }}"
+                 style="width:64px;height:64px;border-radius:10px;object-fit:cover;">
+            <div style="flex:1;">
+              <div style="font-weight:600; color:#fff;">{{ item.product.name }}</div>
+              <div style="color:var(--text-muted); font-size:0.82rem;">
+                ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
+              </div>
+            </div>
+            <strong style="color:#fff;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
+          </div>
+        {% endfor %}
+
+        <div style="display:flex; justify-content:flex-end; padding-top:1rem; gap:0.5rem;">
+          <span style="color:var(--text-muted);">Total:</span>
+          <strong style="font-family:'Syne',sans-serif; font-size:1.2rem; color:#fff;">
+            ₱{{ "%.2f"|format(order.total_float) }}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping Info -->
+    <div class="col-lg-4">
+      <div style="background:var(--card-bg); border:1px solid var(--border);
+                  border-radius:var(--radius); padding:1.5rem;">
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
+          Shipping Address
+        </h4>
+        <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+          <strong style="color:#fff;">{{ current_user.name }}</strong><br>
+          {{ order.shipping_address or 'No address provided.' }}
+        </p>
+        <hr style="border-color:var(--border);">
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">
+          Payment
+        </h4>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Cash on Delivery (COD)</p>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ── Order History List ──────────────────────────────────── -->
+  <h1 class="cart-page-title mb-4">My Orders</h1>
+
+  {% if orders %}
+    <div class="d-flex flex-column gap-3">
+      {% for o in orders %}
+        <div style="background:var(--card-bg); border:1px solid var(--border);
+                    border-radius:var(--radius); padding:1.5rem;
+                    display:flex; align-items:center; justify-content:space-between;
+                    flex-wrap:wrap; gap:1rem;
+                    transition:border-color 0.25s;"
+             onmouseover="this.style.borderColor='rgba(124,92,252,0.4)'"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+
+          <div>
+            <div style="font-family:'Syne',sans-serif; font-weight:700; color:#fff; font-size:1rem;">
+              Order #{{ "%04d"|format(o.id) }}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:0.2rem;">
+              {{ o.created_at.strftime('%B %d, %Y') }} · {{ o.item_count }} item(s)
+            </div>
+          </div>
+
+          <div style="text-align:center;">
+            <span class="order-status-badge status-{{ o.status }}">{{ o.status|upper }}</span>
+          </div>
+
+          <div style="font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:#fff;">
+            ₱{{ "%.2f"|format(o.total_float) }}
+          </div>
+
+          <a href="{{ url_for('orders.order_detail', order_id=o.id) }}"
+             class="btn-outline-custom" style="padding:0.4rem 1rem; font-size:0.85rem;">
+            View Details →
+          </a>
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-cart">
+      <div class="empty-cart-icon">📦</div>
+      <h3>No orders yet</h3>
+      <p>You haven't placed any orders. Start shopping!</p>
+      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom mt-3 d-inline-flex">
+        <i class="bi bi-grid-fill"></i> Shop Now
+      </a>
+    </div>
+  {% endif %}
+
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+<style>
+.order-status-badge {
+  display: inline-block;
+  border-radius: 50px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.status-pending   { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
+.status-paid      { background:rgba(0,212,170,0.15);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
+.status-shipped   { background:rgba(124,92,252,0.15); color:var(--primary); border:1px solid rgba(124,92,252,0.3); }
+.status-delivered { background:rgba(0,212,170,0.15);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
+</style>
+{% endblock %}

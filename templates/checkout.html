@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Checkout – GadgetHub PH{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <h1 class="cart-page-title mb-1">Checkout</h1>
+  <p style="color:var(--text-muted); margin-bottom:2rem">Review your order and place it</p>
+
+  <div class="row g-4">
+
+    <!-- Checkout Form -->
+    <div class="col-lg-7">
+      <div style="background:var(--card-bg); border:1px solid var(--border);
+                  border-radius:var(--radius); padding:2rem;">
+
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1.5rem;">
+          <i class="bi bi-geo-alt" style="color:var(--primary)"></i> Shipping Details
+        </h4>
+
+        <form id="checkout-form">
+
+          <!-- Name (pre-filled) -->
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control"
+                   value="{{ current_user.name }}" readonly>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control"
+                   value="{{ current_user.email }}" readonly>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="mb-4">
+            <label class="form-label">Shipping Address <span style="color:var(--accent)">*</span></label>
+            <textarea id="shipping_address" class="form-control" rows="3"
+                      placeholder="House/Unit No., Street, Barangay, City, Province, ZIP">{{ current_user.address or '' }}</textarea>
+          </div>
+
+          <!-- Order Notes -->
+          <div class="mb-4">
+            <label class="form-label">Order Notes <span style="color:var(--text-muted)">(optional)</span></label>
+            <textarea class="form-control" rows="2"
+                      placeholder="Special instructions for your order…"></textarea>
+          </div>
+
+          <!-- Payment Method -->
+          <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
+            <i class="bi bi-credit-card" style="color:var(--primary)"></i> Payment Method
+          </h4>
+          <div style="background:var(--surface); border:1px solid var(--border);
+                      border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.5rem;">
+            <label style="display:flex; align-items:center; gap:0.8rem; cursor:pointer;">
+              <input type="radio" name="payment" value="cod" checked
+                     style="accent-color:var(--primary);">
+              <div>
+                <strong style="color:#fff">Cash on Delivery (COD)</strong>
+                <p style="color:var(--text-muted); font-size:0.82rem; margin:0">
+                  Pay when your order arrives. No extra charges.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" id="place-order-btn" class="btn-primary-custom justify-content-center">
+              <i class="bi bi-bag-check"></i> Place Order
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-5">
+      <div class="order-summary">
+        <h3>Your Order ({{ cart_items|length }} items)</h3>
+
+        {% for item in cart_items %}
+          <div class="summary-row" style="padding:0.6rem 0; border-bottom:1px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:0.8rem; flex:1; min-width:0;">
+              <img src="{{ item.product.image_url }}"
+                   style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+              <div style="min-width:0;">
+                <div style="color:#fff; font-size:0.88rem; font-weight:600;
+                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  {{ item.product.name }}
+                </div>
+                <div style="color:var(--text-muted); font-size:0.78rem;">
+                  Qty: {{ item.quantity }}
+                </div>
+              </div>
+            </div>
+            <strong style="color:#fff; font-size:0.9rem; flex-shrink:0; margin-left:0.5rem;">
+              ₱{{ "%.2f"|format(item.subtotal) }}
+            </strong>
+          </div>
+        {% endfor %}
+
+        <div class="summary-row mt-2">
+          <span>Subtotal</span>
+          <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <strong style="color:var(--accent2)">FREE</strong>
+        </div>
+        <div class="summary-total">
+          <span>Total</span>
+          <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
+        </div>
+
+        <p class="text-center mt-3" style="font-size:0.78rem; color:var(--text-muted);">
+          <i class="bi bi-shield-check"></i> Your order is protected by GadgetHub's buyer guarantee.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

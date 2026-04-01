@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} – GadgetHub PH{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/product.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-4" style="font-size:0.85rem; color:var(--text-muted)">
+    <a href="{{ url_for('shop.index') }}" style="color:var(--primary)">Home</a>
+    <span class="mx-2">/</span>
+    <a href="{{ url_for('shop.index', category=product.category) }}" style="color:var(--primary)">
+      {{ product.category|capitalize }}
+    </a>
+    <span class="mx-2">/</span>
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <!-- Product Main -->
+  <div class="row g-5 mb-5">
+
+    <!-- Image -->
+    <div class="col-md-5">
+      <div class="product-detail-img">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% if product.stock == 0 %}
+          <div class="sold-out-overlay">Sold Out</div>
+        {% elif product.stock <= 5 %}
+          <div class="low-stock-badge">⚡ Only {{ product.stock }} left!</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="col-md-7">
+      <span class="product-category-tag">{{ product.category|capitalize }}</span>
+      <h1 class="product-detail-title">{{ product.name }}</h1>
+
+      <!-- Rating -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="stars-large">
+          {% for i in range(1, 6) %}
+            {% if i <= product.average_rating|int %}★{% else %}☆{% endif %}
+          {% endfor %}
+        </div>
+        <span style="color:var(--text-muted); font-size:0.9rem">
+          {{ product.average_rating }} / 5 ({{ product.review_count }} reviews)
+        </span>
+      </div>
+
+      <!-- Price -->
+      <div class="product-detail-price">₱{{ "%.2f"|format(product.price_float) }}</div>
+
+      <!-- Description -->
+      <p class="product-detail-desc">{{ product.description }}</p>
+
+      <!-- Stock status -->
+      <div class="stock-status mb-4
+        {% if product.stock == 0 %}out{% elif product.stock <= 5 %}low{% else %}in{% endif %}">
+        {% if product.stock == 0 %}
+          <i class="bi bi-x-circle"></i> Out of Stock
+        {% elif product.stock <= 5 %}
+          <i class="bi bi-exclamation-triangle"></i> Only {{ product.stock }} left in stock!
+        {% else %}
+          <i class="bi bi-check-circle"></i> In Stock ({{ product.stock }} available)
+        {% endif %}
+      </div>
+
+      <!-- Quantity + Add to Cart -->
+      {% if product.stock > 0 %}
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="qty-control">
+            <button onclick="changeQty(-1)">−</button>
+            <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly>
+            <button onclick="changeQty(1)">+</button>
+          </div>
+          <button
+            class="btn-primary-custom flex-grow-1"
+            id="addCartBtn"
+            onclick="addToCartDetail({{ product.id }})">
+            <i class="bi bi-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      {% else %}
+        <button class="btn-primary-custom w-100 mb-4" disabled style="opacity:0.4; cursor:not-allowed">
+          <i class="bi bi-x-circle"></i> Out of Stock
+        </button>
+      {% endif %}
+
+      <!-- Meta info -->
+      <div class="product-meta">
+        <div><span>Category</span><strong>{{ product.category|capitalize }}</strong></div>
+        <div><span>SKU</span><strong>#GH-{{ "%04d"|format(product.id) }}</strong></div>
+        <div><span>Added</span><strong>{{ product.created_at.strftime('%b %d, %Y') }}</strong></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="reviews-section mb-5">
+    <h2 class="mb-4">Customer Reviews
+      <span style="color:var(--text-muted); font-size:1rem; font-weight:400">
+        ({{ product.review_count }})
+      </span>
+    </h2>
+
+    {% if product.reviews %}
+      <div class="row g-3">
+        {% for review in product.reviews %}
+          <div class="col-md-6">
+            <div class="review-card">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong style="color:#fff">{{ review.user.name }}</strong>
+                  <div class="stars" style="font-size:0.85rem">
+                    {% for i in range(1,6) %}
+                      {% if i <= review.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+                <span style="font-size:0.78rem; color:var(--text-muted)">
+                  {{ review.created_at.strftime('%b %d, %Y') }}
+                </span>
+              </div>
+              {% if review.comment %}
+                <p style="color:var(--text-muted); font-size:0.9rem; margin:0">{{ review.comment }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-reviews">
+        <p>⭐ No reviews yet. Be the first to review this product!</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Related Products -->
+  {% if related %}
+    <div class="mb-5">
+      <div class="section-head">
+        <h2>You May Also Like</h2>
+        <a href="{{ url_for('shop.index', category=product.category) }}">View all →</a>
+      </div>
+      <div class="row g-4">
+        {% for p in related %}
+          <div class="col-6 col-md-3">
+            <div class="product-card">
+              <a href="{{ url_for('shop.product_detail', product_id=p.id) }}">
+                <div class="product-img-wrap">
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy">
+                </div>
+              </a>
+              <div class="product-body">
+                <div class="product-category">{{ p.category }}</div>
+                <a href="{{ url_for('shop.product_detail', product_id=p.id) }}">
+                  <div class="product-name">{{ p.name }}</div>
+                </a>
+                <div class="product-footer">
+                  <div class="product-price"><small>₱</small>{{ "%.2f"|format(p.price_float) }}</div>
+                  <button class="btn-add-cart" onclick="addToCart({{ p.id }}, this)"
+                    {% if p.stock == 0 %}disabled{% endif %}>
+                    {% if p.stock == 0 %}Sold Out{% else %}<i class="bi bi-cart-plus"></i> Add{% endif %}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+function changeQty(delta) {
+  const input = document.getElementById('qty');
+  const max   = parseInt(input.max);
+  let val = parseInt(input.value) + delta;
+  if (val < 1) val = 1;
+  if (val > max) val = max;
+  input.value = val;
+}
+
+async function addToCartDetail(productId) {
+  const qty = parseInt(document.getElementById('qty').value);
+  const btn = document.getElementById('addCartBtn');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding…';
+
+  try {
+    const res = await fetch('/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity: qty })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      btn.innerHTML = '<i class="bi bi-check-lg"></i> Added to Cart!';
+      btn.style.background = 'var(--accent2)';
+      updateCartBadge(data.cart_count);
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 2000);
+    } else if (res.status === 401) {
+      window.location.href = '/login';
+    } else {
+      btn.innerHTML = original;
+      btn.disabled = false;
+    }
+  } catch {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}
