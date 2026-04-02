@@ -3,242 +3,223 @@
 
 {% block extra_css %}
 <style>
-/* ── Success Overlay ───────────────────────────────────────────── */
-#success-overlay {
-  display: none; opacity: 0;
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(26,12,43,0.96);
-  backdrop-filter: blur(12px);
-  flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
-  transition: opacity 0.5s ease;
-}
-#confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .checkout-wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem 3rem;}
+  @media(min-width:768px){.checkout-wrap{padding:2rem 2rem 4rem;}}
 
-.success-checkmark {
-  width: 90px; height: 90px; border-radius: 50%;
-  background: rgba(0,212,170,0.12); border: 3px solid rgba(0,212,170,0.4);
-  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
-  transform: scale(0); transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative; z-index: 1;
-}
-.success-checkmark.pop { transform: scale(1); }
-.overlay-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800;
-  color: #fff; text-align: center; position: relative; z-index: 1;
-}
-.overlay-sub { color: #8888aa; font-size: 0.95rem; margin-top: -1rem; position: relative; z-index: 1; text-align: center; }
+  .checkout-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2rem);font-weight:800;color:#fff;margin-bottom:.25rem;}
+  .checkout-sub{color:#c9c4d8;font-size:.88rem;margin-bottom:1.5rem;}
 
-/* Truck */
-.truck-road-wrap { position: relative; width: 100vw; overflow: hidden; height: 70px; z-index: 1; }
-.checkout-truck { position: absolute; left: -200px; bottom: 0; display: flex; flex-direction: column; align-items: center; }
-.truck-body-svg { animation: bounce 0.5s linear infinite; }
-@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-.truck-tires { display:flex; gap:74px; margin-top:-4px; }
-.truck-road { width: 100vw; height: 2px; background: linear-gradient(90deg, transparent, #444, #947dff, #444, transparent); position: absolute; bottom: 0; left: 0; }
-.truck-road::after { content:''; position:absolute; top:0; left:0; width:60px; height:100%; background:#947dff; border-radius:2px; animation: roadLine 0.9s linear infinite; }
-@keyframes roadLine { from { left:-60px; } to { left:100vw; } }
+  /* Progress */
+  .progress-bar-wrap{display:flex;align-items:center;max-width:320px;margin-bottom:2rem;}
+  .prog-step{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+  .prog-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:.88rem;font-family:'Space Grotesk',sans-serif;}
+  .prog-num.active{background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;box-shadow:0 0 18px rgba(202,190,255,.35);}
+  .prog-num.inactive{background:#271938;border:1px solid rgba(72,69,85,.3);color:#c9c4d8;}
+  .prog-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .prog-label.active{color:#cabeff;}
+  .prog-label.inactive{color:#8888aa;}
+  .prog-line{flex:1;height:2px;margin:0 .5rem;margin-bottom:.9rem;}
+  .prog-line.active{background:rgba(202,190,255,.25);}
+  .prog-line.inactive{background:#271938;}
 
-/* Spinner dots */
-.spinner-dots { display:inline-flex; gap:5px; align-items:center; }
-.spinner-dots span { width:6px; height:6px; background:#fff; border-radius:50%; animation: dotPulse 0.9s ease infinite; }
-.spinner-dots span:nth-child(2) { animation-delay:0.2s; }
-.spinner-dots span:nth-child(3) { animation-delay:0.4s; }
-@keyframes dotPulse { 0%,80%,100% { transform:scale(0.6); opacity:0.4; } 40% { transform:scale(1.1); opacity:1; } }
+  /* Two-col layout */
+  .checkout-grid{display:flex;flex-direction:column;gap:1.5rem;}
+  @media(min-width:900px){.checkout-grid{flex-direction:row;align-items:flex-start;gap:2rem;}}
 
-@keyframes shakeX {
-  0%,100% { transform:translateX(0); } 20% { transform:translateX(-8px); }
-  40% { transform:translateX(8px); }  60% { transform:translateX(-5px); } 80% { transform:translateX(5px); }
-}
+  /* Form card */
+  .form-card{flex:1;background:#1a1a2e;border:1px solid rgba(72,69,85,.2);border-radius:16px;padding:1.5rem;}
+  @media(min-width:640px){.form-card{padding:2rem;}}
+  .form-section-title{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;
+    color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;}
+
+  .form-label{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:1.2px;color:#947dff;margin-bottom:.45rem;}
+  .form-input{width:100%;border-radius:12px;padding:.75rem 1rem;font-size:.88rem;outline:none;
+    transition:all .2s;background:#3d2e4f;border:1px solid rgba(72,69,85,.3);color:#eedbff;
+    display:block;margin-bottom:.9rem;}
+  .form-input:focus{border-color:#947dff;box-shadow:0 0 0 3px rgba(148,125,255,.15);}
+  .form-input[readonly]{background:#271938;color:rgba(238,219,255,.55);cursor:default;}
+  .form-textarea{resize:vertical;min-height:80px;}
+
+  /* Payment option */
+  .payment-opt{background:#271938;border:1px solid rgba(148,125,255,.25);border-radius:12px;
+    padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.9rem;cursor:pointer;}
+  .payment-opt input{margin-top:.15rem;accent-color:#947dff;width:16px;height:16px;flex-shrink:0;}
+
+  .btn-place-order{width:100%;padding:1rem;border-radius:14px;font-weight:800;font-size:1rem;
+    border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
+    box-shadow:0 12px 28px rgba(148,125,255,.3);transition:all .2s;
+    display:flex;align-items:center;justify-content:center;gap:.6rem;}
+  .btn-place-order:hover{transform:translateY(-1px);box-shadow:0 16px 32px rgba(148,125,255,.4);}
+  .btn-place-order:active{transform:scale(.98);}
+
+  /* Order summary sidebar */
+  .order-summary-card{background:rgba(35,21,52,.65);backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);border:1px solid rgba(72,69,85,.18);
+    border-radius:16px;padding:1.5rem;}
+  @media(min-width:900px){.order-summary-card{position:sticky;top:80px;width:380px;flex-shrink:0;}}
+
+  .os-title{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:700;
+    color:#cabeff;margin-bottom:1.25rem;}
+  .os-items{display:flex;flex-direction:column;gap:.9rem;max-height:300px;overflow-y:auto;margin-bottom:1.25rem;}
+  @media(min-width:900px){.os-items{max-height:380px;}}
+  .os-item{display:flex;gap:.8rem;align-items:flex-start;}
+  .os-item-img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#3d2e4f;}
+  @media(min-width:480px){.os-item-img{width:64px;height:64px;}}
+
+  .os-row{display:flex;justify-content:space-between;font-size:.85rem;color:#8888aa;padding:.35rem 0;}
+  .os-total-row{display:flex;justify-content:space-between;align-items:flex-end;
+    padding-top:.85rem;margin-top:.5rem;border-top:1px solid rgba(72,69,85,.2);}
+  .os-total-label{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:#fff;}
+  .os-total-amount{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:800;color:#cabeff;}
+  .os-total-sub{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#8888aa;text-align:right;}
+
+  .trust-row{display:flex;justify-content:center;gap:1rem;opacity:.4;padding-top:.75rem;}
+
+  /* Success Overlay */
+  #success-overlay{display:none;opacity:0;position:fixed;inset:0;z-index:9999;
+    background:rgba(26,12,43,.97);backdrop-filter:blur(12px);
+    flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;
+    transition:opacity .5s ease;}
+  #confetti-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;}
+  .success-checkmark{width:80px;height:80px;border-radius:50%;background:rgba(0,212,170,.12);
+    border:3px solid rgba(0,212,170,.4);display:flex;align-items:center;justify-content:center;
+    font-size:2.2rem;transform:scale(0);transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+    position:relative;z-index:1;}
+  .success-checkmark.pop{transform:scale(1);}
+  .overlay-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2rem);
+    font-weight:800;color:#fff;text-align:center;position:relative;z-index:1;padding:0 1rem;}
+  .overlay-sub{color:#8888aa;font-size:.9rem;position:relative;z-index:1;text-align:center;padding:0 1rem;margin-top:-.75rem;}
+  .truck-road-wrap{position:relative;width:100vw;overflow:hidden;height:60px;z-index:1;}
+  .checkout-truck{position:absolute;left:-200px;bottom:0;display:flex;flex-direction:column;align-items:center;}
+  .truck-body-svg{animation:bounce .5s linear infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(4px);}}
+  .truck-tires{display:flex;gap:74px;margin-top:-4px;}
+  .truck-road{width:100vw;height:2px;background:linear-gradient(90deg,transparent,#444,#947dff,#444,transparent);position:absolute;bottom:0;left:0;}
+  .truck-road::after{content:'';position:absolute;top:0;left:0;width:60px;height:100%;background:#947dff;border-radius:2px;animation:roadLine .9s linear infinite;}
+  @keyframes roadLine{from{left:-60px;}to{left:100vw;}}
+  .spinner-dots{display:inline-flex;gap:5px;align-items:center;}
+  .spinner-dots span{width:6px;height:6px;background:#fff;border-radius:50%;animation:dotPulse .9s ease infinite;}
+  .spinner-dots span:nth-child(2){animation-delay:.2s;}
+  .spinner-dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes dotPulse{0%,80%,100%{transform:scale(.6);opacity:.4;}40%{transform:scale(1.1);opacity:1;}}
+  @keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 py-12">
+<div class="checkout-wrap">
+  <h1 class="checkout-title">Checkout</h1>
+  <p class="checkout-sub">Review your order and complete your purchase</p>
 
-  <!-- Page Title -->
-  <div class="mb-8">
-    <h1 class="text-4xl font-bold tracking-tight text-white" style="font-family:'Space Grotesk',sans-serif;">Checkout</h1>
-    <p style="color:#c9c4d8;margin-top:0.3rem;">Review your order and complete your purchase</p>
-  </div>
-
-  <!-- Progress Steps -->
-  <div class="flex items-center max-w-sm mb-12">
-    <div class="flex flex-col items-center gap-1">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-           style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-                  box-shadow:0 0 20px rgba(202,190,255,0.4);">1</div>
-      <span class="text-xs font-bold uppercase tracking-tight" style="color:#cabeff;">Shipping</span>
+  <!-- Progress -->
+  <div class="progress-bar-wrap">
+    <div class="prog-step">
+      <div class="prog-num active">1</div>
+      <span class="prog-label active">Shipping</span>
     </div>
-    <div class="flex-1 h-[2px] mx-3" style="background:rgba(202,190,255,0.2);"></div>
-    <div class="flex flex-col items-center gap-1" style="opacity:0.4;">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border"
-           style="background:#271938;border-color:rgba(72,69,85,0.3);color:#c9c4d8;">2</div>
-      <span class="text-xs font-bold uppercase tracking-tight" style="color:#c9c4d8;">Payment</span>
+    <div class="prog-line active"></div>
+    <div class="prog-step" style="opacity:.4;">
+      <div class="prog-num inactive">2</div>
+      <span class="prog-label inactive">Payment</span>
     </div>
-    <div class="flex-1 h-[2px] mx-3" style="background:#271938;"></div>
-    <div class="flex flex-col items-center gap-1" style="opacity:0.4;">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border"
-           style="background:#271938;border-color:rgba(72,69,85,0.3);color:#c9c4d8;">3</div>
-      <span class="text-xs font-bold uppercase tracking-tight" style="color:#c9c4d8;">Review</span>
+    <div class="prog-line inactive"></div>
+    <div class="prog-step" style="opacity:.4;">
+      <div class="prog-num inactive">3</div>
+      <span class="prog-label inactive">Review</span>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+  <div class="checkout-grid">
 
-    <!-- ── Left: Checkout Form ───────────────────────────────────── -->
-    <div class="lg:col-span-7">
-      <div class="rounded-2xl p-8" style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
+    <!-- ── LEFT: Form ─────────────────────────────────────────────── -->
+    <div class="form-card">
+      <h2 class="form-section-title">
+        <span class="material-symbols-outlined" style="color:#947dff;">location_on</span> Shipping Details
+      </h2>
 
-        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3" style="font-family:'Space Grotesk',sans-serif;">
-          <span class="material-symbols-outlined" style="color:#947dff;">location_on</span>
-          Shipping Details
+      <form id="checkout-form">
+        <label class="form-label">Full Name</label>
+        <input type="text" value="{{ current_user.name }}" readonly class="form-input">
+
+        <label class="form-label">Email Address</label>
+        <input type="email" value="{{ current_user.email }}" readonly class="form-input">
+
+        <label class="form-label">Shipping Address <span style="color:#ff4d6d;">*</span></label>
+        <textarea id="shipping_address" rows="3" class="form-input form-textarea"
+                  placeholder="House/Unit No., Street, Barangay, City, Province, ZIP"
+                  onfocus="this.style.borderColor='#947dff';this.style.boxShadow='0 0 0 3px rgba(148,125,255,.15)'"
+                  onblur="this.style.borderColor='rgba(72,69,85,.3)';this.style.boxShadow='none'"
+                  >{{ current_user.address or '' }}</textarea>
+
+        <label class="form-label" style="color:rgba(148,125,255,.7);">Order Notes <span style="color:#8888aa;">(optional)</span></label>
+        <textarea rows="2" class="form-input form-textarea" placeholder="Special instructions…"
+                  onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,.3)'"></textarea>
+
+        <h2 class="form-section-title" style="margin-top:.5rem;">
+          <span class="material-symbols-outlined" style="color:#947dff;">payments</span> Payment Method
         </h2>
-
-        <form id="checkout-form">
-
-          <!-- Full Name (read-only) -->
-          <div class="mb-4">
-            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">Full Name</label>
-            <input type="text" value="{{ current_user.name }}" readonly
-                   class="w-full rounded-xl px-4 py-3 text-sm"
-                   style="background:#271938;border:none;color:rgba(238,219,255,0.6);outline:none;">
+        <div class="payment-opt">
+          <input type="radio" name="payment" value="cod" checked>
+          <div>
+            <strong style="color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">💵 Cash on Delivery (COD)</strong>
+            <p style="color:#8888aa;font-size:.8rem;margin:.2rem 0 0;">Pay when your order arrives. No extra charges.</p>
           </div>
+        </div>
 
-          <!-- Email (read-only) -->
-          <div class="mb-4">
-            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">Email Address</label>
-            <input type="email" value="{{ current_user.email }}" readonly
-                   class="w-full rounded-xl px-4 py-3 text-sm"
-                   style="background:#271938;border:none;color:rgba(238,219,255,0.6);outline:none;">
-          </div>
-
-          <!-- Shipping Address -->
-          <div class="mb-6">
-            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">
-              Shipping Address <span style="color:#ff4d6d;">*</span>
-            </label>
-            <textarea id="shipping_address" rows="3"
-                      placeholder="House/Unit No., Street, Barangay, City, Province, ZIP"
-                      class="w-full rounded-xl px-4 py-3 text-sm resize-none transition-all outline-none"
-                      style="background:#3d2e4f;border:1px solid rgba(72,69,85,0.3);color:#eedbff;"
-                      onfocus="this.style.borderColor='#947dff';this.style.boxShadow='0 0 0 3px rgba(148,125,255,0.2)'"
-                      onblur="this.style.borderColor='rgba(72,69,85,0.3)';this.style.boxShadow='none'"
-                      >{{ current_user.address or '' }}</textarea>
-          </div>
-
-          <!-- Order Notes -->
-          <div class="mb-8">
-            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:rgba(148,125,255,0.6);">
-              Order Notes <span style="color:#8888aa;">(optional)</span>
-            </label>
-            <textarea rows="2"
-                      placeholder="Special instructions for your order…"
-                      class="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none transition-all"
-                      style="background:#271938;border:1px solid rgba(72,69,85,0.2);color:#eedbff;"
-                      onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,0.2)'">
-            </textarea>
-          </div>
-
-          <!-- Payment Method -->
-          <h2 class="text-xl font-bold mb-4 flex items-center gap-3" style="font-family:'Space Grotesk',sans-serif;">
-            <span class="material-symbols-outlined" style="color:#947dff;">payments</span>
-            Payment Method
-          </h2>
-          <div class="rounded-xl p-4 mb-8" style="background:#271938;border:1px solid rgba(148,125,255,0.25);">
-            <label class="flex items-center gap-4 cursor-pointer">
-              <input type="radio" name="payment" value="cod" checked style="accent-color:#947dff;width:16px;height:16px;">
-              <div>
-                <strong class="block text-white text-sm" style="font-family:'Space Grotesk',sans-serif;">💵 Cash on Delivery (COD)</strong>
-                <p class="text-xs mt-1" style="color:#8888aa;">Pay when your order arrives. No extra charges.</p>
-              </div>
-            </label>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="submit" id="place-order-btn"
-                  class="w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-                         border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
-                         box-shadow:0 12px 24px rgba(148,125,255,0.3);">
-            <span class="material-symbols-outlined">shopping_bag</span> Place Order
-          </button>
-
-        </form>
-      </div>
+        <button type="submit" id="place-order-btn" class="btn-place-order">
+          <span class="material-symbols-outlined" style="font-size:1.1rem;">shopping_bag</span> Place Order
+        </button>
+      </form>
     </div>
 
-    <!-- ── Right: Order Summary ──────────────────────────────────── -->
-    <aside class="lg:col-span-5">
-      <div class="sticky rounded-2xl p-8" style="top:100px;background:rgba(35,21,52,0.6);
-           backdrop-filter:blur(20px);border:1px solid rgba(72,69,85,0.15);
-           box-shadow:0 24px 48px rgba(21,7,38,0.5);">
+    <!-- ── RIGHT: Order Summary ────────────────────────────────────── -->
+    <div class="order-summary-card">
+      <h3 class="os-title">Your Order ({{ cart_items|length }} items)</h3>
 
-        <h3 class="text-xl font-bold mb-6" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">
-          Your Order ({{ cart_items|length }} items)
-        </h3>
-
-        <!-- Cart Items -->
-        <div class="space-y-4 mb-6 overflow-y-auto" style="max-height:360px;">
-          {% for item in cart_items %}
-            <div class="flex gap-3 group">
-              <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0"
-                   style="background:#3d2e4f;">
-                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"
-                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
-              </div>
-              <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
-                <div>
-                  <h4 class="text-sm font-bold truncate" style="color:#eedbff;font-family:'Space Grotesk',sans-serif;">
-                    {{ item.product.name }}
-                  </h4>
-                  <p class="text-xs" style="color:#8888aa;">{{ item.product.category|capitalize }}</p>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-xs font-medium" style="color:#8888aa;">Qty: {{ item.quantity }}</span>
-                  <span class="text-sm font-bold" style="color:#cabeff;">₱{{ "%.2f"|format(item.subtotal) }}</span>
-                </div>
+      <div class="os-items">
+        {% for item in cart_items %}
+          <div class="os-item">
+            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="os-item-img">
+            <div style="flex:1;min-width:0;">
+              <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.85rem;
+                        color:#eedbff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 .15rem;">
+                {{ item.product.name }}
+              </p>
+              <p style="font-size:.75rem;color:#8888aa;margin:0 0 .25rem;">{{ item.product.category|capitalize }}</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:.75rem;color:#8888aa;">Qty: {{ item.quantity }}</span>
+                <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.88rem;color:#cabeff;">₱{{ "%.2f"|format(item.subtotal) }}</span>
               </div>
             </div>
-          {% endfor %}
-        </div>
-
-        <!-- Totals -->
-        <div class="space-y-3 pt-6" style="border-top:1px solid rgba(72,69,85,0.2);">
-          <div class="flex justify-between text-sm">
-            <span style="color:#8888aa;">Subtotal</span>
-            <span style="color:#eedbff;font-weight:500;">₱{{ "%.2f"|format(cart_total) }}</span>
           </div>
-          <div class="flex justify-between text-sm">
-            <span style="color:#8888aa;">Shipping</span>
-            <span style="color:#00d4aa;font-weight:600;">FREE 🎁</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span style="color:#8888aa;">Tax</span>
-            <span style="color:#eedbff;font-weight:500;">₱0.00</span>
-          </div>
-          <div class="flex justify-between items-end pt-4" style="border-top:1px solid rgba(72,69,85,0.2);">
-            <span class="text-lg font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">Total</span>
-            <div class="text-right">
-              <span class="block text-2xl font-bold" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">
-                ₱{{ "%.2f"|format(cart_total) }}
-              </span>
-              <span class="text-[10px] uppercase tracking-widest" style="color:#8888aa;">PHP — Tax Included</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Trust Signals -->
-        <div class="pt-6 flex items-center justify-center gap-4 opacity-40">
-          <span class="material-symbols-outlined" style="font-size:1.4rem;">lock</span>
-          <span class="material-symbols-outlined" style="font-size:1.4rem;">verified_user</span>
-          <span class="material-symbols-outlined" style="font-size:1.4rem;">shield</span>
-        </div>
-        <p class="text-center text-[10px] mt-2 px-4" style="color:#8888aa;">
-          Secure checkout · Free nationwide shipping · Buyer protection guaranteed
-        </p>
-
+        {% endfor %}
       </div>
-    </aside>
+
+      <div style="border-top:1px solid rgba(72,69,85,.2);padding-top:.75rem;">
+        <div class="os-row"><span>Subtotal</span><span style="color:#eedbff;font-weight:500;">₱{{ "%.2f"|format(cart_total) }}</span></div>
+        <div class="os-row"><span>Shipping</span><span style="color:#00d4aa;font-weight:600;">FREE 🎁</span></div>
+        <div class="os-row"><span>Tax</span><span style="color:#eedbff;font-weight:500;">₱0.00</span></div>
+        <div class="os-total-row">
+          <span class="os-total-label">Total</span>
+          <div>
+            <div class="os-total-amount">₱{{ "%.2f"|format(cart_total) }}</div>
+            <div class="os-total-sub">PHP — Incl. Tax</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-row">
+        <span class="material-symbols-outlined" style="font-size:1.3rem;">lock</span>
+        <span class="material-symbols-outlined" style="font-size:1.3rem;">verified_user</span>
+        <span class="material-symbols-outlined" style="font-size:1.3rem;">shield</span>
+      </div>
+      <p style="text-align:center;font-size:.7rem;color:#8888aa;margin-top:.4rem;">
+        Secure checkout · Free nationwide shipping
+      </p>
+    </div>
 
   </div>
 </div>
@@ -253,18 +234,16 @@
   <div class="overlay-sub">Sit tight — your gadget is on its way!</div>
   <div class="truck-road-wrap">
     <div class="checkout-truck">
-      <svg class="truck-body-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 198 93" width="170">
-        <path stroke-width="3" stroke="#282828" fill="#947dff"
-              d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z"/>
-        <path stroke-width="3" stroke="#282828" fill="#7D7C7C"
-              d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z"/>
+      <svg class="truck-body-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 198 93" width="160">
+        <path stroke-width="3" stroke="#282828" fill="#947dff" d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z"/>
+        <path stroke-width="3" stroke="#282828" fill="#7D7C7C" d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z"/>
         <rect stroke-width="2" stroke="#282828" fill="#FFFCAB" rx="1" height="7" width="5" y="63" x="187"/>
         <rect stroke-width="3" stroke="#282828" fill="#DFDFDF" rx="2.5" height="90" width="121" y="1.5" x="6.5"/>
         <rect stroke-width="2" stroke="#282828" fill="#DFDFDF" rx="2" height="4" width="6" y="84" x="1"/>
       </svg>
       <div class="truck-tires">
         {% for _ in range(2) %}
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" width="24">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" width="22">
           <circle stroke-width="3" stroke="#282828" fill="#282828" r="13.5" cy="15" cx="15"/>
           <circle fill="#DFDFDF" r="7" cy="15" cx="15"/>
         </svg>
@@ -273,10 +252,7 @@
     </div>
     <div class="truck-road"></div>
   </div>
-  <div style="color:#8888aa;font-size:0.82rem;position:relative;z-index:1;">
-    Redirecting to your order…
-  </div>
+  <div style="color:#8888aa;font-size:.8rem;position:relative;z-index:1;text-align:center;padding:0 1rem;">Redirecting to your order…</div>
 </div>
-
 <script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
 {% endblock %}

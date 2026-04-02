@@ -1,269 +1,270 @@
 {% extends "base.html" %}
 {% block title %}GadgetHub PH – Tech Accessories{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── HERO ── */
+  .hero-section{position:relative;overflow:hidden;padding:3rem 1.25rem 2.5rem;}
+  @media(min-width:768px){.hero-section{padding:4rem 3rem 3.5rem;}}
+  @media(min-width:1024px){.hero-section{padding:5rem 5rem 4rem;}}
+  .hero-bg{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:flex-end;pointer-events:none;}
+  .hero-bg img{width:55vw;max-width:480px;object-fit:contain;opacity:.18;}
+  @media(max-width:600px){.hero-bg img{width:80vw;opacity:.1;}}
+  .hero-overlay{position:absolute;inset:0;z-index:0;background:linear-gradient(to right,#1a0c2b 35%,rgba(26,12,43,.8) 65%,transparent);}
+  .hero-content{position:relative;z-index:1;max-width:600px;}
+  .hero-tag{display:inline-block;padding:.3rem 1rem;border-radius:50px;font-size:.72rem;
+    font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;
+    background:#3d2e4f;color:#cabeff;border:1px solid rgba(148,125,255,.2);}
+  .hero-h1{font-family:'Space Grotesk',sans-serif;font-weight:800;line-height:1.08;
+    letter-spacing:-1.5px;margin-bottom:1rem;color:#fff;
+    font-size:clamp(2.2rem,8vw,5rem);}
+  .hero-grad{background:linear-gradient(135deg,#cabeff,#947dff);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .hero-p{color:#c9c4d8;line-height:1.65;margin-bottom:1.5rem;font-size:clamp(.88rem,2.5vw,1.05rem);}
+  .hero-btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.75rem;}
+  .btn-primary-hero{padding:.75rem 1.75rem;border-radius:10px;font-weight:700;font-size:.9rem;
+    text-decoration:none;transition:all .2s;active:scale(.95);white-space:nowrap;
+    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
+    font-family:'Space Grotesk',sans-serif;box-shadow:0 0 24px rgba(148,125,255,.3);}
+  .btn-outline-hero{padding:.75rem 1.75rem;border-radius:10px;font-weight:700;font-size:.9rem;
+    text-decoration:none;transition:all .2s;white-space:nowrap;
+    border:1.5px solid rgba(72,69,85,.5);color:#cabeff;font-family:'Space Grotesk',sans-serif;}
+  .hero-stats{display:flex;gap:1.5rem;flex-wrap:wrap;}
+  .hero-stat strong{display:block;font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;color:#fff;}
+  .hero-stat span{font-size:.75rem;color:#c9c4d8;}
+
+  /* ── FILTER BAR ── */
+  .filter-bar{padding:1rem 1.25rem;border-bottom:1px solid rgba(72,69,85,.2);}
+  @media(min-width:768px){.filter-bar{padding:1.25rem 2rem;}}
+  .pills-wrap{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch;}
+  .pills-wrap::-webkit-scrollbar{display:none;}
+  .cat-pill{flex-shrink:0;padding:.45rem 1rem;border-radius:50px;font-size:.8rem;font-weight:500;
+    text-decoration:none;transition:all .2s;border:1px solid rgba(72,69,85,.35);
+    background:#22223b;color:#8888aa;white-space:nowrap;}
+  .cat-pill.active,.cat-pill:hover{background:#947dff;color:#fff;border-color:#947dff;}
+  .search-row{display:flex;align-items:center;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;}
+  .search-input-wrap{position:relative;flex:1;min-width:140px;}
+  .search-input-wrap .si{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);
+    font-size:.95rem;color:#8888aa;pointer-events:none;}
+  .search-input{width:100%;padding:.5rem .9rem .5rem 2.4rem;border-radius:50px;
+    background:#22223b;border:1px solid rgba(72,69,85,.35);color:#eedbff;
+    font-size:.85rem;outline:none;transition:border-color .2s;}
+  .search-input:focus{border-color:#947dff;box-shadow:0 0 0 2px rgba(148,125,255,.2);}
+  .search-btn{padding:.5rem 1rem;border-radius:50px;background:#947dff;color:#fff;
+    border:none;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap;}
+
+  /* ── PRODUCT SECTION ── */
+  .products-section{padding:1.25rem 1.25rem 3rem;}
+  @media(min-width:768px){.products-section{padding:1.5rem 2rem 4rem;}}
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;}
+  .section-h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.2rem,4vw,1.6rem);font-weight:800;color:#fff;margin:0;}
+
+  /* ── PRODUCT GRID ── */
+  .product-grid{display:grid;gap:.9rem;grid-template-columns:repeat(2,1fr);}
+  @media(min-width:480px){.product-grid{gap:1rem;}}
+  @media(min-width:640px){.product-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:900px){.product-grid{grid-template-columns:repeat(4,1fr);gap:1.25rem;}}
+
+  /* ── PRODUCT CARD ── */
+  .product-card{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
+    background:#1a1a2e;border:1px solid rgba(72,69,85,.2);transition:all .3s;}
+  .product-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.4);border-color:rgba(148,125,255,.25);}
+  .pc-img-wrap{position:relative;padding-top:100%;background:#22223b;overflow:hidden;}
+  .pc-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+  .product-card:hover .pc-img-wrap img{transform:scale(1.07);}
+  .pc-badge{position:absolute;top:8px;left:8px;padding:2px 7px;border-radius:5px;font-size:.63rem;font-weight:700;text-transform:uppercase;}
+  .badge-in{background:rgba(0,212,170,.9);color:#000;}
+  .badge-low{background:rgba(255,193,7,.9);color:#000;}
+  .badge-out{background:rgba(255,77,109,.9);color:#fff;}
+  .pc-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .3s;background:rgba(26,12,43,.5);}
+  .product-card:hover .pc-overlay{opacity:1;}
+  .pc-body{padding:.85rem .85rem 1rem;display:flex;flex-direction:column;flex:1;}
+  @media(min-width:640px){.pc-body{padding:1rem 1rem 1.1rem;}}
+  .pc-cat{font-size:.65rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#947dff;margin-bottom:.25rem;}
+  .pc-name{font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:.88rem;
+    line-height:1.3;margin-bottom:.4rem;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  @media(min-width:640px){.pc-name{font-size:.95rem;}}
+  .pc-stars{color:#ffc107;font-size:.72rem;}
+  .pc-rating-count{color:#8888aa;font-size:.68rem;}
+  .pc-footer{display:flex;align-items:center;justify-content:space-between;
+    margin-top:auto;padding-top:.65rem;border-top:1px solid rgba(72,69,85,.2);}
+  .pc-price{font-family:'Space Grotesk',sans-serif;font-weight:800;color:#fff;font-size:.95rem;}
+  .pc-price small{font-size:.7rem;color:#8888aa;font-weight:400;font-family:'Inter',sans-serif;}
+  .btn-add-cart{background:#947dff;color:#fff;border:none;border-radius:8px;
+    padding:.4rem .75rem;font-size:.75rem;font-weight:600;cursor:pointer;
+    transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:.25rem;}
+  .btn-add-cart:hover{background:#7c5cfc;transform:scale(1.04);}
+  .btn-add-cart:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;}
+
+  /* ── PAGINATION ── */
+  .pagination-row{display:flex;justify-content:center;gap:.4rem;margin-top:2.5rem;flex-wrap:wrap;}
+  .page-btn{padding:.55rem 1rem;border-radius:8px;font-size:.82rem;text-decoration:none;transition:all .2s;
+    background:#271938;border:1px solid rgba(72,69,85,.35);color:#cabeff;}
+  .page-btn.active,.page-btn:hover{background:#947dff;border-color:#947dff;color:#fff;}
+  .page-dots{padding:.55rem .5rem;color:#8888aa;font-size:.82rem;}
+
+  /* ── EMPTY STATE ── */
+  .empty-state{text-align:center;padding:4rem 1rem;}
+
+  /* ── CTA SECTION ── */
+  .cta-section{padding:2rem 1.25rem;}
+  @media(min-width:640px){.cta-section{padding:3rem 2rem;}}
+  .cta-inner{max-width:680px;margin:0 auto;border-radius:20px;padding:2.5rem 1.5rem;text-align:center;
+    background:rgba(35,21,52,.6);backdrop-filter:blur(20px);border:1px solid rgba(72,69,85,.15);}
+  @media(min-width:640px){.cta-inner{padding:3.5rem 3rem;border-radius:28px;}}
+  .cta-h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2.2rem);font-weight:800;margin-bottom:.75rem;}
+  .cta-form{display:flex;gap:.5rem;max-width:400px;margin:1.5rem auto 0;flex-direction:column;}
+  @media(min-width:480px){.cta-form{flex-direction:row;}}
+  .cta-input{flex:1;border-radius:10px;padding:.8rem 1.2rem;font-size:.88rem;outline:none;
+    background:#3d2e4f;border:none;color:#eedbff;}
+  .cta-btn{padding:.8rem 1.5rem;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;
+    background:#947dff;color:#fff;border:none;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<!-- ── Hero Section ───────────────────────────────────────────────── -->
-<section class="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden px-8 lg:px-24 pt-8">
-  <!-- Background: logo as ambient -->
-  <div class="absolute inset-0 z-0 flex items-center justify-end pr-8 lg:pr-24">
-    <img src="{{ url_for('static', filename='images/gadgethub-logo.png') }}"
-         alt="GadgetHub PH"
-         class="w-[420px] lg:w-[520px] object-contain opacity-25 select-none pointer-events-none">
+<!-- ── HERO ───────────────────────────────────────────────────────── -->
+<section class="hero-section" id="top">
+  <div class="hero-bg">
+    <img src="{{ url_for('static', filename='images/gadgethub-logo.png') }}" alt="GadgetHub PH">
   </div>
-  <!-- Gradient overlay left -->
-  <div class="absolute inset-0 z-0"
-       style="background:linear-gradient(to right, #1a0c2b 40%, rgba(26,12,43,0.7) 70%, transparent 100%);">
-  </div>
-
-  <!-- Content -->
-  <div class="relative z-10 max-w-3xl">
-    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-6"
-          style="background:#3d2e4f;color:#cabeff;border:1px solid rgba(148,125,255,0.2);">
-      🇵🇭 Free Shipping Nationwide
-    </span>
-    <h1 class="text-6xl md:text-8xl font-bold leading-tight tracking-tighter text-white mb-6"
-        style="font-family:'Space Grotesk',sans-serif;">
-      Level Up Your<br>
-      <span style="background:linear-gradient(135deg,#cabeff,#947dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-        Tech Setup.
-      </span>
-    </h1>
-    <p class="text-xl mb-10 leading-relaxed max-w-lg" style="color:#c9c4d8;">
-      Earbuds, chargers, powerbanks &amp; accessories — curated for every budget,
-      delivered fast anywhere in the Philippines.
-    </p>
-    <div class="flex flex-wrap gap-4">
-      <a href="#products"
-         class="px-10 py-4 rounded-lg font-bold text-lg no-underline transition-all active:scale-95 hover:shadow-[0_0_30px_rgba(148,125,255,0.4)]"
-         style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;font-family:'Space Grotesk',sans-serif;">
-        Shop Now
-      </a>
-      <a href="{{ url_for('shop.index', category='earbuds') }}"
-         class="px-10 py-4 rounded-lg font-bold text-lg no-underline transition-all hover:bg-[#322343] active:scale-95"
-         style="border:1.5px solid rgba(72,69,85,0.4);color:#cabeff;font-family:'Space Grotesk',sans-serif;">
-        🎧 Top Picks
-      </a>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-tag">🇵🇭 Free Shipping Nationwide</span>
+    <h1 class="hero-h1">Level Up Your<br><span class="hero-grad">Tech Setup.</span></h1>
+    <p class="hero-p">Earbuds, chargers, powerbanks &amp; accessories — curated for every budget, delivered fast anywhere in the Philippines.</p>
+    <div class="hero-btns">
+      <a href="#products" class="btn-primary-hero">Shop Now</a>
+      <a href="{{ url_for('shop.index', category='earbuds') }}" class="btn-outline-hero">🎧 Top Picks</a>
     </div>
-    <!-- Stats -->
-    <div class="flex gap-8 mt-10">
-      <div>
-        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">500+</strong>
-        <span class="text-sm" style="color:#c9c4d8;">Happy Customers</span>
-      </div>
-      <div>
-        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">{{ products.total }}</strong>
-        <span class="text-sm" style="color:#c9c4d8;">Products</span>
-      </div>
-      <div>
-        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">4</strong>
-        <span class="text-sm" style="color:#c9c4d8;">Categories</span>
-      </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>500+</strong><span>Happy Customers</span></div>
+      <div class="hero-stat"><strong>{{ products.total }}</strong><span>Products</span></div>
+      <div class="hero-stat"><strong>4</strong><span>Categories</span></div>
     </div>
   </div>
 </section>
 
-<!-- ── Category Bar + Search ─────────────────────────────────────── -->
-<div class="max-w-7xl mx-auto px-8 py-8" id="products">
-  <div class="flex flex-wrap items-center justify-between gap-4"
-       style="border-bottom:1px solid rgba(72,69,85,0.2);padding-bottom:1.5rem;">
-
-    <!-- Category Pills -->
-    <div class="flex gap-2 flex-wrap">
-      <a href="{{ url_for('shop.index') }}"
-         class="px-5 py-2 rounded-full text-sm font-medium no-underline transition-all border"
-         style="{% if not current_category %}background:#947dff;color:#fff;border-color:#947dff;{% else %}background:#22223b;color:#8888aa;border-color:rgba(72,69,85,0.3);{% endif %}">
-        All
+<!-- ── CATEGORY BAR + SEARCH ─────────────────────────────────────── -->
+<div class="filter-bar" id="products">
+  <div class="pills-wrap">
+    <a href="{{ url_for('shop.index') }}" class="cat-pill{% if not current_category %} active{% endif %}">All</a>
+    {% for cat in categories %}
+      <a href="{{ url_for('shop.index', category=cat) }}" class="cat-pill{% if current_category == cat %} active{% endif %}">
+        {% if cat=='earbuds' %}🎧{% elif cat=='chargers' %}⚡{% elif cat=='powerbanks' %}🔋{% else %}📱{% endif %} {{ cat|capitalize }}
       </a>
-      {% for cat in categories %}
-        <a href="{{ url_for('shop.index', category=cat) }}"
-           class="px-5 py-2 rounded-full text-sm font-medium no-underline transition-all border"
-           style="{% if current_category == cat %}background:#947dff;color:#fff;border-color:#947dff;{% else %}background:#22223b;color:#8888aa;border-color:rgba(72,69,85,0.3);{% endif %}">
-          {% if cat == 'earbuds' %}🎧{% elif cat == 'chargers' %}⚡{% elif cat == 'powerbanks' %}🔋{% else %}📱{% endif %}
-          {{ cat|capitalize }}
-        </a>
-      {% endfor %}
-    </div>
-
-    <!-- Search -->
-    <form method="GET" action="{{ url_for('shop.index') }}" class="flex items-center gap-2">
-      {% if current_category %}
-        <input type="hidden" name="category" value="{{ current_category }}">
-      {% endif %}
-      <div class="relative">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2"
-              style="font-size:1rem;color:#8888aa;pointer-events:none;">search</span>
-        <input type="text" name="q" value="{{ search }}" placeholder="Search products…"
-               style="padding:0.5rem 1rem 0.5rem 2.5rem;border-radius:50px;background:#22223b;
-                      border:1px solid rgba(72,69,85,0.3);color:#eedbff;font-size:0.88rem;
-                      width:220px;outline:none;transition:border-color 0.2s;"
-               onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,0.3)'">
-      </div>
-      <button type="submit"
-              class="px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
-              style="background:#947dff;color:#fff;border:none;cursor:pointer;">
-        Search
-      </button>
-    </form>
+    {% endfor %}
   </div>
+  <form method="GET" action="{{ url_for('shop.index') }}" class="search-row">
+    {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+    <div class="search-input-wrap">
+      <span class="material-symbols-outlined si">search</span>
+      <input type="text" name="q" value="{{ search }}" placeholder="Search products…" class="search-input">
+    </div>
+    <button type="submit" class="search-btn">Search</button>
+  </form>
 </div>
 
-<!-- ── Product Grid ────────────────────────────────────────────────── -->
-<section class="pb-16 px-8 max-w-7xl mx-auto">
-
-  <!-- Section Header -->
-  <div class="flex justify-between items-end mb-10">
-    <h2 class="text-3xl font-bold tracking-tight text-white" style="font-family:'Space Grotesk',sans-serif;">
+<!-- ── PRODUCTS ───────────────────────────────────────────────────── -->
+<section class="products-section">
+  <div class="section-head">
+    <h2 class="section-h2">
       {% if search %}Results for "{{ search }}"
       {% elif current_category %}{{ current_category|capitalize }}
       {% else %}All Products{% endif %}
-      <span class="text-xl font-normal ml-2" style="color:#8888aa;">({{ products.total }})</span>
+      <span style="color:#8888aa;font-weight:400;font-size:.8em;">({{ products.total }})</span>
     </h2>
   </div>
 
   {% if products.items %}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="product-grid">
       {% for product in products.items %}
-        <div class="product-card group flex flex-col rounded-xl overflow-hidden transition-all duration-300
-                    hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
-             style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-
-          <!-- Image -->
-          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="block">
-            <div class="relative overflow-hidden" style="padding-top:100%;background:#22223b;">
-              <img src="{{ product.image_url }}" alt="{{ product.name }}"
-                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                   loading="lazy">
-
-              <!-- Badge -->
+        <div class="product-card">
+          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" style="text-decoration:none;display:block;">
+            <div class="pc-img-wrap">
+              <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
               {% if product.stock == 0 %}
-                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
-                      style="background:rgba(255,77,109,0.9);color:#fff;">Out of Stock</span>
+                <span class="pc-badge badge-out">Out of Stock</span>
               {% elif product.stock <= 5 %}
-                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
-                      style="background:rgba(255,193,7,0.9);color:#000;">Only {{ product.stock }} left</span>
+                <span class="pc-badge badge-low">{{ product.stock }} left</span>
               {% else %}
-                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
-                      style="background:rgba(0,212,170,0.9);color:#000;">In Stock</span>
+                <span class="pc-badge badge-in">In Stock</span>
               {% endif %}
-
-              <!-- Hover quick view -->
-              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                   style="background:rgba(26,12,43,0.5);">
-                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}"
-                   class="p-3 rounded-full no-underline transition-all hover:scale-110"
-                   style="background:#322343;color:#cabeff;">
-                  <span class="material-symbols-outlined" style="font-size:1.2rem;">visibility</span>
-                </a>
+              <div class="pc-overlay">
+                <span style="background:#322343;color:#cabeff;border-radius:50%;padding:.5rem;display:flex;">
+                  <span class="material-symbols-outlined" style="font-size:1.1rem;">visibility</span>
+                </span>
               </div>
             </div>
           </a>
-
-          <!-- Body -->
-          <div class="p-4 flex flex-col flex-1">
-            <p class="text-[0.7rem] font-bold tracking-widest uppercase mb-1" style="color:#947dff;">{{ product.category }}</p>
-            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="no-underline">
-              <h3 class="font-bold text-white text-sm leading-tight mb-2 hover:text-[#cabeff] transition-colors"
-                  style="font-family:'Space Grotesk',sans-serif;
-                         display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                {{ product.name }}
-              </h3>
+          <div class="pc-body">
+            <p class="pc-cat">{{ product.category }}</p>
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" style="text-decoration:none;">
+              <h3 class="pc-name">{{ product.name }}</h3>
             </a>
-
-            <!-- Stars -->
-            <div class="flex items-center gap-1 mb-3">
-              <span style="color:#ffc107;font-size:0.75rem;">
-                {% for i in range(1, 6) %}{% if i <= product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}
-              </span>
-              <span style="color:#8888aa;font-size:0.72rem;">({{ product.review_count }})</span>
+            <div style="display:flex;align-items:center;gap:.3rem;margin-bottom:.5rem;">
+              <span class="pc-stars">{% for i in range(1,6) %}{% if i<=product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}</span>
+              <span class="pc-rating-count">({{ product.review_count }})</span>
             </div>
-
-            <!-- Price + Add to Cart -->
-            <div class="mt-auto flex items-center justify-between pt-3"
-                 style="border-top:1px solid rgba(72,69,85,0.2);">
-              <span class="font-bold text-white" style="font-family:'Space Grotesk',sans-serif;font-size:1.05rem;">
-                <small style="font-size:0.75rem;color:#8888aa;font-family:'Inter',sans-serif;">₱</small>{{ "%.2f"|format(product.price_float) }}
-              </span>
-              <button class="btn-add-cart flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-xs
-                             transition-all active:scale-95"
-                      onclick="addToCart({{ product.id }}, this)"
-                      {% if product.stock == 0 %}disabled{% endif %}
-                      style="background:#947dff;color:#fff;border:none;cursor:pointer;
-                             {% if product.stock == 0 %}opacity:0.4;cursor:not-allowed;background:#22223b;color:#8888aa;{% endif %}">
-                {% if product.stock == 0 %}
-                  Sold Out
-                {% else %}
-                  <span class="material-symbols-outlined" style="font-size:0.9rem;">add_shopping_cart</span> Add
-                {% endif %}
+            <div class="pc-footer">
+              <span class="pc-price"><small>₱</small>{{ "%.2f"|format(product.price_float) }}</span>
+              <button class="btn-add-cart" onclick="addToCart({{ product.id }}, this)"
+                      {% if product.stock == 0 %}disabled{% endif %}>
+                {% if product.stock == 0 %}Sold Out
+                {% else %}<span class="material-symbols-outlined" style="font-size:.85rem;">add_shopping_cart</span> Add{% endif %}
               </button>
             </div>
           </div>
-
         </div>
       {% endfor %}
     </div>
 
     <!-- Pagination -->
     {% if products.pages > 1 %}
-      <nav class="flex justify-center mt-12">
-        <div class="flex gap-2">
-          {% if products.has_prev %}
-            <a href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}"
-               class="px-4 py-2 rounded-lg no-underline transition-all"
-               style="background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;">‹</a>
+      <div class="pagination-row">
+        {% if products.has_prev %}
+          <a href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}" class="page-btn">‹</a>
+        {% endif %}
+        {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+          {% if p %}
+            <a href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}"
+               class="page-btn{% if p==products.page %} active{% endif %}">{{ p }}</a>
+          {% else %}
+            <span class="page-dots">…</span>
           {% endif %}
-          {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-            {% if p %}
-              <a href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}"
-                 class="px-4 py-2 rounded-lg no-underline transition-all"
-                 style="{% if p == products.page %}background:#947dff;border:1px solid #947dff;color:#fff;{% else %}background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;{% endif %}">
-                {{ p }}
-              </a>
-            {% else %}
-              <span class="px-4 py-2" style="color:#8888aa;">…</span>
-            {% endif %}
-          {% endfor %}
-          {% if products.has_next %}
-            <a href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}"
-               class="px-4 py-2 rounded-lg no-underline transition-all"
-               style="background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;">›</a>
-          {% endif %}
-        </div>
-      </nav>
+        {% endfor %}
+        {% if products.has_next %}
+          <a href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}" class="page-btn">›</a>
+        {% endif %}
+      </div>
     {% endif %}
 
   {% else %}
-    <!-- Empty State -->
-    <div class="text-center py-20">
-      <div style="font-size:4rem;margin-bottom:1rem;">🔍</div>
-      <h3 class="text-xl mb-2" style="color:#8888aa;font-family:'Space Grotesk',sans-serif;">No products found</h3>
-      <p class="mb-6" style="color:#8888aa;">Try a different search term or category.</p>
+    <div class="empty-state">
+      <div style="font-size:3.5rem;margin-bottom:1rem;">🔍</div>
+      <h3 style="color:#8888aa;font-family:'Space Grotesk',sans-serif;margin-bottom:.5rem;">No products found</h3>
+      <p style="color:#8888aa;font-size:.88rem;margin-bottom:1.5rem;">Try a different search or category.</p>
       <a href="{{ url_for('shop.index') }}"
-         class="px-8 py-3 rounded-lg font-bold no-underline transition-all inline-block"
-         style="background:#947dff;color:#fff;">View All Products</a>
+         style="background:#947dff;color:#fff;padding:.75rem 1.75rem;border-radius:10px;
+                text-decoration:none;font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">
+        View All Products
+      </a>
     </div>
   {% endif %}
 </section>
 
-<!-- ── Newsletter CTA ─────────────────────────────────────────────── -->
-<section class="py-24 px-8">
-  <div class="max-w-4xl mx-auto glass-panel rounded-3xl p-12 text-center"
-       style="border:1px solid rgba(72,69,85,0.15);">
-    <h2 class="text-4xl font-bold mb-4 tracking-tight" style="font-family:'Space Grotesk',sans-serif;">
-      Stay in the Loop
-    </h2>
-    <p class="text-lg mb-8 max-w-xl mx-auto" style="color:#c9c4d8;">
-      Get exclusive deals, new arrivals, and tech tips delivered straight to your inbox.
-    </p>
-    <div class="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-      <input type="email" placeholder="Enter your email"
-             class="flex-1 rounded-lg px-6 py-4 text-sm outline-none transition-all"
-             style="background:#3d2e4f;border:none;color:#eedbff;"
-             onfocus="this.style.boxShadow='0 0 0 2px #947dff'" onblur="this.style.boxShadow='none'">
-      <button class="px-8 py-4 rounded-lg font-bold transition-all active:scale-95 hover:brightness-110"
-              style="background:#947dff;color:#fff;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
-        Subscribe
-      </button>
+<!-- ── CTA NEWSLETTER ──────────────────────────────────────────────── -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-h2">Stay in the Loop</h2>
+    <p style="color:#c9c4d8;font-size:clamp(.85rem,2vw,.95rem);">Get exclusive deals, new arrivals, and tech tips delivered straight to your inbox.</p>
+    <div class="cta-form">
+      <input type="email" placeholder="Enter your email" class="cta-input">
+      <button class="cta-btn">Subscribe</button>
     </div>
   </div>
 </section>

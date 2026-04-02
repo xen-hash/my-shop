@@ -3,268 +3,283 @@
 
 {% block extra_css %}
 <style>
-/* Qty control */
-.qty-control {
-  display: flex; align-items: center;
-  background: #271938; border: 1px solid rgba(72,69,85,0.3);
-  border-radius: 12px; overflow: hidden;
-}
-.qty-control button {
-  background: transparent; border: none; color: #fff;
-  width: 42px; height: 46px; font-size: 1.2rem; font-weight: 700;
-  cursor: pointer; transition: background 0.2s;
-}
-.qty-control button:hover { background: rgba(148,125,255,0.2); }
-.qty-control input {
-  width: 52px; height: 46px; background: transparent; border: none;
-  color: #fff; text-align: center;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; outline: none;
-}
+  .product-wrap{max-width:1100px;margin:0 auto;padding:1.25rem 1.25rem 3rem;}
+  @media(min-width:768px){.product-wrap{padding:1.75rem 2rem 4rem;}}
 
-/* Review star widget */
-.star-rating { display: flex; flex-direction: row-reverse; gap: 4px; }
-.star-rating input { display: none; }
-.star-rating label {
-  font-size: 1.5rem; color: #3d2e4f; cursor: pointer;
-  transition: color 0.15s, transform 0.15s;
-}
-.star-rating label:hover,
-.star-rating label:hover ~ label,
-.star-rating input:checked ~ label { color: #ffc107; }
-.star-rating label:hover { transform: scale(1.2); }
+  /* Breadcrumb */
+  .breadcrumb-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+    font-size:.8rem;color:#8888aa;margin-bottom:1.25rem;}
+  .bc-link{color:#947dff;text-decoration:none;transition:color .2s;}
+  .bc-link:hover{color:#cabeff;}
 
-/* Review toast */
-.review-toast {
-  position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
-  background: #00d4aa; color: #0d0d1a;
-  padding: 0.8rem 1.4rem; border-radius: 12px;
-  font-weight: 700; font-size: 0.9rem;
-  box-shadow: 0 8px 32px rgba(0,212,170,0.35);
-  transform: translateY(80px); opacity: 0;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
-}
-.review-toast.show { transform: translateY(0); opacity: 1; }
+  /* Product grid */
+  .product-main{display:flex;flex-direction:column;gap:1.75rem;margin-bottom:3rem;}
+  @media(min-width:768px){.product-main{flex-direction:row;align-items:flex-start;gap:2.5rem;}}
+
+  /* Gallery */
+  .gallery-col{width:100%;}
+  @media(min-width:768px){.gallery-col{width:55%;flex-shrink:0;}}
+  @media(min-width:1024px){.gallery-col{width:58%;}}
+  .gallery-main{position:relative;border-radius:16px;overflow:hidden;
+    background:#1a1a2e;border:1px solid rgba(72,69,85,.2);}
+  .gallery-main img{width:100%;display:block;transition:transform .7s;
+    height:280px;object-fit:cover;}
+  @media(min-width:480px){.gallery-main img{height:340px;}}
+  @media(min-width:768px){.gallery-main img{height:400px;}}
+  @media(min-width:1024px){.gallery-main img{height:450px;}}
+  .gallery-main:hover img{transform:scale(1.04);}
+  .sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.6);font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(1.2rem,5vw,2rem);font-weight:800;color:#ff4d6d;letter-spacing:2px;}
+  .low-stock-badge{position:absolute;bottom:10px;left:10px;padding:.35rem .9rem;
+    border-radius:50px;font-weight:700;font-size:.78rem;background:rgba(255,193,7,.9);color:#000;}
+  .gallery-cat-tag{position:absolute;top:12px;left:12px;padding:.2rem .8rem;
+    border-radius:50px;font-size:.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+    background:rgba(148,125,255,.2);color:#cabeff;border:1px solid rgba(148,125,255,.3);
+    backdrop-filter:blur(8px);}
+
+  /* Info col */
+  .info-col{flex:1;min-width:0;}
+  .product-title{font-family:'Space Grotesk',sans-serif;font-weight:800;
+    font-size:clamp(1.5rem,5vw,2.5rem);color:#eedbff;line-height:1.1;
+    letter-spacing:-1px;margin-bottom:.5rem;}
+  .product-sku{font-size:.78rem;color:#8888aa;margin-bottom:1rem;}
+
+  .rating-price-row{display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:.75rem;padding:1rem 0;
+    border-top:1px solid rgba(72,69,85,.2);border-bottom:1px solid rgba(72,69,85,.2);margin-bottom:1.25rem;}
+  .stars-lg{color:#ffc107;font-size:1rem;letter-spacing:2px;}
+  .rating-text{font-size:.8rem;color:#8888aa;margin-left:.3rem;}
+  .product-price{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.6rem,5vw,2.2rem);
+    font-weight:800;color:#cabeff;}
+
+  .product-desc{color:#c9c4d8;line-height:1.7;font-size:.92rem;margin-bottom:1.25rem;}
+
+  /* Stock badge */
+  .stock-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;
+    border-radius:10px;font-size:.82rem;font-weight:600;margin-bottom:1.25rem;}
+  .stock-in{background:rgba(0,212,170,.1);color:#00d4aa;border:1px solid rgba(0,212,170,.25);}
+  .stock-low{background:rgba(255,193,7,.1);color:#ffc107;border:1px solid rgba(255,193,7,.25);}
+  .stock-out{background:rgba(255,77,109,.1);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);}
+
+  /* Qty + cart */
+  .add-cart-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+  .qty-control{display:flex;align-items:center;background:#271938;
+    border:1px solid rgba(72,69,85,.35);border-radius:12px;overflow:hidden;flex-shrink:0;}
+  .qty-btn{background:transparent;border:none;color:#fff;width:42px;height:46px;
+    font-size:1.2rem;font-weight:700;cursor:pointer;transition:background .2s;}
+  .qty-btn:hover{background:rgba(148,125,255,.2);}
+  .qty-input{width:48px;height:46px;background:transparent;border:none;color:#fff;
+    text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;outline:none;}
+  .btn-add-to-cart{flex:1;min-width:140px;padding:.85rem 1.25rem;border-radius:12px;font-weight:800;
+    font-size:.92rem;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
+    box-shadow:0 0 20px rgba(148,125,255,.3);transition:all .2s;
+    display:flex;align-items:center;justify-content:center;gap:.5rem;}
+  .btn-add-to-cart:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(148,125,255,.4);}
+  .btn-add-to-cart:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  /* Meta table */
+  .product-meta{background:#1a1a2e;border:1px solid rgba(72,69,85,.2);
+    border-radius:12px;padding:1rem 1.25rem;}
+  .meta-row{display:flex;justify-content:space-between;font-size:.84rem;padding:.35rem 0;
+    border-bottom:1px solid rgba(72,69,85,.12);}
+  .meta-row:last-child{border-bottom:none;}
+  .meta-label{color:#8888aa;}
+  .meta-val{color:#eedbff;font-weight:600;}
+
+  /* Reviews */
+  .reviews-section{border-top:1px solid rgba(72,69,85,.2);padding-top:2.5rem;margin-bottom:3rem;}
+  .section-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.2rem,4vw,1.6rem);
+    font-weight:800;color:#fff;margin-bottom:1.25rem;}
+  .review-grid{display:grid;gap:.85rem;grid-template-columns:1fr;}
+  @media(min-width:600px){.review-grid{grid-template-columns:1fr 1fr;}}
+  .review-card{background:#1a1a2e;border:1px solid rgba(72,69,85,.2);
+    border-radius:12px;padding:1rem 1.1rem;transition:border-color .2s;}
+  .review-card:hover{border-color:rgba(148,125,255,.25);}
+
+  /* Related products */
+  .related-section{}
+  .related-grid{display:grid;gap:.85rem;grid-template-columns:repeat(2,1fr);}
+  @media(min-width:600px){.related-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:900px){.related-grid{grid-template-columns:repeat(4,1fr);gap:1.1rem;}}
+  .related-card{border-radius:12px;overflow:hidden;background:#1a1a2e;
+    border:1px solid rgba(72,69,85,.2);transition:all .3s;}
+  .related-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
+  .rel-img-wrap{aspect-ratio:4/5;overflow:hidden;background:#22223b;}
+  .rel-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+  .related-card:hover .rel-img-wrap img{transform:scale(1.08);}
+  .rel-body{padding:.85rem .85rem .9rem;}
+  .rel-name{font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:.84rem;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.45rem;}
+  .rel-footer{display:flex;justify-content:space-between;align-items:center;gap:.4rem;}
+  .rel-price{font-family:'Space Grotesk',sans-serif;font-weight:800;color:#cabeff;font-size:.9rem;}
+  .btn-rel-add{background:#947dff;color:#fff;border:none;border-radius:7px;
+    padding:.35rem .7rem;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .btn-rel-add:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;}
+
+  /* Review toast */
+  .review-toast{position:fixed;bottom:1.5rem;right:1.25rem;z-index:9999;
+    background:#00d4aa;color:#0d0d1a;padding:.75rem 1.25rem;border-radius:12px;
+    font-weight:700;font-size:.88rem;box-shadow:0 8px 32px rgba(0,212,170,.35);
+    transform:translateY(80px);opacity:0;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s;}
+  .review-toast.show{transform:translateY(0);opacity:1;}
+
+  /* Review form */
+  .review-form-wrap{background:rgba(148,125,255,.06);border:1px solid rgba(148,125,255,.15);
+    border-radius:10px;padding:.85rem 1rem;margin-top:.75rem;}
+  .star-rating{display:flex;flex-direction:row-reverse;gap:3px;}
+  .star-rating input{display:none;}
+  .star-rating label{font-size:1.4rem;color:#3d2e4f;cursor:pointer;transition:color .15s,transform .15s;}
+  .star-rating label:hover,.star-rating label:hover~label,.star-rating input:checked~label{color:#ffc107;}
+  .star-rating label:hover{transform:scale(1.2);}
+  .review-textarea{width:100%;background:#271938;border:1px solid rgba(72,69,85,.3);
+    border-radius:8px;color:#fff;padding:.55rem .75rem;font-size:.84rem;resize:vertical;min-height:65px;
+    transition:border-color .2s;outline:none;}
+  .review-textarea:focus{border-color:#947dff;}
+  .btn-review-submit{background:#947dff;color:#fff;border:none;border-radius:8px;
+    padding:.45rem 1.1rem;font-size:.82rem;font-weight:600;cursor:pointer;margin-top:.5rem;
+    transition:all .2s;}
+  .btn-review-submit:hover{background:#7c5cfc;}
+  .btn-review-submit:disabled{opacity:.5;cursor:not-allowed;}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-8 py-10">
+<div class="product-wrap">
 
   <!-- Breadcrumb -->
-  <nav class="mb-8 text-sm flex items-center gap-2" style="color:#8888aa;">
-    <a href="{{ url_for('shop.index') }}" class="no-underline transition-colors hover:text-[#cabeff]" style="color:#947dff;">Home</a>
+  <nav class="breadcrumb-row">
+    <a href="{{ url_for('shop.index') }}" class="bc-link">Home</a>
     <span>/</span>
-    <a href="{{ url_for('shop.index', category=product.category) }}" class="no-underline transition-colors hover:text-[#cabeff]" style="color:#947dff;">{{ product.category|capitalize }}</a>
+    <a href="{{ url_for('shop.index', category=product.category) }}" class="bc-link">{{ product.category|capitalize }}</a>
     <span>/</span>
-    <span style="color:#c9c4d8;">{{ product.name }}</span>
+    <span style="color:#c9c4d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">{{ product.name }}</span>
   </nav>
 
-  <!-- Product Main Section -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
+  <!-- Main Product -->
+  <div class="product-main">
 
-    <!-- ── Gallery ────────────────────────────────────────────────── -->
-    <div class="lg:col-span-7 flex flex-col gap-4">
-      <div class="group relative rounded-2xl overflow-hidden" style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}"
-             class="w-full transition-transform duration-700 group-hover:scale-105"
-             style="height:440px;object-fit:cover;display:block;">
-
-        <!-- Status overlay badges -->
+    <!-- Gallery -->
+    <div class="gallery-col">
+      <div class="gallery-main">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        <span class="gallery-cat-tag">{{ product.category|capitalize }}</span>
         {% if product.stock == 0 %}
-          <div class="absolute inset-0 flex items-center justify-center"
-               style="background:rgba(0,0,0,0.6);">
-            <span class="text-3xl font-bold tracking-[2px]" style="color:#ff4d6d;font-family:'Space Grotesk',sans-serif;">SOLD OUT</span>
-          </div>
+          <div class="sold-out-overlay">SOLD OUT</div>
         {% elif product.stock <= 5 %}
-          <div class="absolute bottom-4 left-4 px-4 py-2 rounded-full font-bold text-sm"
-               style="background:rgba(255,193,7,0.9);color:#000;">
-            ⚡ Only {{ product.stock }} left!
-          </div>
+          <div class="low-stock-badge">⚡ Only {{ product.stock }} left!</div>
         {% endif %}
-
-        <!-- Category + IP tag -->
-        <div class="absolute top-4 left-4 flex gap-2">
-          <span class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
-                style="background:rgba(148,125,255,0.2);color:#cabeff;border:1px solid rgba(148,125,255,0.3);
-                       backdrop-filter:blur(8px);">
-            {{ product.category|capitalize }}
-          </span>
-        </div>
       </div>
     </div>
 
-    <!-- ── Product Info ───────────────────────────────────────────── -->
-    <div class="lg:col-span-5 space-y-6">
+    <!-- Info -->
+    <div class="info-col">
+      <h1 class="product-title">{{ product.name }}</h1>
+      <p class="product-sku">SKU: #GH-{{ "%04d"|format(product.id) }}</p>
 
-      <!-- Title -->
-      <div>
-        <h1 class="text-5xl font-bold tracking-tighter leading-none mb-3"
-            style="font-family:'Space Grotesk',sans-serif;color:#eedbff;">
-          {{ product.name }}
-        </h1>
-        <p class="text-sm" style="color:#8888aa;">SKU: #GH-{{ "%04d"|format(product.id) }}</p>
-      </div>
-
-      <!-- Rating + Price -->
-      <div class="flex items-center justify-between py-5"
-           style="border-top:1px solid rgba(72,69,85,0.2);border-bottom:1px solid rgba(72,69,85,0.2);">
+      <div class="rating-price-row">
         <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span style="color:#ffc107;font-size:1.1rem;letter-spacing:2px;">
-              {% for i in range(1, 6) %}{% if i <= product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}
-            </span>
-            <span style="color:#8888aa;font-size:0.85rem;">{{ product.average_rating }} / 5 ({{ product.review_count }} reviews)</span>
-          </div>
+          <span class="stars-lg">{% for i in range(1,6) %}{% if i<=product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}</span>
+          <span class="rating-text">{{ product.average_rating }}/5 ({{ product.review_count }} reviews)</span>
         </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">
-            ₱{{ "%.2f"|format(product.price_float) }}
-          </div>
-        </div>
+        <div class="product-price">₱{{ "%.2f"|format(product.price_float) }}</div>
       </div>
 
-      <!-- Description -->
-      <p class="leading-relaxed text-base" style="color:#c9c4d8;">{{ product.description }}</p>
+      <p class="product-desc">{{ product.description }}</p>
 
-      <!-- Stock Status -->
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
-                  {% if product.stock == 0 %}
-                  {% elif product.stock <= 5 %}
-                  {% else %}{% endif %}"
-           style="{% if product.stock == 0 %}background:rgba(255,77,109,0.1);color:#ff4d6d;border:1px solid rgba(255,77,109,0.25);
-                  {% elif product.stock <= 5 %}background:rgba(255,193,7,0.1);color:#ffc107;border:1px solid rgba(255,193,7,0.25);
-                  {% else %}background:rgba(0,212,170,0.1);color:#00d4aa;border:1px solid rgba(0,212,170,0.25);{% endif %}">
-        {% if product.stock == 0 %}
-          <span class="material-symbols-outlined" style="font-size:1rem;">cancel</span> Out of Stock
-        {% elif product.stock <= 5 %}
-          <span class="material-symbols-outlined" style="font-size:1rem;">warning</span> Only {{ product.stock }} left in stock!
-        {% else %}
-          <span class="material-symbols-outlined" style="font-size:1rem;">check_circle</span> In Stock ({{ product.stock }} available)
-        {% endif %}
+      <div class="stock-badge {% if product.stock==0 %}stock-out{% elif product.stock<=5 %}stock-low{% else %}stock-in{% endif %}">
+        <span class="material-symbols-outlined" style="font-size:1rem;">
+          {% if product.stock==0 %}cancel{% elif product.stock<=5 %}warning{% else %}check_circle{% endif %}
+        </span>
+        {% if product.stock==0 %}Out of Stock
+        {% elif product.stock<=5 %}Only {{ product.stock }} left!
+        {% else %}In Stock ({{ product.stock }} available){% endif %}
       </div>
 
-      <!-- Qty + Add to Cart -->
       {% if product.stock > 0 %}
-        <div class="flex items-center gap-4">
+        <div class="add-cart-row">
           <div class="qty-control">
-            <button onclick="changeQty(-1)">−</button>
-            <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly>
-            <button onclick="changeQty(1)">+</button>
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly class="qty-input">
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
           </div>
-          <button id="addCartBtn"
-                  onclick="addToCartDetail({{ product.id }})"
-                  class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all active:scale-95"
-                  style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-                         border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
-                         box-shadow:0 0 20px rgba(148,125,255,0.3);">
-            <span class="material-symbols-outlined">add_shopping_cart</span> Add to Cart
+          <button id="addCartBtn" onclick="addToCartDetail({{ product.id }})" class="btn-add-to-cart">
+            <span class="material-symbols-outlined" style="font-size:1.05rem;">add_shopping_cart</span> Add to Cart
           </button>
         </div>
       {% else %}
-        <button class="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold" disabled
-                style="background:#22223b;color:#8888aa;border:none;cursor:not-allowed;opacity:0.5;
-                       font-family:'Space Grotesk',sans-serif;">
-          <span class="material-symbols-outlined">cancel</span> Out of Stock
+        <button disabled class="btn-add-to-cart" style="margin-bottom:1.25rem;">
+          <span class="material-symbols-outlined" style="font-size:1.05rem;">cancel</span> Out of Stock
         </button>
       {% endif %}
 
-      <!-- Product Meta -->
-      <div class="rounded-xl p-5 space-y-3" style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-        <div class="flex justify-between text-sm">
-          <span style="color:#8888aa;">Category</span>
-          <strong style="color:#eedbff;">{{ product.category|capitalize }}</strong>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span style="color:#8888aa;">SKU</span>
-          <strong style="color:#eedbff;">#GH-{{ "%04d"|format(product.id) }}</strong>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span style="color:#8888aa;">Added</span>
-          <strong style="color:#eedbff;">{{ product.created_at.strftime('%b %d, %Y') }}</strong>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span style="color:#8888aa;">Shipping</span>
-          <strong style="color:#00d4aa;">FREE Nationwide 🇵🇭</strong>
-        </div>
+      <div class="product-meta">
+        <div class="meta-row"><span class="meta-label">Category</span><span class="meta-val">{{ product.category|capitalize }}</span></div>
+        <div class="meta-row"><span class="meta-label">SKU</span><span class="meta-val">#GH-{{ "%04d"|format(product.id) }}</span></div>
+        <div class="meta-row"><span class="meta-label">Added</span><span class="meta-val">{{ product.created_at.strftime('%b %d, %Y') }}</span></div>
+        <div class="meta-row"><span class="meta-label">Shipping</span><span class="meta-val" style="color:#00d4aa;">FREE 🇵🇭</span></div>
       </div>
-
     </div>
   </div>
 
-  <!-- ── Reviews Section ─────────────────────────────────────────── -->
-  <div style="border-top:1px solid rgba(72,69,85,0.2);padding-top:3rem;margin-bottom:4rem;">
-    <h2 class="text-3xl font-bold mb-8" style="font-family:'Space Grotesk',sans-serif;">
-      Customer Reviews
-      <span class="text-xl font-normal ml-2" style="color:#8888aa;">({{ product.review_count }})</span>
+  <!-- Reviews -->
+  <div class="reviews-section">
+    <h2 class="section-title">
+      Customer Reviews <span style="font-weight:400;color:#8888aa;font-size:.75em;">({{ product.review_count }})</span>
     </h2>
-
     {% if product.reviews %}
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="review-grid">
         {% for review in product.reviews %}
-          <div class="rounded-xl p-5 transition-all hover:border-[rgba(148,125,255,0.3)]"
-               style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-            <div class="flex justify-between items-start mb-3">
+          <div class="review-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
               <div>
-                <strong class="block text-white text-sm" style="font-family:'Space Grotesk',sans-serif;">{{ review.user.name }}</strong>
-                <span style="color:#ffc107;font-size:0.85rem;">
-                  {% for i in range(1,6) %}{% if i <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
-                </span>
+                <strong style="color:#fff;font-size:.88rem;font-family:'Space Grotesk',sans-serif;">{{ review.user.name }}</strong>
+                <div style="color:#ffc107;font-size:.8rem;margin-top:.15rem;">
+                  {% for i in range(1,6) %}{% if i<=review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                </div>
               </div>
-              <span class="text-xs" style="color:#8888aa;">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+              <span style="font-size:.72rem;color:#8888aa;flex-shrink:0;margin-left:.5rem;">{{ review.created_at.strftime('%b %d, %Y') }}</span>
             </div>
-            {% if review.comment %}
-              <p class="text-sm leading-relaxed" style="color:#c9c4d8;">{{ review.comment }}</p>
-            {% endif %}
+            {% if review.comment %}<p style="color:#c9c4d8;font-size:.84rem;margin:0;line-height:1.55;">{{ review.comment }}</p>{% endif %}
           </div>
         {% endfor %}
       </div>
     {% else %}
-      <div class="rounded-xl p-8 text-center" style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-        <p style="color:#8888aa;">⭐ No reviews yet. Be the first to review this product!</p>
+      <div style="background:#1a1a2e;border:1px solid rgba(72,69,85,.2);border-radius:12px;padding:2rem;text-align:center;">
+        <p style="color:#8888aa;margin:0;">⭐ No reviews yet. Be the first!</p>
       </div>
     {% endif %}
   </div>
 
-  <!-- ── Related Products ────────────────────────────────────────── -->
+  <!-- Related Products -->
   {% if related %}
-    <div>
-      <div class="flex justify-between items-end mb-8">
+    <div class="related-section">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.1rem;flex-wrap:wrap;gap:.5rem;">
         <div>
-          <span class="text-xs font-bold uppercase tracking-widest block mb-1" style="color:#947dff;">Curated Collection</span>
-          <h2 class="text-3xl font-bold" style="font-family:'Space Grotesk',sans-serif;">You May Also Like</h2>
+          <span style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#947dff;display:block;margin-bottom:.2rem;">Curated Collection</span>
+          <h2 class="section-title" style="margin:0;">You May Also Like</h2>
         </div>
         <a href="{{ url_for('shop.index', category=product.category) }}"
-           class="no-underline text-sm font-medium flex items-center gap-1 transition-colors hover:text-white"
-           style="color:#947dff;">
-          View all <span class="material-symbols-outlined" style="font-size:1rem;">arrow_forward</span>
+           style="color:#947dff;font-size:.82rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:.2rem;">
+          View all <span class="material-symbols-outlined" style="font-size:.95rem;">arrow_forward</span>
         </a>
       </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="related-grid">
         {% for p in related %}
-          <div class="group flex flex-col rounded-xl overflow-hidden transition-all duration-300
-                      hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
-               style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
-            <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="block">
-              <div class="relative overflow-hidden" style="aspect-ratio:4/5;background:#22223b;">
-                <img src="{{ p.image_url }}" alt="{{ p.name }}"
-                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                     loading="lazy">
-              </div>
+          <div class="related-card">
+            <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" style="text-decoration:none;display:block;">
+              <div class="rel-img-wrap"><img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy"></div>
             </a>
-            <div class="p-4">
-              <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="no-underline">
-                <h3 class="font-bold text-white text-sm mb-1 hover:text-[#cabeff] transition-colors"
-                    style="font-family:'Space Grotesk',sans-serif;
-                           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</h3>
+            <div class="rel-body">
+              <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" style="text-decoration:none;">
+                <div class="rel-name">{{ p.name }}</div>
               </a>
-              <div class="flex justify-between items-center mt-2">
-                <span class="font-bold" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">₱{{ "%.2f"|format(p.price_float) }}</span>
-                <button class="btn-add-cart px-3 py-1 rounded-lg text-xs font-bold transition-all active:scale-95"
-                        onclick="addToCart({{ p.id }}, this)"
-                        {% if p.stock == 0 %}disabled{% endif %}
-                        style="background:{% if p.stock == 0 %}#22223b;color:#8888aa;cursor:not-allowed;{% else %}#947dff;color:#fff;cursor:pointer;{% endif %}border:none;">
-                  {% if p.stock == 0 %}Sold Out{% else %}+ Add{% endif %}
+              <div class="rel-footer">
+                <span class="rel-price">₱{{ "%.2f"|format(p.price_float) }}</span>
+                <button class="btn-rel-add btn-add-cart" onclick="addToCart({{ p.id }}, this)"
+                        {% if p.stock==0 %}disabled{% endif %}>
+                  {% if p.stock==0 %}Sold{% else %}+ Add{% endif %}
                 </button>
               </div>
             </div>
@@ -276,15 +291,12 @@
 
 </div>
 
-<!-- Review Toast -->
 <div id="review-toast" class="review-toast">✅ Review submitted! Thank you!</div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
-// ── Quantity Control ─────────────────────────────────────────────
 function changeQty(delta) {
   const input = document.getElementById('qty');
   const max = parseInt(input.max);
@@ -294,82 +306,28 @@ function changeQty(delta) {
   input.value = val;
 }
 
-// ── Add to Cart (product detail) ────────────────────────────────
 async function addToCartDetail(productId) {
   const qty = parseInt(document.getElementById('qty').value);
   const btn = document.getElementById('addCartBtn');
   const original = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite">progress_activity</span> Adding…';
-
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">hourglass_top</span> Adding…';
   try {
     const res = await fetch('/cart/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId, quantity: qty })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({product_id:productId, quantity:qty})
     });
     const data = await res.json();
     if (res.ok && data.success) {
-      btn.innerHTML = '<span class="material-symbols-outlined">check</span> Added to Cart!';
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">check</span> Added!';
       btn.style.background = 'linear-gradient(135deg,#00d4aa,#00a884)';
       btn.style.color = '#000';
       updateCartBadge(data.cart_count);
-      setTimeout(() => {
-        btn.innerHTML = original;
-        btn.style.background = '';
-        btn.style.color = '';
-        btn.disabled = false;
-      }, 2000);
-    } else if (res.status === 401) {
-      window.location.href = '/login';
-    } else {
-      btn.innerHTML = original;
-      btn.disabled = false;
-    }
-  } catch {
-    btn.innerHTML = original;
-    btn.disabled = false;
-  }
-}
-
-// ── Submit Review ────────────────────────────────────────────────
-async function submitReview(orderId, productId, btn) {
-  const ratingInput = document.querySelector(`input[name="rating-${productId}"]:checked`);
-  if (!ratingInput) { alert('Please select a star rating first!'); return; }
-  const rating  = parseInt(ratingInput.value);
-  const comment = document.getElementById(`comment-${productId}`).value.trim();
-
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Submitting…';
-
-  try {
-    const res = await fetch(`/orders/${orderId}/review`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId, rating, comment })
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      const wrap = document.getElementById(`review-wrap-${productId}`);
-      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-      wrap.innerHTML = `
-        <div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:0.8rem 1rem;margin-top:0.8rem;">
-          <div style="font-size:0.78rem;color:#8888aa;margin-bottom:0.3rem;">Your review</div>
-          <div style="color:#ffc107;">${stars}</div>
-          ${comment ? `<p style="color:#c9c4d8;font-size:0.85rem;margin:0.4rem 0 0;">${comment}</p>` : ''}
-        </div>`;
-      const toast = document.getElementById('review-toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    } else {
-      btn.disabled = false;
-      btn.innerHTML = 'Submit Review';
-      alert(data.message || 'Could not submit review.');
-    }
-  } catch {
-    btn.disabled = false;
-    btn.innerHTML = 'Submit Review';
-  }
+      setTimeout(() => { btn.innerHTML=original; btn.style.background=''; btn.style.color=''; btn.disabled=false; }, 2000);
+    } else if (res.status===401) {
+      window.location.href='/login';
+    } else { btn.innerHTML=original; btn.disabled=false; }
+  } catch { btn.innerHTML=original; btn.disabled=false; }
 }
 </script>
 {% endblock %}
