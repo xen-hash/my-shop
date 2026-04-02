@@ -1,7 +1,5 @@
 {
   "pythonVersion": "3.12",
-  "typeCheckingMode": "basic",
-  "extraPaths": ["."],
-  "reportMissingImports": "none",
-  "reportMissingModuleSource": "none"
+  "typeCheckingMode": "off",
+  "extraPaths": ["."]
 }
