@@ -33,12 +33,11 @@ def create_app(env=None):
         return db.session.get(User, int(user_id))
 
     # ── Blueprints ────────────────────────────────────────────
-    # IMPORTANT: import from root, not from routes.*
-    from auth   import auth_bp
-    from shop   import shop_bp
-    from cart   import cart_bp
-    from orders import orders_bp
-    from admin  import admin_bp
+    from routes.auth   import auth_bp
+    from routes.shop   import shop_bp
+    from routes.cart   import cart_bp
+    from routes.orders import orders_bp
+    from routes.admin  import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(shop_bp)
