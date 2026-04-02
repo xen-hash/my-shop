@@ -2,225 +2,243 @@
 {% block title %}Checkout – GadgetHub PH{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
 <style>
-/* ── Success Overlay ─────────────────────────────────────── */
+/* ── Success Overlay ───────────────────────────────────────────── */
 #success-overlay {
   display: none; opacity: 0;
   position: fixed; inset: 0; z-index: 9999;
-  background: rgba(13,13,26,0.96);
+  background: rgba(26,12,43,0.96);
   backdrop-filter: blur(12px);
-  flex-direction: column; align-items: center; justify-content: center;
-  gap: 1.5rem;
+  flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
   transition: opacity 0.5s ease;
 }
-#confetti-canvas {
-  position: absolute; inset: 0; pointer-events: none; z-index: 0;
-}
+#confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 
-/* Checkmark pop */
 .success-checkmark {
   width: 90px; height: 90px; border-radius: 50%;
-  background: rgba(0,212,170,0.12);
-  border: 3px solid rgba(0,212,170,0.4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.5rem;
+  background: rgba(0,212,170,0.12); border: 3px solid rgba(0,212,170,0.4);
+  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
   transform: scale(0); transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
   position: relative; z-index: 1;
 }
 .success-checkmark.pop { transform: scale(1); }
-
 .overlay-title {
-  font-family: "Syne", sans-serif; font-size: 2rem; font-weight: 800;
+  font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800;
   color: #fff; text-align: center; position: relative; z-index: 1;
 }
-.overlay-sub {
-  color: #8888aa; font-size: 0.95rem; margin-top: -1rem;
-  position: relative; z-index: 1; text-align: center;
-}
+.overlay-sub { color: #8888aa; font-size: 0.95rem; margin-top: -1rem; position: relative; z-index: 1; text-align: center; }
 
 /* Truck */
-.truck-road-wrap {
-  position: relative; width: 100vw; overflow: hidden;
-  height: 70px; z-index: 1;
-}
-.checkout-truck {
-  position: absolute; left: -200px; bottom: 0;
-  display: flex; flex-direction: column; align-items: center;
-}
+.truck-road-wrap { position: relative; width: 100vw; overflow: hidden; height: 70px; z-index: 1; }
+.checkout-truck { position: absolute; left: -200px; bottom: 0; display: flex; flex-direction: column; align-items: center; }
 .truck-body-svg { animation: bounce 0.5s linear infinite; }
-@keyframes bounce {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(4px); }
-}
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 .truck-tires { display:flex; gap:74px; margin-top:-4px; }
-.truck-road {
-  width: 100vw; height: 2px;
-  background: linear-gradient(90deg, transparent, #444, #7c5cfc, #444, transparent);
-  position: absolute; bottom: 0; left: 0;
-}
-.truck-road::after {
-  content:''; position:absolute; top:0; left:0;
-  width:60px; height:100%; background:#7c5cfc;
-  border-radius:2px; animation: roadLine 0.9s linear infinite;
-}
+.truck-road { width: 100vw; height: 2px; background: linear-gradient(90deg, transparent, #444, #947dff, #444, transparent); position: absolute; bottom: 0; left: 0; }
+.truck-road::after { content:''; position:absolute; top:0; left:0; width:60px; height:100%; background:#947dff; border-radius:2px; animation: roadLine 0.9s linear infinite; }
 @keyframes roadLine { from { left:-60px; } to { left:100vw; } }
 
-/* Spinner dots for button */
+/* Spinner dots */
 .spinner-dots { display:inline-flex; gap:5px; align-items:center; }
-.spinner-dots span {
-  width:6px; height:6px; background:#fff; border-radius:50%;
-  animation: dotPulse 0.9s ease infinite;
-}
+.spinner-dots span { width:6px; height:6px; background:#fff; border-radius:50%; animation: dotPulse 0.9s ease infinite; }
 .spinner-dots span:nth-child(2) { animation-delay:0.2s; }
 .spinner-dots span:nth-child(3) { animation-delay:0.4s; }
-@keyframes dotPulse {
-  0%,80%,100% { transform:scale(0.6); opacity:0.4; }
-  40%          { transform:scale(1.1); opacity:1; }
-}
+@keyframes dotPulse { 0%,80%,100% { transform:scale(0.6); opacity:0.4; } 40% { transform:scale(1.1); opacity:1; } }
 
-/* Shake animation */
 @keyframes shakeX {
-  0%,100% { transform:translateX(0); }
-  20%     { transform:translateX(-8px); }
-  40%     { transform:translateX(8px); }
-  60%     { transform:translateX(-5px); }
-  80%     { transform:translateX(5px); }
+  0%,100% { transform:translateX(0); } 20% { transform:translateX(-8px); }
+  40% { transform:translateX(8px); }  60% { transform:translateX(-5px); } 80% { transform:translateX(5px); }
 }
-
-/* Form field focus glow */
-.form-control:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(124,92,252,0.2) !important;
-}
-
-/* Input pulse on hover */
-.form-control { transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; }
-.form-control:hover:not(:focus) { border-color: rgba(124,92,252,0.3); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="max-w-7xl mx-auto px-6 py-12">
 
-  <h1 class="cart-page-title mb-1">Checkout</h1>
-  <p style="color:var(--text-muted); margin-bottom:2rem">Review your order and place it</p>
+  <!-- Page Title -->
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold tracking-tight text-white" style="font-family:'Space Grotesk',sans-serif;">Checkout</h1>
+    <p style="color:#c9c4d8;margin-top:0.3rem;">Review your order and complete your purchase</p>
+  </div>
 
-  <div class="row g-4">
+  <!-- Progress Steps -->
+  <div class="flex items-center max-w-sm mb-12">
+    <div class="flex flex-col items-center gap-1">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+           style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
+                  box-shadow:0 0 20px rgba(202,190,255,0.4);">1</div>
+      <span class="text-xs font-bold uppercase tracking-tight" style="color:#cabeff;">Shipping</span>
+    </div>
+    <div class="flex-1 h-[2px] mx-3" style="background:rgba(202,190,255,0.2);"></div>
+    <div class="flex flex-col items-center gap-1" style="opacity:0.4;">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border"
+           style="background:#271938;border-color:rgba(72,69,85,0.3);color:#c9c4d8;">2</div>
+      <span class="text-xs font-bold uppercase tracking-tight" style="color:#c9c4d8;">Payment</span>
+    </div>
+    <div class="flex-1 h-[2px] mx-3" style="background:#271938;"></div>
+    <div class="flex flex-col items-center gap-1" style="opacity:0.4;">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border"
+           style="background:#271938;border-color:rgba(72,69,85,0.3);color:#c9c4d8;">3</div>
+      <span class="text-xs font-bold uppercase tracking-tight" style="color:#c9c4d8;">Review</span>
+    </div>
+  </div>
 
-    <!-- Checkout Form -->
-    <div class="col-lg-7">
-      <div style="background:var(--card-bg); border:1px solid var(--border);
-                  border-radius:var(--radius); padding:2rem;">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1.5rem;">
-          <i class="bi bi-geo-alt" style="color:var(--primary)"></i> Shipping Details
-        </h4>
+    <!-- ── Left: Checkout Form ───────────────────────────────────── -->
+    <div class="lg:col-span-7">
+      <div class="rounded-2xl p-8" style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
+
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3" style="font-family:'Space Grotesk',sans-serif;">
+          <span class="material-symbols-outlined" style="color:#947dff;">location_on</span>
+          Shipping Details
+        </h2>
 
         <form id="checkout-form">
 
-          <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control"
-                   value="{{ current_user.name }}" readonly>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-control"
-                   value="{{ current_user.email }}" readonly>
-          </div>
-
+          <!-- Full Name (read-only) -->
           <div class="mb-4">
-            <label class="form-label">
-              Shipping Address <span style="color:var(--accent)">*</span>
+            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">Full Name</label>
+            <input type="text" value="{{ current_user.name }}" readonly
+                   class="w-full rounded-xl px-4 py-3 text-sm"
+                   style="background:#271938;border:none;color:rgba(238,219,255,0.6);outline:none;">
+          </div>
+
+          <!-- Email (read-only) -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">Email Address</label>
+            <input type="email" value="{{ current_user.email }}" readonly
+                   class="w-full rounded-xl px-4 py-3 text-sm"
+                   style="background:#271938;border:none;color:rgba(238,219,255,0.6);outline:none;">
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="mb-6">
+            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:#947dff;">
+              Shipping Address <span style="color:#ff4d6d;">*</span>
             </label>
-            <textarea id="shipping_address" class="form-control" rows="3"
+            <textarea id="shipping_address" rows="3"
                       placeholder="House/Unit No., Street, Barangay, City, Province, ZIP"
+                      class="w-full rounded-xl px-4 py-3 text-sm resize-none transition-all outline-none"
+                      style="background:#3d2e4f;border:1px solid rgba(72,69,85,0.3);color:#eedbff;"
+                      onfocus="this.style.borderColor='#947dff';this.style.boxShadow='0 0 0 3px rgba(148,125,255,0.2)'"
+                      onblur="this.style.borderColor='rgba(72,69,85,0.3)';this.style.boxShadow='none'"
                       >{{ current_user.address or '' }}</textarea>
           </div>
 
-          <div class="mb-4">
-            <label class="form-label">
-              Order Notes <span style="color:var(--text-muted)">(optional)</span>
+          <!-- Order Notes -->
+          <div class="mb-8">
+            <label class="block text-xs font-bold uppercase tracking-widest mb-2" style="color:rgba(148,125,255,0.6);">
+              Order Notes <span style="color:#8888aa;">(optional)</span>
             </label>
-            <textarea class="form-control" rows="2"
-                      placeholder="Special instructions for your order…"></textarea>
+            <textarea rows="2"
+                      placeholder="Special instructions for your order…"
+                      class="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none transition-all"
+                      style="background:#271938;border:1px solid rgba(72,69,85,0.2);color:#eedbff;"
+                      onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,0.2)'">
+            </textarea>
           </div>
 
-          <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
-            <i class="bi bi-credit-card" style="color:var(--primary)"></i> Payment Method
-          </h4>
-          <div style="background:var(--surface); border:1px solid var(--border);
-                      border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.5rem;">
-            <label style="display:flex; align-items:center; gap:0.8rem; cursor:pointer;">
-              <input type="radio" name="payment" value="cod" checked
-                     style="accent-color:var(--primary);">
+          <!-- Payment Method -->
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-3" style="font-family:'Space Grotesk',sans-serif;">
+            <span class="material-symbols-outlined" style="color:#947dff;">payments</span>
+            Payment Method
+          </h2>
+          <div class="rounded-xl p-4 mb-8" style="background:#271938;border:1px solid rgba(148,125,255,0.25);">
+            <label class="flex items-center gap-4 cursor-pointer">
+              <input type="radio" name="payment" value="cod" checked style="accent-color:#947dff;width:16px;height:16px;">
               <div>
-                <strong style="color:#fff">💵 Cash on Delivery (COD)</strong>
-                <p style="color:var(--text-muted); font-size:0.82rem; margin:0">
-                  Pay when your order arrives. No extra charges.
-                </p>
+                <strong class="block text-white text-sm" style="font-family:'Space Grotesk',sans-serif;">💵 Cash on Delivery (COD)</strong>
+                <p class="text-xs mt-1" style="color:#8888aa;">Pay when your order arrives. No extra charges.</p>
               </div>
             </label>
           </div>
 
-          <div class="d-grid">
-            <button type="submit" id="place-order-btn" class="btn-primary-custom justify-content-center"
-                    style="font-size:1rem; padding:0.8rem; transition:transform 0.2s;">
-              <i class="bi bi-bag-check"></i> Place Order
-            </button>
-          </div>
+          <!-- Submit Button -->
+          <button type="submit" id="place-order-btn"
+                  class="w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-95"
+                  style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
+                         border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+                         box-shadow:0 12px 24px rgba(148,125,255,0.3);">
+            <span class="material-symbols-outlined">shopping_bag</span> Place Order
+          </button>
 
         </form>
       </div>
     </div>
 
-    <!-- Order Summary -->
-    <div class="col-lg-5">
-      <div class="order-summary">
-        <h3>Your Order ({{ cart_items|length }} items)</h3>
+    <!-- ── Right: Order Summary ──────────────────────────────────── -->
+    <aside class="lg:col-span-5">
+      <div class="sticky rounded-2xl p-8" style="top:100px;background:rgba(35,21,52,0.6);
+           backdrop-filter:blur(20px);border:1px solid rgba(72,69,85,0.15);
+           box-shadow:0 24px 48px rgba(21,7,38,0.5);">
 
-        {% for item in cart_items %}
-          <div class="summary-row" style="padding:0.6rem 0; border-bottom:1px solid var(--border);">
-            <div style="display:flex; align-items:center; gap:0.8rem; flex:1; min-width:0;">
-              <img src="{{ item.product.image_url }}"
-                   style="width:48px;height:48px;border-radius:10px;object-fit:cover;
-                          flex-shrink:0; transition:transform 0.2s;"
-                   onmouseover="this.style.transform='scale(1.1)'"
-                   onmouseout="this.style.transform=''">
-              <div style="min-width:0;">
-                <div style="color:#fff; font-size:0.88rem; font-weight:600;
-                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                  {{ item.product.name }}
+        <h3 class="text-xl font-bold mb-6" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">
+          Your Order ({{ cart_items|length }} items)
+        </h3>
+
+        <!-- Cart Items -->
+        <div class="space-y-4 mb-6 overflow-y-auto" style="max-height:360px;">
+          {% for item in cart_items %}
+            <div class="flex gap-3 group">
+              <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0"
+                   style="background:#3d2e4f;">
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+              </div>
+              <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
+                <div>
+                  <h4 class="text-sm font-bold truncate" style="color:#eedbff;font-family:'Space Grotesk',sans-serif;">
+                    {{ item.product.name }}
+                  </h4>
+                  <p class="text-xs" style="color:#8888aa;">{{ item.product.category|capitalize }}</p>
                 </div>
-                <div style="color:var(--text-muted); font-size:0.78rem;">Qty: {{ item.quantity }}</div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-medium" style="color:#8888aa;">Qty: {{ item.quantity }}</span>
+                  <span class="text-sm font-bold" style="color:#cabeff;">₱{{ "%.2f"|format(item.subtotal) }}</span>
+                </div>
               </div>
             </div>
-            <strong style="color:#fff; font-size:0.9rem; flex-shrink:0; margin-left:0.5rem;">
-              ₱{{ "%.2f"|format(item.subtotal) }}
-            </strong>
+          {% endfor %}
+        </div>
+
+        <!-- Totals -->
+        <div class="space-y-3 pt-6" style="border-top:1px solid rgba(72,69,85,0.2);">
+          <div class="flex justify-between text-sm">
+            <span style="color:#8888aa;">Subtotal</span>
+            <span style="color:#eedbff;font-weight:500;">₱{{ "%.2f"|format(cart_total) }}</span>
           </div>
-        {% endfor %}
+          <div class="flex justify-between text-sm">
+            <span style="color:#8888aa;">Shipping</span>
+            <span style="color:#00d4aa;font-weight:600;">FREE 🎁</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span style="color:#8888aa;">Tax</span>
+            <span style="color:#eedbff;font-weight:500;">₱0.00</span>
+          </div>
+          <div class="flex justify-between items-end pt-4" style="border-top:1px solid rgba(72,69,85,0.2);">
+            <span class="text-lg font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">Total</span>
+            <div class="text-right">
+              <span class="block text-2xl font-bold" style="color:#cabeff;font-family:'Space Grotesk',sans-serif;">
+                ₱{{ "%.2f"|format(cart_total) }}
+              </span>
+              <span class="text-[10px] uppercase tracking-widest" style="color:#8888aa;">PHP — Tax Included</span>
+            </div>
+          </div>
+        </div>
 
-        <div class="summary-row mt-2">
-          <span>Subtotal</span>
-          <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
+        <!-- Trust Signals -->
+        <div class="pt-6 flex items-center justify-center gap-4 opacity-40">
+          <span class="material-symbols-outlined" style="font-size:1.4rem;">lock</span>
+          <span class="material-symbols-outlined" style="font-size:1.4rem;">verified_user</span>
+          <span class="material-symbols-outlined" style="font-size:1.4rem;">shield</span>
         </div>
-        <div class="summary-row">
-          <span>Shipping</span>
-          <strong style="color:var(--accent2)">FREE 🎁</strong>
-        </div>
-        <div class="summary-total">
-          <span>Total</span>
-          <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
-        </div>
-
-        <p class="text-center mt-3" style="font-size:0.78rem; color:var(--text-muted);">
-          <i class="bi bi-shield-check"></i> Protected by GadgetHub's buyer guarantee.
+        <p class="text-center text-[10px] mt-2 px-4" style="color:#8888aa;">
+          Secure checkout · Free nationwide shipping · Buyer protection guaranteed
         </p>
+
       </div>
-    </div>
+    </aside>
 
   </div>
 </div>
@@ -230,18 +248,13 @@
 <!-- SUCCESS OVERLAY -->
 <div id="success-overlay">
   <canvas id="confetti-canvas"></canvas>
-
   <div class="success-checkmark">✅</div>
   <div class="overlay-title">🎉 Order Placed!</div>
   <div class="overlay-sub">Sit tight — your gadget is on its way!</div>
-
-  <!-- Truck animation -->
   <div class="truck-road-wrap">
     <div class="checkout-truck">
-      <!-- Truck SVG -->
-      <svg class="truck-body-svg" xmlns="http://www.w3.org/2000/svg"
-           fill="none" viewBox="0 0 198 93" width="170">
-        <path stroke-width="3" stroke="#282828" fill="#7c5cfc"
+      <svg class="truck-body-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 198 93" width="170">
+        <path stroke-width="3" stroke="#282828" fill="#947dff"
               d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z"/>
         <path stroke-width="3" stroke="#282828" fill="#7D7C7C"
               d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z"/>
@@ -249,7 +262,6 @@
         <rect stroke-width="3" stroke="#282828" fill="#DFDFDF" rx="2.5" height="90" width="121" y="1.5" x="6.5"/>
         <rect stroke-width="2" stroke="#282828" fill="#DFDFDF" rx="2" height="4" width="6" y="84" x="1"/>
       </svg>
-      <!-- Tires -->
       <div class="truck-tires">
         {% for _ in range(2) %}
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" width="24">
@@ -261,8 +273,7 @@
     </div>
     <div class="truck-road"></div>
   </div>
-
-  <div style="color:#8888aa; font-size:0.82rem; position:relative; z-index:1;">
+  <div style="color:#8888aa;font-size:0.82rem;position:relative;z-index:1;">
     Redirecting to your order…
   </div>
 </div>

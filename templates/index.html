@@ -1,232 +1,273 @@
 {% extends "base.html" %}
 {% block title %}GadgetHub PH – Tech Accessories{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-{% endblock %}
-
 {% block content %}
 
-<!-- ── Hero ──────────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-6">
-        <div class="hero-tag">🇵🇭 Free Shipping Nationwide</div>
-        <h1>
-          Level Up Your<br>
-          <span class="highlight">Tech Setup</span>
-        </h1>
-        <p>
-          Earbuds, chargers, powerbanks &amp; accessories — curated for
-          every budget, delivered fast anywhere in the Philippines.
-        </p>
-        <div class="d-flex gap-3 flex-wrap">
-          <a href="#products" class="btn-primary-custom">
-            <i class="bi bi-grid-fill"></i> Shop Now
-          </a>
-          <a href="{{ url_for('shop.index', category='earbuds') }}" class="btn-outline-custom">
-            🎧 Top Picks
-          </a>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <strong>500+</strong>
-            <span>Happy Customers</span>
-          </div>
-          <div class="hero-stat">
-            <strong>12</strong>
-            <span>Products</span>
-          </div>
-          <div class="hero-stat">
-            <strong>4</strong>
-            <span>Categories</span>
-          </div>
-        </div>
+<!-- ── Hero Section ───────────────────────────────────────────────── -->
+<section class="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden px-8 lg:px-24 pt-8">
+  <!-- Background: logo as ambient -->
+  <div class="absolute inset-0 z-0 flex items-center justify-end pr-8 lg:pr-24">
+    <img src="{{ url_for('static', filename='images/gadgethub-logo.png') }}"
+         alt="GadgetHub PH"
+         class="w-[420px] lg:w-[520px] object-contain opacity-25 select-none pointer-events-none">
+  </div>
+  <!-- Gradient overlay left -->
+  <div class="absolute inset-0 z-0"
+       style="background:linear-gradient(to right, #1a0c2b 40%, rgba(26,12,43,0.7) 70%, transparent 100%);">
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 max-w-3xl">
+    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-6"
+          style="background:#3d2e4f;color:#cabeff;border:1px solid rgba(148,125,255,0.2);">
+      🇵🇭 Free Shipping Nationwide
+    </span>
+    <h1 class="text-6xl md:text-8xl font-bold leading-tight tracking-tighter text-white mb-6"
+        style="font-family:'Space Grotesk',sans-serif;">
+      Level Up Your<br>
+      <span style="background:linear-gradient(135deg,#cabeff,#947dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+        Tech Setup.
+      </span>
+    </h1>
+    <p class="text-xl mb-10 leading-relaxed max-w-lg" style="color:#c9c4d8;">
+      Earbuds, chargers, powerbanks &amp; accessories — curated for every budget,
+      delivered fast anywhere in the Philippines.
+    </p>
+    <div class="flex flex-wrap gap-4">
+      <a href="#products"
+         class="px-10 py-4 rounded-lg font-bold text-lg no-underline transition-all active:scale-95 hover:shadow-[0_0_30px_rgba(148,125,255,0.4)]"
+         style="background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;font-family:'Space Grotesk',sans-serif;">
+        Shop Now
+      </a>
+      <a href="{{ url_for('shop.index', category='earbuds') }}"
+         class="px-10 py-4 rounded-lg font-bold text-lg no-underline transition-all hover:bg-[#322343] active:scale-95"
+         style="border:1.5px solid rgba(72,69,85,0.4);color:#cabeff;font-family:'Space Grotesk',sans-serif;">
+        🎧 Top Picks
+      </a>
+    </div>
+    <!-- Stats -->
+    <div class="flex gap-8 mt-10">
+      <div>
+        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">500+</strong>
+        <span class="text-sm" style="color:#c9c4d8;">Happy Customers</span>
       </div>
-      <div class="col-lg-6 d-none d-lg-block text-center mt-4 mt-lg-0">
-        <img
-          src="{{ url_for('static', filename='images/gadgethub-logo.png') }}"
-          alt="GadgetHub PH Logo"
-          style="border-radius:24px; max-height:380px; width:100%; object-fit:cover;
-                 box-shadow: 0 30px 80px rgba(124,92,252,0.3);"
-        >
+      <div>
+        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">{{ products.total }}</strong>
+        <span class="text-sm" style="color:#c9c4d8;">Products</span>
+      </div>
+      <div>
+        <strong class="block text-3xl font-bold text-white" style="font-family:'Space Grotesk',sans-serif;">4</strong>
+        <span class="text-sm" style="color:#c9c4d8;">Categories</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Flash ─────────────────────────────────────────────────── -->
-<div class="container flash-container">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-</div>
+<!-- ── Category Bar + Search ─────────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-8 py-8" id="products">
+  <div class="flex flex-wrap items-center justify-between gap-4"
+       style="border-bottom:1px solid rgba(72,69,85,0.2);padding-bottom:1.5rem;">
 
-<!-- ── Category + Search Bar ────────────────────────────────── -->
-<div class="container">
-  <div class="category-bar">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-
-      <!-- Pills -->
-      <div class="category-pills">
-        <a href="{{ url_for('shop.index') }}"
-           class="category-pill {% if not current_category %}active{% endif %}">
-          All
+    <!-- Category Pills -->
+    <div class="flex gap-2 flex-wrap">
+      <a href="{{ url_for('shop.index') }}"
+         class="px-5 py-2 rounded-full text-sm font-medium no-underline transition-all border"
+         style="{% if not current_category %}background:#947dff;color:#fff;border-color:#947dff;{% else %}background:#22223b;color:#8888aa;border-color:rgba(72,69,85,0.3);{% endif %}">
+        All
+      </a>
+      {% for cat in categories %}
+        <a href="{{ url_for('shop.index', category=cat) }}"
+           class="px-5 py-2 rounded-full text-sm font-medium no-underline transition-all border"
+           style="{% if current_category == cat %}background:#947dff;color:#fff;border-color:#947dff;{% else %}background:#22223b;color:#8888aa;border-color:rgba(72,69,85,0.3);{% endif %}">
+          {% if cat == 'earbuds' %}🎧{% elif cat == 'chargers' %}⚡{% elif cat == 'powerbanks' %}🔋{% else %}📱{% endif %}
+          {{ cat|capitalize }}
         </a>
-        {% for cat in categories %}
-          <a href="{{ url_for('shop.index', category=cat) }}"
-             class="category-pill {% if current_category == cat %}active{% endif %}">
-            {% if cat == 'earbuds' %}🎧{% elif cat == 'chargers' %}⚡{% elif cat == 'powerbanks' %}🔋{% else %}📱{% endif %}
-            {{ cat|capitalize }}
-          </a>
-        {% endfor %}
-      </div>
-
-      <!-- Search -->
-      <form method="GET" action="{{ url_for('shop.index') }}" class="search-wrap">
-        {% if current_category %}
-          <input type="hidden" name="category" value="{{ current_category }}">
-        {% endif %}
-        <i class="bi bi-search search-icon"></i>
-        <input type="text" name="q" value="{{ search }}" placeholder="Search products…">
-      </form>
-
+      {% endfor %}
     </div>
+
+    <!-- Search -->
+    <form method="GET" action="{{ url_for('shop.index') }}" class="flex items-center gap-2">
+      {% if current_category %}
+        <input type="hidden" name="category" value="{{ current_category }}">
+      {% endif %}
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2"
+              style="font-size:1rem;color:#8888aa;pointer-events:none;">search</span>
+        <input type="text" name="q" value="{{ search }}" placeholder="Search products…"
+               style="padding:0.5rem 1rem 0.5rem 2.5rem;border-radius:50px;background:#22223b;
+                      border:1px solid rgba(72,69,85,0.3);color:#eedbff;font-size:0.88rem;
+                      width:220px;outline:none;transition:border-color 0.2s;"
+               onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,0.3)'">
+      </div>
+      <button type="submit"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
+              style="background:#947dff;color:#fff;border:none;cursor:pointer;">
+        Search
+      </button>
+    </form>
   </div>
 </div>
 
-<!-- ── Product Grid ───────────────────────────────────────────── -->
-<div class="container pb-5" id="products">
+<!-- ── Product Grid ────────────────────────────────────────────────── -->
+<section class="pb-16 px-8 max-w-7xl mx-auto">
 
-  <!-- Result header -->
-  <div class="section-head">
-    <h2>
-      {% if search %}
-        Results for "{{ search }}"
-      {% elif current_category %}
-        {{ current_category|capitalize }}
-      {% else %}
-        All Products
-      {% endif %}
-      <span style="color:var(--text-muted); font-size:1rem; font-weight:400">
-        ({{ products.total }})
-      </span>
+  <!-- Section Header -->
+  <div class="flex justify-between items-end mb-10">
+    <h2 class="text-3xl font-bold tracking-tight text-white" style="font-family:'Space Grotesk',sans-serif;">
+      {% if search %}Results for "{{ search }}"
+      {% elif current_category %}{{ current_category|capitalize }}
+      {% else %}All Products{% endif %}
+      <span class="text-xl font-normal ml-2" style="color:#8888aa;">({{ products.total }})</span>
     </h2>
   </div>
 
   {% if products.items %}
-    <div class="row g-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {% for product in products.items %}
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="product-card">
+        <div class="product-card group flex flex-col rounded-xl overflow-hidden transition-all duration-300
+                    hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+             style="background:#1a1a2e;border:1px solid rgba(72,69,85,0.2);">
 
-            <!-- Image -->
-            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
-              <div class="product-img-wrap">
-                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+          <!-- Image -->
+          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="block">
+            <div class="relative overflow-hidden" style="padding-top:100%;background:#22223b;">
+              <img src="{{ product.image_url }}" alt="{{ product.name }}"
+                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                   loading="lazy">
 
-                {% if product.stock == 0 %}
-                  <span class="product-badge badge-out">Out of Stock</span>
-                {% elif product.stock <= 5 %}
-                  <span class="product-badge badge-stock-low">Only {{ product.stock }} left</span>
-                {% else %}
-                  <span class="product-badge badge-new">In Stock</span>
-                {% endif %}
-              </div>
-            </a>
+              <!-- Badge -->
+              {% if product.stock == 0 %}
+                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
+                      style="background:rgba(255,77,109,0.9);color:#fff;">Out of Stock</span>
+              {% elif product.stock <= 5 %}
+                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
+                      style="background:rgba(255,193,7,0.9);color:#000;">Only {{ product.stock }} left</span>
+              {% else %}
+                <span class="absolute top-2 left-2 px-2 py-1 rounded text-[0.65rem] font-bold uppercase"
+                      style="background:rgba(0,212,170,0.9);color:#000;">In Stock</span>
+              {% endif %}
 
-            <!-- Body -->
-            <div class="product-body">
-              <div class="product-category">{{ product.category }}</div>
-              <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
-                <div class="product-name">{{ product.name }}</div>
-              </a>
-
-              <!-- Stars -->
-              <div class="product-rating">
-                <span class="stars">
-                  {% for i in range(1, 6) %}
-                    {% if i <= product.average_rating|int %}★{% else %}☆{% endif %}
-                  {% endfor %}
-                </span>
-                <span class="rating-count">({{ product.review_count }})</span>
-              </div>
-
-              <!-- Price + Cart -->
-              <div class="product-footer">
-                <div class="product-price">
-                  <small>₱</small>{{ "%.2f"|format(product.price_float) }}
-                </div>
-                <button
-                  class="btn-add-cart"
-                  onclick="addToCart({{ product.id }}, this)"
-                  {% if product.stock == 0 %}disabled{% endif %}>
-                  {% if product.stock == 0 %}
-                    Sold Out
-                  {% else %}
-                    <i class="bi bi-cart-plus"></i> Add
-                  {% endif %}
-                </button>
+              <!-- Hover quick view -->
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                   style="background:rgba(26,12,43,0.5);">
+                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}"
+                   class="p-3 rounded-full no-underline transition-all hover:scale-110"
+                   style="background:#322343;color:#cabeff;">
+                  <span class="material-symbols-outlined" style="font-size:1.2rem;">visibility</span>
+                </a>
               </div>
             </div>
+          </a>
 
+          <!-- Body -->
+          <div class="p-4 flex flex-col flex-1">
+            <p class="text-[0.7rem] font-bold tracking-widest uppercase mb-1" style="color:#947dff;">{{ product.category }}</p>
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="no-underline">
+              <h3 class="font-bold text-white text-sm leading-tight mb-2 hover:text-[#cabeff] transition-colors"
+                  style="font-family:'Space Grotesk',sans-serif;
+                         display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                {{ product.name }}
+              </h3>
+            </a>
+
+            <!-- Stars -->
+            <div class="flex items-center gap-1 mb-3">
+              <span style="color:#ffc107;font-size:0.75rem;">
+                {% for i in range(1, 6) %}{% if i <= product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}
+              </span>
+              <span style="color:#8888aa;font-size:0.72rem;">({{ product.review_count }})</span>
+            </div>
+
+            <!-- Price + Add to Cart -->
+            <div class="mt-auto flex items-center justify-between pt-3"
+                 style="border-top:1px solid rgba(72,69,85,0.2);">
+              <span class="font-bold text-white" style="font-family:'Space Grotesk',sans-serif;font-size:1.05rem;">
+                <small style="font-size:0.75rem;color:#8888aa;font-family:'Inter',sans-serif;">₱</small>{{ "%.2f"|format(product.price_float) }}
+              </span>
+              <button class="btn-add-cart flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-xs
+                             transition-all active:scale-95"
+                      onclick="addToCart({{ product.id }}, this)"
+                      {% if product.stock == 0 %}disabled{% endif %}
+                      style="background:#947dff;color:#fff;border:none;cursor:pointer;
+                             {% if product.stock == 0 %}opacity:0.4;cursor:not-allowed;background:#22223b;color:#8888aa;{% endif %}">
+                {% if product.stock == 0 %}
+                  Sold Out
+                {% else %}
+                  <span class="material-symbols-outlined" style="font-size:0.9rem;">add_shopping_cart</span> Add
+                {% endif %}
+              </button>
+            </div>
           </div>
+
         </div>
       {% endfor %}
     </div>
 
     <!-- Pagination -->
     {% if products.pages > 1 %}
-      <nav class="d-flex justify-content-center mt-5">
-        <ul class="pagination gap-1">
+      <nav class="flex justify-center mt-12">
+        <div class="flex gap-2">
           {% if products.has_prev %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}">
-                <i class="bi bi-chevron-left"></i>
-              </a>
-            </li>
+            <a href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}"
+               class="px-4 py-2 rounded-lg no-underline transition-all"
+               style="background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;">‹</a>
           {% endif %}
           {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
             {% if p %}
-              <li class="page-item {% if p == products.page %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}">{{ p }}</a>
-              </li>
+              <a href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}"
+                 class="px-4 py-2 rounded-lg no-underline transition-all"
+                 style="{% if p == products.page %}background:#947dff;border:1px solid #947dff;color:#fff;{% else %}background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;{% endif %}">
+                {{ p }}
+              </a>
             {% else %}
-              <li class="page-item disabled"><span class="page-link">…</span></li>
+              <span class="px-4 py-2" style="color:#8888aa;">…</span>
             {% endif %}
           {% endfor %}
           {% if products.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}">
-                <i class="bi bi-chevron-right"></i>
-              </a>
-            </li>
+            <a href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}"
+               class="px-4 py-2 rounded-lg no-underline transition-all"
+               style="background:#271938;border:1px solid rgba(72,69,85,0.3);color:#cabeff;">›</a>
           {% endif %}
-        </ul>
+        </div>
       </nav>
     {% endif %}
 
   {% else %}
-    <!-- Empty state -->
-    <div class="text-center py-5">
-      <div style="font-size:4rem; margin-bottom:1rem">🔍</div>
-      <h3 style="color:var(--text-muted)">No products found</h3>
-      <p style="color:var(--text-muted)">Try a different search or category.</p>
-      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom mt-3">
-        View All Products
-      </a>
+    <!-- Empty State -->
+    <div class="text-center py-20">
+      <div style="font-size:4rem;margin-bottom:1rem;">🔍</div>
+      <h3 class="text-xl mb-2" style="color:#8888aa;font-family:'Space Grotesk',sans-serif;">No products found</h3>
+      <p class="mb-6" style="color:#8888aa;">Try a different search term or category.</p>
+      <a href="{{ url_for('shop.index') }}"
+         class="px-8 py-3 rounded-lg font-bold no-underline transition-all inline-block"
+         style="background:#947dff;color:#fff;">View All Products</a>
     </div>
   {% endif %}
+</section>
 
-</div>
+<!-- ── Newsletter CTA ─────────────────────────────────────────────── -->
+<section class="py-24 px-8">
+  <div class="max-w-4xl mx-auto glass-panel rounded-3xl p-12 text-center"
+       style="border:1px solid rgba(72,69,85,0.15);">
+    <h2 class="text-4xl font-bold mb-4 tracking-tight" style="font-family:'Space Grotesk',sans-serif;">
+      Stay in the Loop
+    </h2>
+    <p class="text-lg mb-8 max-w-xl mx-auto" style="color:#c9c4d8;">
+      Get exclusive deals, new arrivals, and tech tips delivered straight to your inbox.
+    </p>
+    <div class="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
+      <input type="email" placeholder="Enter your email"
+             class="flex-1 rounded-lg px-6 py-4 text-sm outline-none transition-all"
+             style="background:#3d2e4f;border:none;color:#eedbff;"
+             onfocus="this.style.boxShadow='0 0 0 2px #947dff'" onblur="this.style.boxShadow='none'">
+      <button class="px-8 py-4 rounded-lg font-bold transition-all active:scale-95 hover:brightness-110"
+              style="background:#947dff;color:#fff;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
+        Subscribe
+      </button>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 {% block extra_js %}
