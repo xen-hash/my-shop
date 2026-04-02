@@ -56,9 +56,11 @@
         {% if current_user.is_authenticated %}
           <!-- Cart -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('cart.view_cart') }}">
+            <a class="nav-link" href="{{ url_for('cart.view_cart') }}" style="position:relative;display:inline-flex;align-items:center;padding-right:0.8rem;">
               <i class="bi bi-cart3" style="font-size:1.2rem"></i>
+              {% if current_user.cart_count > 0 %}
               <span class="cart-badge">{{ current_user.cart_count }}</span>
+              {% endif %}
             </a>
           </li>
 

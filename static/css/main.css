@@ -106,15 +106,24 @@ img { max-width: 100%; display: block; }
 .cart-icon-wrap { position: relative; display: inline-block; }
 .cart-badge {
   position: absolute;
-  top: -6px; right: -8px;
+  top: -2px; right: -4px;
   background: var(--accent);
   color: #fff;
   font-size: 0.6rem;
   font-weight: 700;
-  width: 17px; height: 17px;
-  border-radius: 50%;
+  min-width: 17px; height: 17px;
+  padding: 0 3px;
+  border-radius: 50px;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--dark);
+  line-height: 1;
+  z-index: 10;
+  pointer-events: none;
+  animation: badgePop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badgePop {
+  0%   { transform: scale(0); }
+  100% { transform: scale(1); }
 }
 
 .dropdown-menu {
