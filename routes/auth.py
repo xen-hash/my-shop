@@ -1,12 +1,13 @@
 """
-routes/auth.py – GadgetHub PH
+auth.py – GadgetHub PH
 ==============================
 Authentication blueprint: Register, Login, Logout, Profile.
+Social Login: Google OAuth2, Facebook OAuth2 (via Authlib).
 """
 
 from flask import (
     Blueprint, render_template, redirect,
-    url_for, flash, request
+    url_for, flash, request, session, current_app
 )
 from flask_login import (
     login_user, logout_user,
@@ -16,6 +17,37 @@ from models import db, User
 from forms import RegisterForm, LoginForm, UpdateProfileForm
 
 auth_bp = Blueprint("auth", __name__)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OAuth helper – lazy-init so missing keys don't crash the app
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_oauth():
+    from authlib.integrations.flask_client import OAuth
+    oauth = OAuth(current_app)
+
+    if current_app.config.get("GOOGLE_CLIENT_ID"):
+        oauth.register(
+            name="google",
+            client_id     = current_app.config["GOOGLE_CLIENT_ID"],
+            client_secret = current_app.config["GOOGLE_CLIENT_SECRET"],
+            server_metadata_url = "https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs = {"scope": "openid email profile"},
+        )
+
+    if current_app.config.get("FACEBOOK_CLIENT_ID"):
+        oauth.register(
+            name="facebook",
+            client_id     = current_app.config["FACEBOOK_CLIENT_ID"],
+            client_secret = current_app.config["FACEBOOK_CLIENT_SECRET"],
+            access_token_url  = "https://graph.facebook.com/oauth/access_token",
+            authorize_url     = "https://www.facebook.com/dialog/oauth",
+            api_base_url      = "https://graph.facebook.com/",
+            client_kwargs     = {"scope": "email public_profile"},
+        )
+
+    return oauth
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -65,14 +97,22 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=True)
             flash(f"Welcome back, {user.name}! 👋", "success")
-
-            # Redirect to the page the user originally wanted
             next_page = request.args.get("next")
             return redirect(next_page or url_for("shop.index"))
 
         flash("Incorrect email or password. Please try again.", "danger")
 
-    return render_template("login.html", form=form, title="Log In")
+    # Check if OAuth providers are configured
+    google_enabled   = bool(current_app.config.get("GOOGLE_CLIENT_ID"))
+    facebook_enabled = bool(current_app.config.get("FACEBOOK_CLIENT_ID"))
+
+    return render_template(
+        "login.html",
+        form=form,
+        title="Log In",
+        google_enabled=google_enabled,
+        facebook_enabled=facebook_enabled,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -104,3 +144,83 @@ def profile():
         return redirect(url_for("auth.profile"))
 
     return render_template("profile.html", form=form, title="My Profile")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GOOGLE OAUTH
+# ─────────────────────────────────────────────────────────────────────────────
+
+@auth_bp.route("/login/google")
+def google_login():
+    if not current_app.config.get("GOOGLE_CLIENT_ID"):
+        flash("Google login is not configured yet.", "warning")
+        return redirect(url_for("auth.login"))
+    oauth = get_oauth()
+    redirect_uri = url_for("auth.google_callback", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@auth_bp.route("/login/google/callback")
+def google_callback():
+    try:
+        oauth = get_oauth()
+        token    = oauth.google.authorize_access_token()
+        userinfo = token.get("userinfo") or oauth.google.parse_id_token(token)
+        return _social_login(
+            email = userinfo["email"],
+            name  = userinfo.get("name", userinfo["email"].split("@")[0]),
+        )
+    except Exception as e:
+        flash("Google login failed. Please try again.", "danger")
+        return redirect(url_for("auth.login"))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FACEBOOK OAUTH
+# ─────────────────────────────────────────────────────────────────────────────
+
+@auth_bp.route("/login/facebook")
+def facebook_login():
+    if not current_app.config.get("FACEBOOK_CLIENT_ID"):
+        flash("Facebook login is not configured yet.", "warning")
+        return redirect(url_for("auth.login"))
+    oauth = get_oauth()
+    redirect_uri = url_for("auth.facebook_callback", _external=True)
+    return oauth.facebook.authorize_redirect(redirect_uri)
+
+
+@auth_bp.route("/login/facebook/callback")
+def facebook_callback():
+    try:
+        oauth = get_oauth()
+        oauth.facebook.authorize_access_token()
+        resp = oauth.facebook.get("me?fields=id,name,email")
+        info = resp.json()
+        email = info.get("email") or f"fb_{info['id']}@facebook.local"
+        return _social_login(email=email, name=info.get("name", "Facebook User"))
+    except Exception as e:
+        flash("Facebook login failed. Please try again.", "danger")
+        return redirect(url_for("auth.login"))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shared social-login helper
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _social_login(email: str, name: str):
+    """Find-or-create a user from a social provider, then log them in."""
+    user = User.query.filter_by(email=email.lower()).first()
+    if not user:
+        user = User(
+            name     = name,
+            email    = email.lower(),
+            password = "",          # no password – social only
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash(f"Welcome to GadgetHub, {user.name}! 🎉", "success")
+    else:
+        flash(f"Welcome back, {user.name}! 👋", "success")
+
+    login_user(user, remember=True)
+    return redirect(url_for("shop.index"))

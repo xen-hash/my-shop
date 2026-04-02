@@ -14,13 +14,46 @@
           <p class="auth-subtitle">Log in to your GadgetHub account</p>
         </div>
 
-        <!-- Form -->
+        <!-- Social Login Buttons -->
+        {% if google_enabled or facebook_enabled %}
+        <div class="d-flex flex-column gap-2 mb-4">
+          {% if google_enabled %}
+          <a href="{{ url_for('auth.google_login') }}"
+             class="social-btn social-btn-google">
+            <svg width="20" height="20" viewBox="0 0 48 48" style="flex-shrink:0">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </a>
+          {% endif %}
+
+          {% if facebook_enabled %}
+          <a href="{{ url_for('auth.facebook_login') }}"
+             class="social-btn social-btn-facebook">
+            <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0">
+              <path fill="#fff" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Continue with Facebook
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <hr style="flex:1;border-color:var(--border)">
+          <span style="color:var(--text-muted);font-size:0.82rem;">or sign in with email</span>
+          <hr style="flex:1;border-color:var(--border)">
+        </div>
+        {% endif %}
+
+        <!-- Email/Password Form -->
         <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
           {{ form.hidden_tag() }}
 
-          <!-- Email -->
           <div class="mb-3">
-            <label class="form-label fw-600">{{ form.email.label.text }}</label>
+            <label class="form-label">{{ form.email.label.text }}</label>
             {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""),
                placeholder="you@example.com", autocomplete="email") }}
             {% for error in form.email.errors %}
@@ -28,9 +61,8 @@
             {% endfor %}
           </div>
 
-          <!-- Password -->
           <div class="mb-4">
-            <label class="form-label fw-600">{{ form.password.label.text }}</label>
+            <label class="form-label">{{ form.password.label.text }}</label>
             {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
                placeholder="Enter your password", autocomplete="current-password") }}
             {% for error in form.password.errors %}
@@ -38,18 +70,16 @@
             {% endfor %}
           </div>
 
-          <!-- Submit -->
           <div class="d-grid">
             {{ form.submit(class="btn btn-primary btn-lg") }}
           </div>
         </form>
 
-        <!-- Divider -->
         <hr class="my-4">
 
         <p class="text-center mb-0" style="color:#888">
           Don't have an account?
-          <a href="{{ url_for('auth.register') }}" class="fw-600" style="color:var(--primary)">
+          <a href="{{ url_for('auth.register') }}" style="color:var(--primary);font-weight:600;">
             Sign up for free
           </a>
         </p>
@@ -58,4 +88,42 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.social-btn-google {
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #ddd;
+}
+.social-btn-google:hover {
+  background: #f5f5f5;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  color: #333;
+}
+.social-btn-facebook {
+  background: #1877f2;
+  color: #fff;
+  border: 1.5px solid #1877f2;
+}
+.social-btn-facebook:hover {
+  background: #166fe5;
+  box-shadow: 0 4px 16px rgba(24,119,242,0.4);
+  color: #fff;
+}
+</style>
 {% endblock %}

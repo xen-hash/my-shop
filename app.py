@@ -1,5 +1,8 @@
 """
 app.py – GadgetHub PH (application factory)
+
+FIX: Route files live in the project ROOT (auth.py, shop.py, etc.)
+     NOT in a routes/ sub-package.  Import them directly.
 """
 
 from flask import Flask
@@ -27,14 +30,15 @@ def create_app(env=None):
     @login_manager.user_loader
     def load_user(user_id):
         from models import User
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # ── Blueprints ────────────────────────────────────────────
-    from routes.auth   import auth_bp
-    from routes.shop   import shop_bp
-    from routes.cart   import cart_bp
-    from routes.orders import orders_bp
-    from routes.admin  import admin_bp
+    # IMPORTANT: import from root, not from routes.*
+    from auth   import auth_bp
+    from shop   import shop_bp
+    from cart   import cart_bp
+    from orders import orders_bp
+    from admin  import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(shop_bp)
