@@ -193,14 +193,18 @@ def seed():
         admin_password = os.environ.get("ADMIN_PASSWORD", "Admin@1234")
         admin_name     = "GadgetHub Admin"
 
-        if not User.query.filter_by(email=admin_email).first():
+        admin = User.query.filter_by(email=admin_email).first()
+        if not admin:
             admin = User(name=admin_name, email=admin_email, is_admin=True)
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
             print(f"✅  Admin user created  →  {admin_email}")
         else:
-            print(f"ℹ️   Admin user already exists  →  {admin_email}")
+            admin.set_password(admin_password)
+            admin.is_admin = True
+            db.session.commit()
+            print(f"✅  Admin password reset  →  {admin_email}")
 
         # 3. Sample products
         added = 0
