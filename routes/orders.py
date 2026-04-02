@@ -1,12 +1,12 @@
 """
 routes/orders.py – GadgetHub PH
 =================================
-Orders blueprint: checkout, order history, order detail.
+Orders blueprint: checkout, order history, order detail, review submission.
 """
 
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, CartItem, Order, OrderItem
+from models import db, CartItem, Order, OrderItem, Review
 
 orders_bp = Blueprint("orders", __name__, url_prefix="/orders")
 
@@ -127,3 +127,55 @@ def order_detail(order_id):
         orders = None,
         title  = f"Order #{order_id:04d} – GadgetHub PH"
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# SUBMIT REVIEW  (POST /orders/<id>/review)
+# ─────────────────────────────────────────────────────────────
+
+@orders_bp.route("/<int:order_id>/review", methods=["POST"])
+@login_required
+def submit_review(order_id):
+    # Verify order belongs to user
+    order = Order.query.filter_by(
+        id      = order_id,
+        user_id = current_user.id
+    ).first_or_404()
+
+    data       = request.get_json()
+    product_id = data.get("product_id")
+    comment    = data.get("comment", "").strip()
+
+    try:
+        rating = int(data.get("rating", 0))
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "message": "Invalid rating value."}), 400
+
+    if not (1 <= rating <= 5):
+        return jsonify({"success": False, "message": "Rating must be between 1 and 5."}), 400
+
+    # Verify the product is actually part of this order
+    item = next((i for i in order.items if i.product_id == product_id), None)
+    if not item:
+        return jsonify({"success": False, "message": "Product not in this order."}), 400
+
+    # Upsert review
+    existing = Review.query.filter_by(
+        user_id    = current_user.id,
+        product_id = product_id
+    ).first()
+
+    if existing:
+        existing.rating  = rating
+        existing.comment = comment
+    else:
+        review = Review(
+            user_id    = current_user.id,
+            product_id = product_id,
+            rating     = rating,
+            comment    = comment
+        )
+        db.session.add(review)
+
+    db.session.commit()
+    return jsonify({"success": True, "message": "Review submitted!"})

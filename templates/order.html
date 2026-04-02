@@ -1,56 +1,221 @@
 {% extends "base.html" %}
 {% block title %}My Orders – GadgetHub PH{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+<style>
+/* ── Status Badges ───────────────────────────────────────── */
+.order-status-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  border-radius: 50px; padding: 0.3rem 0.9rem;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+}
+.status-pending   { background:rgba(255,193,7,0.12);  color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
+.status-paid      { background:rgba(0,212,170,0.12);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
+.status-shipped   { background:rgba(124,92,252,0.12); color:var(--primary); border:1px solid rgba(124,92,252,0.3); }
+.status-delivered { background:rgba(0,212,170,0.12);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
+
+/* ── Order Card (list) ───────────────────────────────────── */
+.order-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  animation: slideUp 0.45s ease both;
+}
+.order-card:hover {
+  border-color: rgba(124,92,252,0.45);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(124,92,252,0.12);
+}
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(22px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* Product thumb stack */
+.order-thumb-stack { display:flex; align-items:center; }
+.order-thumb-stack img {
+  width: 48px; height: 48px; border-radius: 10px;
+  object-fit: cover; border: 2px solid var(--dark);
+  margin-left: -10px; transition: transform 0.2s;
+}
+.order-thumb-stack img:first-child { margin-left: 0; }
+.order-thumb-stack:hover img { transform: translateX(4px); }
+
+/* ── Star Rating UI ──────────────────────────────────────── */
+.star-rating { display:flex; flex-direction:row-reverse; gap:4px; }
+.star-rating input { display:none; }
+.star-rating label {
+  font-size: 1.6rem; color: #444466; cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+}
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+  color: #ffc107;
+}
+.star-rating label:hover { transform: scale(1.25); }
+
+/* ── Review Card ─────────────────────────────────────────── */
+.review-submitted {
+  background: rgba(0,212,170,0.08);
+  border: 1px solid rgba(0,212,170,0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem; margin-top: 0.8rem;
+}
+.review-stars { color: #ffc107; font-size: 1rem; letter-spacing: 1px; }
+
+/* ── Review Form ─────────────────────────────────────────── */
+.review-form-wrap {
+  background: rgba(124,92,252,0.06);
+  border: 1px solid rgba(124,92,252,0.18);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem; margin-top: 0.8rem;
+}
+.review-textarea {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: #fff; padding: 0.6rem 0.8rem; font-size: 0.88rem;
+  resize: vertical; min-height: 70px; transition: border-color 0.2s;
+}
+.review-textarea:focus { outline: none; border-color: var(--primary); }
+
+.btn-review-submit {
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 0.45rem 1.2rem; font-size: 0.84rem;
+  font-weight: 600; cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-review-submit:hover { background: #6a4ae0; transform: scale(1.03); }
+.btn-review-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Review toast */
+.review-toast {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+  background: var(--accent2); color: #0d0d1a;
+  padding: 0.8rem 1.4rem; border-radius: 12px;
+  font-weight: 700; font-size: 0.9rem;
+  box-shadow: 0 8px 32px rgba(0,212,170,0.35);
+  transform: translateY(80px); opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
+}
+.review-toast.show { transform: translateY(0); opacity: 1; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
 
   {% if order %}
-  <!-- ── Single Order Detail ─────────────────────────────────── -->
+  <!-- ══════════════════════════════════════════════════════════
+       SINGLE ORDER DETAIL
+  ══════════════════════════════════════════════════════════ -->
   <div class="mb-4">
     <a href="{{ url_for('orders.order_history') }}"
-       style="color:var(--primary); font-size:0.9rem;">
+       style="color:var(--primary); font-size:0.9rem; display:inline-flex; align-items:center; gap:0.4rem;">
       ← Back to My Orders
     </a>
   </div>
 
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
     <div>
-      <h1 class="cart-page-title mb-0">Order #{{ "%04d"|format(order.id) }}</h1>
-      <p style="color:var(--text-muted); font-size:0.88rem;">
-        Placed on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+      <h1 class="cart-page-title mb-0">
+        {% if order.items|length == 1 %}
+          {{ order.items[0].product.name }}
+        {% else %}
+          {{ order.items[0].product.name }}
+          <span style="color:var(--text-muted); font-size:1rem; font-weight:500">
+            +{{ order.items|length - 1 }} more
+          </span>
+        {% endif %}
+      </h1>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.3rem;">
+        Order #{{ "%04d"|format(order.id) }} &nbsp;·&nbsp;
+        {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}
       </p>
     </div>
     <span class="order-status-badge status-{{ order.status }}">
+      {% if order.status == 'pending' %}⏳{% elif order.status == 'paid' %}💳
+      {% elif order.status == 'shipped' %}🚚{% elif order.status == 'delivered' %}✅{% endif %}
       {{ order.status|upper }}
     </span>
   </div>
 
   <div class="row g-4">
-    <!-- Items -->
+    <!-- Items + Review Section -->
     <div class="col-lg-8">
       <div style="background:var(--card-bg); border:1px solid var(--border);
                   border-radius:var(--radius); padding:1.5rem;">
         <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1.2rem;">
           Order Items
         </h4>
+
         {% for item in order.items %}
-          <div style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0;
-                      border-bottom:1px solid var(--border);">
-            <img src="{{ item.product.image_url }}"
-                 style="width:64px;height:64px;border-radius:10px;object-fit:cover;">
-            <div style="flex:1;">
-              <div style="font-weight:600; color:#fff;">{{ item.product.name }}</div>
-              <div style="color:var(--text-muted); font-size:0.82rem;">
-                ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
+          {% set user_review = item.product.reviews | selectattr('user_id', 'equalto', current_user.id) | list | first %}
+          <div style="padding:1rem 0; border-bottom:1px solid var(--border);">
+
+            <!-- Product row -->
+            <div style="display:flex; align-items:center; gap:1rem;">
+              <img src="{{ item.product.image_url }}"
+                   style="width:68px;height:68px;border-radius:12px;object-fit:cover;flex-shrink:0;">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:#fff; font-size:1rem;">{{ item.product.name }}</div>
+                <div style="color:var(--text-muted); font-size:0.82rem; margin-top:0.2rem;">
+                  ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
+                </div>
               </div>
+              <strong style="color:#fff; flex-shrink:0;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
             </div>
-            <strong style="color:#fff;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
+
+            <!-- Review Section -->
+            {% if user_review %}
+              <!-- Already reviewed -->
+              <div class="review-submitted">
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">Your review</div>
+                <div class="review-stars">
+                  {% for i in range(1, 6) %}{{ '★' if i <= user_review.rating else '☆' }}{% endfor %}
+                </div>
+                {% if user_review.comment %}
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.4rem 0 0;">
+                    {{ user_review.comment }}
+                  </p>
+                {% endif %}
+              </div>
+            {% else %}
+              <!-- Review form -->
+              <div class="review-form-wrap" id="review-wrap-{{ item.product_id }}">
+                <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
+                  ⭐ Rate this product
+                </div>
+                <div class="star-rating" id="stars-{{ item.product_id }}">
+                  {% for i in [5,4,3,2,1] %}
+                    <input type="radio" id="star{{ i }}-{{ item.product_id }}"
+                           name="rating-{{ item.product_id }}" value="{{ i }}">
+                    <label for="star{{ i }}-{{ item.product_id }}" title="{{ i }} star{{ 's' if i > 1 }}">★</label>
+                  {% endfor %}
+                </div>
+                <textarea class="review-textarea mt-2"
+                          id="comment-{{ item.product_id }}"
+                          placeholder="Write a comment (optional)…"></textarea>
+                <button class="btn-review-submit mt-2"
+                        onclick="submitReview({{ order.id }}, {{ item.product_id }}, this)">
+                  Submit Review
+                </button>
+              </div>
+            {% endif %}
+
           </div>
         {% endfor %}
 
         <div style="display:flex; justify-content:flex-end; padding-top:1rem; gap:0.5rem;">
-          <span style="color:var(--text-muted);">Total:</span>
-          <strong style="font-family:'Syne',sans-serif; font-size:1.2rem; color:#fff;">
+          <span style="color:var(--text-muted);">Order Total:</span>
+          <strong style="font-family:'Syne',sans-serif; font-size:1.25rem; color:#fff;">
             ₱{{ "%.2f"|format(order.total_float) }}
           </strong>
         </div>
@@ -64,7 +229,7 @@
         <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
           Shipping Address
         </h4>
-        <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+        <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.7;">
           <strong style="color:#fff;">{{ current_user.name }}</strong><br>
           {{ order.shipping_address or 'No address provided.' }}
         </p>
@@ -72,45 +237,91 @@
         <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">
           Payment
         </h4>
-        <p style="color:var(--text-muted); font-size:0.9rem;">Cash on Delivery (COD)</p>
+        <p style="color:var(--text-muted); font-size:0.9rem;">💵 Cash on Delivery (COD)</p>
+
+        <hr style="border-color:var(--border);">
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">
+          Order Status
+        </h4>
+        <!-- Progress tracker -->
+        <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.5rem;">
+          {% for s, icon in [('pending','⏳'),('paid','💳'),('shipped','🚚'),('delivered','✅')] %}
+            {% set active = order.status == s %}
+            {% set done_statuses = ['pending','paid','shipped','delivered'] %}
+            {% set is_done = done_statuses.index(order.status) >= done_statuses.index(s) %}
+            <div style="display:flex; align-items:center; gap:0.6rem; opacity:{{ '1' if is_done else '0.35' }};">
+              <span style="font-size:1rem;">{{ icon }}</span>
+              <span style="font-size:0.85rem; font-weight:{{ '700' if active else '400' }};
+                           color:{{ 'var(--accent2)' if active else '#fff' }};">
+                {{ s|capitalize }}
+              </span>
+              {% if active %}
+                <span style="background:rgba(0,212,170,0.15); color:var(--accent2);
+                             font-size:0.65rem; font-weight:700; padding:0.1rem 0.5rem;
+                             border-radius:20px; border:1px solid rgba(0,212,170,0.3);">
+                  CURRENT
+                </span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Review Toast -->
+  <div id="review-toast" class="review-toast">✅ Review submitted! Thank you!</div>
+
   {% else %}
-  <!-- ── Order History List ──────────────────────────────────── -->
+  <!-- ══════════════════════════════════════════════════════════
+       ORDER HISTORY LIST
+  ══════════════════════════════════════════════════════════ -->
   <h1 class="cart-page-title mb-4">My Orders</h1>
 
   {% if orders %}
     <div class="d-flex flex-column gap-3">
       {% for o in orders %}
-        <div style="background:var(--card-bg); border:1px solid var(--border);
-                    border-radius:var(--radius); padding:1.5rem;
-                    display:flex; align-items:center; justify-content:space-between;
-                    flex-wrap:wrap; gap:1rem;
-                    transition:border-color 0.25s;"
-             onmouseover="this.style.borderColor='rgba(124,92,252,0.4)'"
-             onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+        <div class="order-card" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
 
-          <div>
-            <div style="font-family:'Syne',sans-serif; font-weight:700; color:#fff; font-size:1rem;">
-              Order #{{ "%04d"|format(o.id) }}
+          <!-- Product thumbnails + name -->
+          <div style="display:flex; align-items:center; gap:1rem; flex:1; min-width:0;">
+            <div class="order-thumb-stack">
+              {% for item in o.items[:3] %}
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+              {% endfor %}
             </div>
-            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:0.2rem;">
-              {{ o.created_at.strftime('%B %d, %Y') }} · {{ o.item_count }} item(s)
+            <div style="min-width:0;">
+              <div style="font-family:'Syne',sans-serif; font-weight:700; color:#fff;
+                          font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                {% if o.items|length == 1 %}
+                  {{ o.items[0].product.name }}
+                {% else %}
+                  {{ o.items[0].product.name }}
+                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;">
+                    +{{ o.items|length - 1 }} more
+                  </span>
+                {% endif %}
+              </div>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-top:0.2rem;">
+                Order #{{ "%04d"|format(o.id) }} &nbsp;·&nbsp;
+                {{ o.created_at.strftime('%B %d, %Y') }} &nbsp;·&nbsp;
+                {{ o.item_count }} item(s)
+              </div>
             </div>
           </div>
 
-          <div style="text-align:center;">
-            <span class="order-status-badge status-{{ o.status }}">{{ o.status|upper }}</span>
-          </div>
+          <span class="order-status-badge status-{{ o.status }}">
+            {% if o.status == 'pending' %}⏳{% elif o.status == 'paid' %}💳
+            {% elif o.status == 'shipped' %}🚚{% elif o.status == 'delivered' %}✅{% endif %}
+            {{ o.status|upper }}
+          </span>
 
-          <div style="font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:#fff;">
+          <div style="font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; color:#fff; flex-shrink:0;">
             ₱{{ "%.2f"|format(o.total_float) }}
           </div>
 
           <a href="{{ url_for('orders.order_detail', order_id=o.id) }}"
-             class="btn-outline-custom" style="padding:0.4rem 1rem; font-size:0.85rem;">
+             class="btn-outline-custom" style="padding:0.45rem 1.1rem; font-size:0.84rem; flex-shrink:0;">
             View Details →
           </a>
 
@@ -134,20 +345,54 @@
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
-<style>
-.order-status-badge {
-  display: inline-block;
-  border-radius: 50px;
-  padding: 0.25rem 0.9rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+{% block extra_js %}
+<script>
+async function submitReview(orderId, productId, btn) {
+  const ratingInput = document.querySelector(
+    `input[name="rating-${productId}"]:checked`
+  );
+  if (!ratingInput) {
+    alert('Please select a star rating first!');
+    return;
+  }
+  const rating  = parseInt(ratingInput.value);
+  const comment = document.getElementById(`comment-${productId}`).value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Submitting…';
+
+  try {
+    const res = await fetch(`/orders/${orderId}/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, rating, comment })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      // Replace form with submitted review
+      const wrap = document.getElementById(`review-wrap-${productId}`);
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      wrap.innerHTML = `
+        <div class="review-submitted">
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">Your review</div>
+          <div class="review-stars">${stars}</div>
+          ${comment ? `<p style="color:var(--text-muted); font-size:0.85rem; margin:0.4rem 0 0;">${comment}</p>` : ''}
+        </div>`;
+
+      // Show toast
+      const toast = document.getElementById('review-toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = 'Submit Review';
+      alert(data.message || 'Could not submit review. Try again.');
+    }
+  } catch {
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Review';
+  }
 }
-.status-pending   { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
-.status-paid      { background:rgba(0,212,170,0.15);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
-.status-shipped   { background:rgba(124,92,252,0.15); color:var(--primary); border:1px solid rgba(124,92,252,0.3); }
-.status-delivered { background:rgba(0,212,170,0.15);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
-</style>
+</script>
 {% endblock %}
