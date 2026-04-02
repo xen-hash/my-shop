@@ -6,6 +6,7 @@
 /* ── Admin Layout ─────────────────────────────────────────── */
 .admin-wrap { display: flex; min-height: calc(100vh - 70px); }
 
+/* ── Sidebar ──────────────────────────────────────────────── */
 .admin-sidebar {
   width: 250px;
   background: #0e0e1f;
@@ -16,7 +17,24 @@
   top: 70px;
   height: calc(100vh - 70px);
   overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
+/* Mobile: sidebar becomes a fixed drawer */
+@media (max-width: 900px) {
+  .admin-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    height: 100vh;
+    transform: translateX(-110%);
+    z-index: 1100;
+    width: min(280px, 85vw);
+    padding-top: 1rem;
+    box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+  }
+  .admin-sidebar.open { transform: translateX(0); }
+}
+
 .admin-sidebar .sidebar-brand {
   padding: 0 1.2rem 1.2rem;
   border-bottom: 1px solid var(--border);
@@ -27,6 +45,9 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .admin-sidebar .sidebar-section {
   font-size: 0.65rem;
@@ -40,7 +61,7 @@
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.6rem 1.2rem;
+  padding: 0.65rem 1.2rem;
   color: var(--text-muted);
   font-size: 0.88rem;
   font-weight: 500;
@@ -64,19 +85,65 @@
   border-radius: 20px;
 }
 
+/* ── Sidebar overlay ─────────────────────────────────────── */
+.admin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1099;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+}
+.admin-overlay.open { display: block; }
+
+/* ── Mobile Admin Topbar ──────────────────────────────────── */
+.admin-mobile-bar {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #0e0e1f;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 58px;
+  z-index: 90;
+}
+@media (max-width: 900px) { .admin-mobile-bar { display: flex; } }
+.admin-mobile-bar .bar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  flex: 1;
+}
+.admin-hamburger {
+  background: rgba(124,92,252,0.15);
+  border: 1px solid rgba(124,92,252,0.3);
+  color: #cabeff;
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: all 0.2s;
+}
+.admin-hamburger:hover { background: rgba(124,92,252,0.3); color: #fff; }
+
+/* ── Main Content ─────────────────────────────────────────── */
 .admin-content {
   flex: 1;
   padding: 2rem;
   overflow-x: hidden;
   min-width: 0;
 }
+@media (max-width: 900px) { .admin-content { padding: 1rem; } }
 
 /* ── Stat Cards ───────────────────────────────────────────── */
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.4rem 1.5rem;
+  padding: 1.2rem 1.3rem;
   transition: all 0.25s;
   position: relative;
   overflow: hidden;
@@ -91,28 +158,29 @@
 }
 .stat-card:hover {
   border-color: rgba(124,92,252,0.35);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.3);
 }
 .stat-icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
+  width: 40px; height: 40px;
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.85rem;
 }
 .stat-value {
   font-family: 'Syne', sans-serif;
-  font-size: 1.9rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #fff;
   line-height: 1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
-.stat-label { color: var(--text-muted); font-size: 0.82rem; }
+@media (max-width: 480px) { .stat-value { font-size: 1.3rem; } }
+.stat-label { color: var(--text-muted); font-size: 0.8rem; }
 .stat-trend {
-  font-size: 0.75rem;
-  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  margin-top: 0.35rem;
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -120,56 +188,62 @@
 .trend-up   { color: var(--accent2); }
 .trend-down { color: var(--accent); }
 
-/* ── Admin Table ──────────────────────────────────────────── */
-.admin-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-.admin-table th {
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-.admin-table td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-size: 0.88rem;
-  vertical-align: middle;
-}
-.admin-table tr:hover td { background: rgba(124,92,252,0.04); }
-.admin-table tr:last-child td { border-bottom: none; }
+/* ── Admin Table (scrollable on mobile) ───────────────────── */
 .table-wrap {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 560px; /* prevents collapse on narrow screens */
+}
+.admin-table th {
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: 0.8rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.86rem;
+  vertical-align: middle;
+}
+.admin-table tr:hover td { background: rgba(124,92,252,0.04); }
+.admin-table tr:last-child td { border-bottom: none; }
 
 /* ── Admin Form ───────────────────────────────────────────── */
 .admin-form {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 740px;
 }
+@media (min-width: 640px) { .admin-form { padding: 2rem; } }
 .admin-form .form-label {
   color: var(--text-muted);
-  font-size: 0.83rem;
+  font-size: 0.82rem;
   font-weight: 600;
   margin-bottom: 0.4rem;
   display: block;
 }
 .admin-form .form-hint {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   margin-top: 0.3rem;
 }
@@ -178,11 +252,12 @@
 .status-badge {
   display: inline-block;
   border-radius: 50px;
-  padding: 0.22rem 0.75rem;
-  font-size: 0.7rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .status-pending   { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.25); }
 .status-paid      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
@@ -193,34 +268,30 @@
 /* ── Page header ──────────────────────────────────────────── */
 .admin-page-title {
   font-family: 'Syne', sans-serif;
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
   font-weight: 800;
   color: #fff;
   margin-bottom: 0.2rem;
 }
-.admin-page-sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
+.admin-page-sub { color: var(--text-muted); font-size: 0.86rem; margin-bottom: 1.25rem; }
 
 .product-thumb {
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   border-radius: 8px;
   object-fit: cover;
   border: 1px solid var(--border);
 }
 
 /* ── Stock inline editor ──────────────────────────────────── */
-.stock-edit-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
+.stock-edit-wrap { display: flex; align-items: center; gap: 0.4rem; }
 .stock-input {
-  width: 62px;
+  width: 58px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
   color: #fff;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.88rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.86rem;
   font-weight: 700;
   text-align: center;
 }
@@ -231,52 +302,51 @@
   color: var(--primary);
   border-radius: 6px;
   padding: 0.25rem 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 .btn-stock-save:hover { background: var(--primary); color: #fff; }
 
-/* ── Chart container ──────────────────────────────────────── */
+/* ── Chart card ───────────────────────────────────────────── */
 .chart-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 .chart-title {
   font-family: 'Syne', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
   margin-bottom: 1rem;
 }
 
 /* ── Image preview ────────────────────────────────────────── */
-#img-preview-wrap {
-  margin-top: 0.8rem;
-  position: relative;
-  display: inline-block;
-}
+#img-preview-wrap { margin-top: 0.75rem; position: relative; display: inline-block; }
 #img-preview {
-  height: 100px;
+  height: 90px;
   border-radius: 10px;
   object-fit: cover;
   border: 1px solid var(--border);
   display: none;
 }
 
-/* ── Action buttons ────────────────────────────────────────── */
+/* ── Action buttons ───────────────────────────────────────── */
 .btn-action {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 7px;
   color: var(--text-muted);
-  padding: 0.3rem 0.6rem;
-  font-size: 0.82rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 .btn-action:hover       { border-color: var(--primary); color: var(--primary); background: rgba(124,92,252,0.1); }
 .btn-action.btn-danger:hover  { border-color: var(--accent);  color: var(--accent);  background: rgba(255,77,109,0.1); }
@@ -287,23 +357,103 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
-/* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .admin-sidebar { display: none; }
-  .admin-content { padding: 1rem; }
+/* ── Mobile filter row ────────────────────────────────────── */
+.filter-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.filter-row .search-wrap { flex: 1; min-width: 160px; }
+
+/* ── Category pill quick links ────────────────────────────── */
+.category-pill {
+  display: inline-block;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.category-pill:hover,
+.category-pill.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ── Status pill scroll row on mobile ────────────────────── */
+.pill-scroll-row {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0.75rem;
+}
+.pill-scroll-row::-webkit-scrollbar { display: none; }
+
+/* ── Low stock list ───────────────────────────────────────── */
+.low-stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  gap: 0.5rem;
+}
+.low-stock-name {
+  font-size: 0.84rem;
+  color: #fff;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- ── Mobile Admin Topbar ──────────────────────────────────── -->
+<div class="admin-mobile-bar">
+  <button class="admin-hamburger" onclick="openAdminSidebar()" aria-label="Open menu">
+    <i class="bi bi-list"></i>
+  </button>
+  <span class="bar-title">⚡ GadgetHub Admin</span>
+  {% if view == 'dashboard' %}
+    <a href="{{ url_for('shop.index') }}" target="_blank"
+       style="color:var(--primary);font-size:0.78rem;white-space:nowrap;">
+      <i class="bi bi-box-arrow-up-right"></i> Store
+    </a>
+  {% endif %}
+</div>
+
+<!-- ── Sidebar Overlay ─────────────────────────────────────── -->
+<div id="admin-overlay" class="admin-overlay" onclick="closeAdminSidebar()"></div>
+
 <div class="admin-wrap">
 
   <!-- ── Sidebar ──────────────────────────────────────────── -->
-  <aside class="admin-sidebar">
-    <div class="sidebar-brand">⚡ GadgetHub Admin</div>
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="sidebar-brand">
+      ⚡ GadgetHub Admin
+      <button onclick="closeAdminSidebar()"
+              style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:0;display:none;"
+              id="sidebar-close-btn" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
 
     <div class="sidebar-section">Overview</div>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if view == 'dashboard' %}active{% endif %}">
@@ -356,13 +506,14 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" style="border-radius:10px;">
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:0.86rem;">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endfor %}
       {% endif %}
     {% endwith %}
+
 
     {# ════════════════════════════════════════════════════════ #}
     {% if view == 'dashboard' %}
@@ -417,81 +568,78 @@
     </div>
 
     <!-- Order status pills -->
-    <div class="d-flex gap-2 mb-4 flex-wrap">
+    <div class="pill-scroll-row mb-3">
       {% for s, count in status_counts.items() %}
-        <a href="{{ url_for('admin.orders', status=s) }}"
-           class="category-pill" style="font-size:0.8rem">
-          <span class="status-badge status-{{ s }}" style="font-size:0.65rem;">{{ s }}</span>
+        <a href="{{ url_for('admin.orders', status=s) }}" class="category-pill" style="font-size:0.76rem">
+          <span class="status-badge status-{{ s }}" style="font-size:0.62rem;">{{ s }}</span>
           &nbsp;{{ count }}
         </a>
       {% endfor %}
     </div>
 
-    <div class="row g-4 mb-4">
+    <div class="row g-3 mb-4">
       <!-- Revenue chart -->
-      <div class="col-lg-8">
+      <div class="col-12 col-lg-8">
         <div class="chart-card">
           <div class="chart-title">📈 Revenue – Last 7 Days</div>
-          <canvas id="revenueChart" height="90"></canvas>
+          <canvas id="revenueChart" height="100"></canvas>
         </div>
       </div>
       <!-- Low stock -->
-      <div class="col-lg-4">
+      <div class="col-12 col-lg-4">
         <div class="chart-card">
           <div class="chart-title">⚠️ Low Stock Alert</div>
           {% if low_stock %}
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-1">
               {% for p in low_stock %}
-                <div class="d-flex justify-content-between align-items-center"
-                     style="padding:0.5rem 0; border-bottom:1px solid var(--border)">
-                  <div style="font-size:0.85rem; color:#fff; flex:1; min-width:0;
-                              white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    {{ p.name }}
-                  </div>
+                <div class="low-stock-item">
+                  <span class="low-stock-name">{{ p.name }}</span>
                   <span style="color:{% if p.stock == 0 %}var(--accent){% else %}#ffc107{% endif %};
-                               font-weight:700; font-size:0.88rem; margin-left:0.8rem;">
+                               font-weight:700; font-size:0.86rem; flex-shrink:0;">
                     {{ p.stock }} left
                   </span>
                   <a href="{{ url_for('admin.edit_product', product_id=p.id) }}"
-                     class="btn-action ms-2" style="font-size:0.75rem;">Edit</a>
+                     class="btn-action ms-1" style="font-size:0.72rem;flex-shrink:0;">Edit</a>
                 </div>
               {% endfor %}
             </div>
           {% else %}
-            <p style="color:var(--accent2); font-size:0.9rem;">✅ All products well-stocked!</p>
+            <p style="color:var(--accent2); font-size:0.88rem;">✅ All products well-stocked!</p>
           {% endif %}
         </div>
       </div>
     </div>
 
     <!-- Recent orders -->
-    <div class="chart-title mb-3">🕐 Recent Orders</div>
+    <div class="chart-title mb-2">🕐 Recent Orders</div>
     <div class="table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for o in recent_orders %}
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead>
             <tr>
-              <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
-              <td>{{ o.user.name }}</td>
-              <td style="color:#fff;font-weight:600">₱{{ "%.2f"|format(o.total_float) }}</td>
-              <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
-              <td style="color:var(--text-muted);font-size:0.8rem">{{ o.created_at.strftime('%b %d') }}</td>
-              <td>
-                <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
-                  <i class="bi bi-eye"></i>
-                </a>
-              </td>
+              <th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th>
             </tr>
-          {% else %}
-            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">No orders yet</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for o in recent_orders %}
+              <tr>
+                <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
+                <td>{{ o.user.name }}</td>
+                <td style="color:#fff;font-weight:600">₱{{ "%.2f"|format(o.total_float) }}</td>
+                <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d') }}</td>
+                <td>
+                  <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">No orders yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -500,7 +648,7 @@
     {# PRODUCTS LIST #}
     {# ════════════════════════════════════════════════════════ #}
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-start align-items-sm-center mb-3 flex-wrap gap-2">
       <div>
         <div class="admin-page-title">Products</div>
         <div class="admin-page-sub">{{ products|length }} products in catalogue</div>
@@ -511,66 +659,73 @@
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="{{ url_for('admin.products') }}" class="d-flex gap-2 mb-3 flex-wrap">
-      <div class="search-wrap" style="max-width:280px">
+    <form method="GET" action="{{ url_for('admin.products') }}" class="filter-row mb-3">
+      <div class="search-wrap" style="position:relative;">
         <i class="bi bi-search search-icon"></i>
-        <input type="text" name="q" value="{{ search }}" placeholder="Search products…">
+        <input type="text" name="q" value="{{ search }}" placeholder="Search products…"
+               style="width:100%;background:var(--surface);border:1px solid var(--border);
+                      border-radius:50px;color:#fff;padding:0.5rem 1rem 0.5rem 2.4rem;
+                      font-size:0.84rem;outline:none;">
       </div>
-      <select name="category" class="form-select" style="width:160px;background:var(--surface);color:#fff;border-color:var(--border);" onchange="this.form.submit()">
+      <select name="category" class="form-select"
+              style="width:auto;min-width:130px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:50px;font-size:0.84rem;"
+              onchange="this.form.submit()">
         <option value="">All Categories</option>
         {% for cat in categories %}
           <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
         {% endfor %}
       </select>
-      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;">Filter</button>
+      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;font-size:0.84rem;">Filter</button>
     </form>
 
     <div class="table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Image</th><th>Name</th><th>Category</th>
-            <th>Price (₱)</th><th>Stock</th><th>Rating</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for p in products %}
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead>
             <tr>
-              <td><img src="{{ p.image_url }}" class="product-thumb" alt="{{ p.name }}"></td>
-              <td style="color:#fff;font-weight:600;max-width:200px;">
-                <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
-              </td>
-              <td><span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2);">{{ p.category }}</span></td>
-              <td style="color:#fff;font-weight:600">{{ "%.2f"|format(p.price_float) }}</td>
-              <td>
-                <div class="stock-edit-wrap">
-                  <input class="stock-input" type="number" value="{{ p.stock }}" min="0"
-                         id="stock-{{ p.id }}" data-product-id="{{ p.id }}">
-                  <button class="btn-stock-save" onclick="saveStock({{ p.id }})">
-                    <i class="bi bi-check"></i>
-                  </button>
-                </div>
-              </td>
-              <td style="color:#ffc107">{{ p.average_rating }}★ <span style="color:var(--text-muted);font-size:0.75rem">({{ p.review_count }})</span></td>
-              <td>
-                <div class="d-flex gap-1">
-                  <a href="{{ url_for('admin.edit_product', product_id=p.id) }}" class="btn-action">
-                    <i class="bi bi-pencil"></i> Edit
-                  </a>
-                  <form method="POST" action="{{ url_for('admin.delete_product', product_id=p.id) }}"
-                        onsubmit="return confirm('Delete {{ p.name }}? This cannot be undone.')">
-                    <button type="submit" class="btn-action btn-danger">
-                      <i class="bi bi-trash3"></i>
-                    </button>
-                  </form>
-                </div>
-              </td>
+              <th>Image</th><th>Name</th><th>Category</th>
+              <th>Price (₱)</th><th>Stock</th><th>Rating</th><th>Actions</th>
             </tr>
-          {% else %}
-            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">No products found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for p in products %}
+              <tr>
+                <td><img src="{{ p.image_url }}" class="product-thumb" alt="{{ p.name }}"></td>
+                <td style="color:#fff;font-weight:600;max-width:180px;">
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
+                </td>
+                <td><span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2);">{{ p.category }}</span></td>
+                <td style="color:#fff;font-weight:600">{{ "%.2f"|format(p.price_float) }}</td>
+                <td>
+                  <div class="stock-edit-wrap">
+                    <input class="stock-input" type="number" value="{{ p.stock }}" min="0"
+                           id="stock-{{ p.id }}" data-product-id="{{ p.id }}">
+                    <button class="btn-stock-save" onclick="saveStock({{ p.id }})">
+                      <i class="bi bi-check"></i>
+                    </button>
+                  </div>
+                </td>
+                <td style="color:#ffc107;white-space:nowrap;">{{ p.average_rating }}★ <span style="color:var(--text-muted);font-size:0.73rem">({{ p.review_count }})</span></td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a href="{{ url_for('admin.edit_product', product_id=p.id) }}" class="btn-action">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('admin.delete_product', product_id=p.id) }}"
+                          onsubmit="return confirm('Delete {{ p.name }}?')">
+                      <button type="submit" class="btn-action btn-danger">
+                        <i class="bi bi-trash3"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">No products found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -598,10 +753,10 @@
                    placeholder="e.g. ProSound AirPods X2">
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-sm-4">
             <label class="form-label">Category <span style="color:var(--accent)">*</span></label>
             <select name="category" class="form-select" required>
-              <option value="">-- Select Category --</option>
+              <option value="">-- Select --</option>
               {% for cat in categories %}
                 <option value="{{ cat }}"
                   {% if view == 'edit_product' and product.category == cat %}selected{% endif %}>
@@ -611,19 +766,19 @@
             </select>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-6 col-sm-4">
             <label class="form-label">Price (₱) <span style="color:var(--accent)">*</span></label>
             <input type="number" name="price" class="form-control" step="0.01" min="0" required
                    value="{% if view == 'edit_product' %}{{ product.price_float }}{% endif %}"
                    placeholder="999.00">
           </div>
 
-          <div class="col-md-4">
-            <label class="form-label">Stock Quantity <span style="color:var(--accent)">*</span></label>
+          <div class="col-6 col-sm-4">
+            <label class="form-label">Stock Qty <span style="color:var(--accent)">*</span></label>
             <input type="number" name="stock" class="form-control" min="0" required
                    value="{% if view == 'edit_product' %}{{ product.stock }}{% endif %}"
                    placeholder="50">
-            <div class="form-hint">Set 0 to mark as Out of Stock.</div>
+            <div class="form-hint">Set 0 = Out of Stock.</div>
           </div>
 
           <div class="col-12">
@@ -633,10 +788,10 @@
                    placeholder="https://images.unsplash.com/photo-..."
                    oninput="previewImage(this.value)">
             <div class="form-hint">
-              Paste any public image URL. Use
-              <a href="https://unsplash.com" target="_blank" style="color:var(--primary)">Unsplash</a>,
-              <a href="https://pexels.com" target="_blank" style="color:var(--primary)">Pexels</a>, or
-              upload to <a href="https://imgur.com" target="_blank" style="color:var(--primary)">Imgur</a> first.
+              Paste any public image URL.
+              <a href="https://unsplash.com" target="_blank" style="color:var(--primary)">Unsplash</a> ·
+              <a href="https://pexels.com" target="_blank" style="color:var(--primary)">Pexels</a> ·
+              <a href="https://imgur.com" target="_blank" style="color:var(--primary)">Imgur</a>
             </div>
             <div id="img-preview-wrap">
               <img id="img-preview"
@@ -647,11 +802,11 @@
 
           <div class="col-12">
             <label class="form-label">Description <span style="color:var(--accent)">*</span></label>
-            <textarea name="description" class="form-control" rows="5" required
+            <textarea name="description" class="form-control" rows="4" required
                       placeholder="Describe the product features, specs, and benefits…">{% if view == 'edit_product' %}{{ product.description }}{% endif %}</textarea>
           </div>
 
-          <div class="col-12 d-flex gap-3 mt-2 flex-wrap">
+          <div class="col-12 d-flex gap-2 flex-wrap mt-2">
             <button type="submit" class="btn-primary-custom">
               <i class="bi bi-check-lg"></i>
               {% if view == 'add_product' %}Add Product{% else %}Save Changes{% endif %}
@@ -661,7 +816,7 @@
             </a>
             {% if view == 'edit_product' %}
               <a href="{{ url_for('shop.product_detail', product_id=product.id) }}"
-                 target="_blank" class="btn-outline-custom" style="margin-left:auto;">
+                 target="_blank" class="btn-outline-custom ms-auto">
                 <i class="bi bi-box-arrow-up-right"></i> View in Store
               </a>
             {% endif %}
@@ -680,74 +835,78 @@
     <div class="admin-page-title">Orders</div>
     <div class="admin-page-sub">Manage, track, and update all customer orders</div>
 
-    <!-- Filters -->
-    <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
-      <!-- Status pills -->
+    <!-- Status pill filters -->
+    <div class="pill-scroll-row">
       <a href="{{ url_for('admin.orders') }}"
-         class="category-pill {% if not current_status %}active{% endif %}" style="font-size:0.8rem">All</a>
+         class="category-pill {% if not current_status %}active{% endif %}" style="font-size:0.76rem">All</a>
       {% for s in statuses %}
         <a href="{{ url_for('admin.orders', status=s) }}"
-           class="category-pill {% if current_status == s %}active{% endif %}" style="font-size:0.8rem">
+           class="category-pill {% if current_status == s %}active{% endif %}" style="font-size:0.76rem">
           {{ s|capitalize }}
         </a>
       {% endfor %}
-
-      <!-- Search -->
-      <form method="GET" action="{{ url_for('admin.orders') }}" class="d-flex gap-2 ms-auto">
-        {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
-        <div class="search-wrap" style="max-width:220px">
-          <i class="bi bi-search search-icon"></i>
-          <input type="text" name="q" value="{{ search }}" placeholder="Order # or name…">
-        </div>
-        <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem">Search</button>
-      </form>
     </div>
 
+    <!-- Search -->
+    <form method="GET" action="{{ url_for('admin.orders') }}" class="filter-row mb-3">
+      {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+      <div class="search-wrap" style="position:relative;flex:1;min-width:160px;">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" name="q" value="{{ search }}" placeholder="Order # or name…"
+               style="width:100%;background:var(--surface);border:1px solid var(--border);
+                      border-radius:50px;color:#fff;padding:0.5rem 1rem 0.5rem 2.4rem;
+                      font-size:0.84rem;outline:none;">
+      </div>
+      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;font-size:0.84rem">Search</button>
+    </form>
+
     <div class="table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Order ID</th><th>Customer</th><th>Items</th>
-            <th>Total</th><th>Date</th><th>Status</th><th>Update Status</th><th>Detail</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for o in orders %}
+      <div class="table-scroll">
+        <table class="admin-table" style="min-width:680px;">
+          <thead>
             <tr>
-              <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
-              <td>
-                <div style="color:#fff;font-weight:500">{{ o.user.name }}</div>
-                <div style="color:var(--text-muted);font-size:0.75rem">{{ o.user.email }}</div>
-              </td>
-              <td style="color:var(--text-muted)">{{ o.item_count }} item(s)</td>
-              <td style="color:#fff;font-weight:700">₱{{ "%.2f"|format(o.total_float) }}</td>
-              <td style="color:var(--text-muted);font-size:0.8rem">{{ o.created_at.strftime('%b %d, %Y') }}</td>
-              <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
-              <td>
-                <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
-                      style="display:flex;gap:0.4rem;align-items:center;">
-                  <select name="status" class="form-select form-select-sm"
-                          style="width:110px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;">
-                    {% for s in statuses %}
-                      <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
-                    {% endfor %}
-                  </select>
-                  <button type="submit" class="btn-action btn-success" title="Save">
-                    <i class="bi bi-check-lg"></i>
-                  </button>
-                </form>
-              </td>
-              <td>
-                <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
-                  <i class="bi bi-eye"></i>
-                </a>
-              </td>
+              <th>Order</th><th>Customer</th><th>Items</th>
+              <th>Total</th><th>Date</th><th>Status</th><th>Update</th><th></th>
             </tr>
-          {% else %}
-            <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">No orders found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for o in orders %}
+              <tr>
+                <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
+                <td>
+                  <div style="color:#fff;font-weight:500">{{ o.user.name }}</div>
+                  <div style="color:var(--text-muted);font-size:0.73rem">{{ o.user.email }}</div>
+                </td>
+                <td style="color:var(--text-muted)">{{ o.item_count }}</td>
+                <td style="color:#fff;font-weight:700">₱{{ "%.2f"|format(o.total_float) }}</td>
+                <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d, %Y') }}</td>
+                <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
+                        style="display:flex;gap:0.3rem;align-items:center;">
+                    <select name="status" class="form-select form-select-sm"
+                            style="width:100px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
+                      {% for s in statuses %}
+                        <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-action btn-success" title="Save">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">No orders found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -757,48 +916,47 @@
     {# ════════════════════════════════════════════════════════ #}
 
     <div class="mb-3">
-      <a href="{{ url_for('admin.orders') }}" style="color:var(--primary);font-size:0.88rem;">
+      <a href="{{ url_for('admin.orders') }}" style="color:var(--primary);font-size:0.86rem;">
         <i class="bi bi-arrow-left"></i> Back to Orders
       </a>
     </div>
 
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-4">
       <div>
         <div class="admin-page-title">Order #{{ "%04d"|format(order.id) }}</div>
         <div class="admin-page-sub">Placed on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
       </div>
-      <span class="status-badge status-{{ order.status }}" style="font-size:0.9rem;padding:0.4rem 1rem;">
+      <span class="status-badge status-{{ order.status }}" style="font-size:0.84rem;padding:0.35rem 0.9rem;">
         {{ order.status|upper }}
       </span>
     </div>
 
-    <div class="row g-4">
-      <div class="col-lg-8">
+    <div class="row g-3">
+      <div class="col-12 col-lg-8">
         <!-- Order items -->
         <div class="order-detail-card mb-3">
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;">Order Items</h5>
           {% for item in order.items %}
-            <div style="display:flex;align-items:center;gap:1rem;padding:0.8rem 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:0.85rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
               <img src="{{ item.product.image_url }}"
-                   style="width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--border);">
-              <div style="flex:1;">
-                <div style="font-weight:600;color:#fff">{{ item.product.name }}</div>
-                <div style="color:var(--text-muted);font-size:0.82rem;">
+                   style="width:54px;height:54px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;color:#fff;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.product.name }}</div>
+                <div style="color:var(--text-muted);font-size:0.78rem;">
                   ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
                 </div>
-                <div style="font-size:0.75rem;color:var(--text-muted)">{{ item.product.category|capitalize }}</div>
               </div>
-              <strong style="color:#fff;font-size:1rem;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
+              <strong style="color:#fff;font-size:0.95rem;flex-shrink:0;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
             </div>
           {% endfor %}
-          <div style="display:flex;justify-content:flex-end;padding-top:1rem;gap:0.5rem;font-size:1.1rem;">
-            <span style="color:var(--text-muted)">Order Total:</span>
+          <div style="display:flex;justify-content:flex-end;padding-top:0.85rem;gap:0.5rem;font-size:1rem;">
+            <span style="color:var(--text-muted)">Total:</span>
             <strong style="color:#fff;font-family:'Syne',sans-serif;">₱{{ "%.2f"|format(order.total_float) }}</strong>
           </div>
         </div>
       </div>
 
-      <div class="col-lg-4">
+      <div class="col-12 col-lg-4">
         <!-- Status update -->
         <div class="order-detail-card mb-3">
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;">
@@ -808,8 +966,8 @@
             <input type="hidden" name="from" value="detail">
             <div class="d-flex flex-column gap-2">
               {% for s in statuses %}
-                <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;
-                              padding:0.6rem 0.8rem;border-radius:8px;
+                <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;
+                              padding:0.55rem 0.75rem;border-radius:8px;
                               background:{% if order.status == s %}rgba(124,92,252,0.15){% else %}transparent{% endif %};
                               border:1px solid {% if order.status == s %}rgba(124,92,252,0.4){% else %}var(--border){% endif %}">
                   <input type="radio" name="status" value="{{ s }}" {% if order.status == s %}checked{% endif %}
@@ -824,25 +982,24 @@
           </form>
         </div>
 
-        <!-- Customer info -->
+        <!-- Customer + Shipping -->
         <div class="order-detail-card mb-3">
-          <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.8rem;">
+          <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.6rem;">
             <i class="bi bi-person" style="color:var(--primary)"></i> Customer
           </h5>
           <div style="color:#fff;font-weight:600">{{ order.user.name }}</div>
-          <div style="color:var(--text-muted);font-size:0.85rem">{{ order.user.email }}</div>
+          <div style="color:var(--text-muted);font-size:0.83rem">{{ order.user.email }}</div>
         </div>
 
-        <!-- Shipping -->
         <div class="order-detail-card">
-          <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.8rem;">
+          <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.6rem;">
             <i class="bi bi-geo-alt" style="color:var(--primary)"></i> Shipping Address
           </h5>
-          <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin:0">
+          <p style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;margin:0">
             {{ order.shipping_address or 'No address provided.' }}
           </p>
-          <hr style="border-color:var(--border);margin:0.8rem 0">
-          <div style="color:var(--text-muted);font-size:0.85rem">
+          <hr style="border-color:var(--border);margin:0.7rem 0">
+          <div style="color:var(--text-muted);font-size:0.83rem">
             <i class="bi bi-cash"></i> Cash on Delivery (COD)
           </div>
         </div>
@@ -859,42 +1016,44 @@
     <div class="admin-page-sub">{{ users|length }} registered users</div>
 
     <div class="table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Joined</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for u in users %}
+      <div class="table-scroll">
+        <table class="admin-table" style="min-width:540px;">
+          <thead>
             <tr>
-              <td style="color:#fff;font-weight:600">{{ u.name }}</td>
-              <td style="color:var(--text-muted)">{{ u.email }}</td>
-              <td>
-                {% if u.is_admin %}
-                  <span class="status-badge" style="background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.25)">Admin</span>
-                {% else %}
-                  <span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2)">Customer</span>
-                {% endif %}
-              </td>
-              <td style="color:var(--text-muted)">{{ u.orders|length }}</td>
-              <td style="color:var(--text-muted);font-size:0.82rem">{{ u.created_at.strftime('%b %d, %Y') }}</td>
-              <td>
-                {% if u.id != current_user.id %}
-                  <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=u.id) }}"
-                        onsubmit="return confirm('Change role for {{ u.name }}?')">
-                    <button type="submit" class="btn-action {% if u.is_admin %}btn-danger{% endif %}">
-                      {% if u.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
-                    </button>
-                  </form>
-                {% else %}
-                  <span style="color:var(--text-muted);font-size:0.8rem">You</span>
-                {% endif %}
-              </td>
+              <th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Joined</th><th>Actions</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td style="color:#fff;font-weight:600">{{ u.name }}</td>
+                <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.email }}</td>
+                <td>
+                  {% if u.is_admin %}
+                    <span class="status-badge" style="background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.25)">Admin</span>
+                  {% else %}
+                    <span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2)">Customer</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--text-muted)">{{ u.orders|length }}</td>
+                <td style="color:var(--text-muted);font-size:0.8rem">{{ u.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                  {% if u.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=u.id) }}"
+                          onsubmit="return confirm('Change role for {{ u.name }}?')">
+                      <button type="submit" class="btn-action {% if u.is_admin %}btn-danger{% endif %}">
+                        {% if u.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
+                      </button>
+                    </form>
+                  {% else %}
+                    <span style="color:var(--text-muted);font-size:0.78rem">You</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -907,38 +1066,40 @@
     <div class="admin-page-sub">{{ reviews|length }} total reviews — moderate and manage customer feedback</div>
 
     <div class="table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr><th>Product</th><th>Customer</th><th>Rating</th><th>Comment</th><th>Date</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-          {% for r in reviews %}
-            <tr>
-              <td style="color:#fff;font-weight:600;max-width:160px;">
-                <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.product.name }}</div>
-              </td>
-              <td style="color:var(--text-muted)">{{ r.user.name }}</td>
-              <td style="color:#ffc107">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</td>
-              <td style="color:var(--text-muted);font-size:0.85rem;max-width:220px;">
-                <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                  {{ r.comment or '—' }}
-                </div>
-              </td>
-              <td style="color:var(--text-muted);font-size:0.8rem">{{ r.created_at.strftime('%b %d, %Y') }}</td>
-              <td>
-                <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.id) }}"
-                      onsubmit="return confirm('Delete this review?')">
-                  <button type="submit" class="btn-action btn-danger">
-                    <i class="bi bi-trash3"></i>
-                  </button>
-                </form>
-              </td>
-            </tr>
-          {% else %}
-            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">No reviews yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="admin-table" style="min-width:560px;">
+          <thead>
+            <tr><th>Product</th><th>Customer</th><th>Rating</th><th>Comment</th><th>Date</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            {% for r in reviews %}
+              <tr>
+                <td style="color:#fff;font-weight:600;max-width:150px;">
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.product.name }}</div>
+                </td>
+                <td style="color:var(--text-muted)">{{ r.user.name }}</td>
+                <td style="color:#ffc107;white-space:nowrap;">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</td>
+                <td style="color:var(--text-muted);font-size:0.83rem;max-width:200px;">
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ r.comment or '—' }}
+                  </div>
+                </td>
+                <td style="color:var(--text-muted);font-size:0.78rem">{{ r.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.id) }}"
+                        onsubmit="return confirm('Delete this review?')">
+                    <button type="submit" class="btn-action btn-danger">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">No reviews yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
     {% endif %}
@@ -948,7 +1109,6 @@
 
 {% block extra_js %}
 {% if view == 'dashboard' %}
-<!-- Chart.js for revenue chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 const ctx = document.getElementById('revenueChart');
@@ -973,14 +1133,10 @@ if (ctx) {
       responsive: true,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => '₱' + ctx.parsed.y.toFixed(2)
-          }
-        }
+        tooltip: { callbacks: { label: ctx => '₱' + ctx.parsed.y.toFixed(2) } }
       },
       scales: {
-        x: { ticks: { color: '#8888aa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { ticks: { color: '#8888aa', maxTicksLimit: 7 }, grid: { color: 'rgba(255,255,255,0.05)' } },
         y: {
           ticks: { color: '#8888aa', callback: v => '₱' + v },
           grid: { color: 'rgba(255,255,255,0.05)' }
@@ -999,7 +1155,6 @@ async function saveStock(productId) {
   const newStock = parseInt(input.value);
   const btn = input.nextElementSibling;
   btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
-
   try {
     const res = await fetch('/admin/products/stock', {
       method: 'POST',
@@ -1014,16 +1169,10 @@ async function saveStock(productId) {
       btn.style.color = '#00d4aa';
       setTimeout(() => {
         btn.innerHTML = '<i class="bi bi-check"></i>';
-        btn.style.background = '';
-        btn.style.borderColor = '';
-        btn.style.color = '';
+        btn.style.background = btn.style.borderColor = btn.style.color = '';
       }, 2000);
-    } else {
-      btn.innerHTML = '<i class="bi bi-x"></i>';
-    }
-  } catch (err) {
-    btn.innerHTML = '<i class="bi bi-x"></i>';
-  }
+    } else { btn.innerHTML = '<i class="bi bi-x"></i>'; }
+  } catch { btn.innerHTML = '<i class="bi bi-x"></i>'; }
 }
 </script>
 {% endif %}
@@ -1037,11 +1186,35 @@ function previewImage(url) {
   img.style.display = 'block';
   img.onerror = () => { img.style.display = 'none'; };
 }
-// Show on load for edit
 document.addEventListener('DOMContentLoaded', () => {
   const url = document.getElementById('image_url_input').value;
   if (url) previewImage(url);
 });
 </script>
 {% endif %}
+
+<!-- ── Mobile sidebar drawer JS ──────────────────────────────── -->
+<script>
+function openAdminSidebar() {
+  document.getElementById('admin-sidebar').classList.add('open');
+  document.getElementById('admin-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('sidebar-close-btn').style.display = 'block';
+}
+function closeAdminSidebar() {
+  document.getElementById('admin-sidebar').classList.remove('open');
+  document.getElementById('admin-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on resize to desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) closeAdminSidebar();
+});
+// Show close button inside sidebar on mobile
+(function() {
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar-close-btn').style.display = 'block';
+  }
+})();
+</script>
 {% endblock %}
