@@ -8,7 +8,6 @@ import os
 import logging
 from flask import Flask
 from flask_login import LoginManager
-from models import db, User
 
 
 # ─────────────────────────────────────────────────────────────
@@ -68,6 +67,7 @@ def create_app():
     )
 
     # ── Extensions ────────────────────────────────────────────
+    from models import db, User
     db.init_app(app)
 
     login_manager = LoginManager()
