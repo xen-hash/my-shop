@@ -259,11 +259,14 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-.status-pending   { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.25); }
-.status-paid      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
-.status-shipped   { background:rgba(124,92,252,0.15); color:#7c5cfc; border:1px solid rgba(124,92,252,0.25); }
-.status-delivered { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
-.status-cancelled { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
+.status-pending        { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.25); }
+.status-confirmed      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.status-order_received { background:rgba(148,125,255,0.15);color:#cabeff; border:1px solid rgba(148,125,255,0.25); }
+.status-ready_to_ship  { background:rgba(255,159,67,0.15); color:#ff9f43; border:1px solid rgba(255,159,67,0.25); }
+.status-paid           { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.status-shipped        { background:rgba(124,92,252,0.15); color:#7c5cfc; border:1px solid rgba(124,92,252,0.25); }
+.status-delivered      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.status-cancelled      { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
 
 /* ── Page header ──────────────────────────────────────────── */
 .admin-page-title {
@@ -276,45 +279,37 @@
 .admin-page-sub { color: var(--text-muted); font-size: 0.86rem; margin-bottom: 1.25rem; }
 
 .product-thumb {
-  width: 56px; height: 56px;
-  border-radius: 10px;
+  width: 40px; height: 40px;
+  border-radius: 8px;
   object-fit: cover;
   border: 1px solid var(--border);
-  background: #22223b;
-  display: block;
 }
 
 /* ── Stock inline editor ──────────────────────────────────── */
 .stock-edit-wrap { display: flex; align-items: center; gap: 0.4rem; }
 .stock-input {
-  width: 68px;
-  background: #22223b !important;
-  border: 1.5px solid rgba(148,125,255,0.3);
-  border-radius: 8px;
-  color: #fff !important;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.9rem;
+  width: 58px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: #fff;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.86rem;
   font-weight: 700;
   text-align: center;
-  -moz-appearance: textfield;
-}
-.stock-input::-webkit-inner-spin-button,
-.stock-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-.stock-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,92,252,0.15); }  text-align: center;
 }
 .stock-input:focus { outline: none; border-color: var(--primary); }
 .btn-stock-save {
   background: rgba(124,92,252,0.2);
-  border: 1.5px solid rgba(124,92,252,0.4);
+  border: 1px solid rgba(124,92,252,0.4);
   color: var(--primary);
-  border-radius: 8px;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.76rem;
   cursor: pointer;
   transition: all 0.2s;
-  line-height: 1;
 }
-.btn-stock-save:hover { background: var(--primary); color: #fff; transform: scale(1.05); }
+.btn-stock-save:hover { background: var(--primary); color: #fff; }
 
 /* ── Chart card ───────────────────────────────────────────── */
 .chart-card {
@@ -634,7 +629,7 @@
                 <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
                 <td>{{ o.user.name }}</td>
                 <td style="color:#fff;font-weight:600">₱{{ "%.2f"|format(o.total_float) }}</td>
-                <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                <td><span class="status-badge status-{{ o.status }}">{{ o.status.replace('_',' ')|title }}</span></td>
                 <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d') }}</td>
                 <td>
                   <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
@@ -698,29 +693,18 @@
           <tbody>
             {% for p in products %}
               <tr>
-                <td><img src="{{ p.image_url }}" class="product-thumb" alt="{{ p.name }}" onerror="this.src='https://placehold.co/56x56/22223b/cabeff?text=IMG'"></td>
+                <td><img src="{{ p.image_url }}" class="product-thumb" alt="{{ p.name }}"></td>
                 <td style="color:#fff;font-weight:600;max-width:180px;">
                   <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
-                  <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">#GH-{{ "%04d"|format(p.id) }}</div>
                 </td>
                 <td><span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2);">{{ p.category }}</span></td>
-                <td style="color:#cabeff;font-weight:700;">₱{{ "%.2f"|format(p.price_float) }}</td>
+                <td style="color:#fff;font-weight:600">{{ "%.2f"|format(p.price_float) }}</td>
                 <td>
-                  <div style="margin-bottom:4px;">
-                    <span style="font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:20px;
-                      {% if p.stock == 0 %}background:rgba(255,77,109,0.15);color:#ff4d6d;border:1px solid rgba(255,77,109,0.3);
-                      {% elif p.stock <= 5 %}background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.3);
-                      {% else %}background:rgba(0,212,170,0.12);color:#00d4aa;border:1px solid rgba(0,212,170,0.25);{% endif %}">
-                      {% if p.stock == 0 %}Out of Stock
-                      {% elif p.stock <= 5 %}⚠ Low Stock
-                      {% else %}✓ In Stock{% endif %}
-                    </span>
-                  </div>
                   <div class="stock-edit-wrap">
                     <input class="stock-input" type="number" value="{{ p.stock }}" min="0"
                            id="stock-{{ p.id }}" data-product-id="{{ p.id }}">
-                    <button class="btn-stock-save" onclick="saveStock({{ p.id }})" title="Save stock">
-                      <i class="bi bi-check-lg"></i>
+                    <button class="btn-stock-save" onclick="saveStock({{ p.id }})">
+                      <i class="bi bi-check"></i>
                     </button>
                   </div>
                 </td>
@@ -899,14 +883,14 @@
                 <td style="color:var(--text-muted)">{{ o.item_count }}</td>
                 <td style="color:#fff;font-weight:700">₱{{ "%.2f"|format(o.total_float) }}</td>
                 <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d, %Y') }}</td>
-                <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                <td><span class="status-badge status-{{ o.status }}">{{ o.status.replace('_',' ')|title }}</span></td>
                 <td>
                   <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
                         style="display:flex;gap:0.3rem;align-items:center;">
                     <select name="status" class="form-select form-select-sm"
-                            style="width:100px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
-                      {% for s in statuses %}
-                        <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                            style="width:130px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
+                      {% for s, lbl in [('pending','Pending'),('confirmed','Confirmed'),('order_received','Order Received'),('ready_to_ship','Ready to Ship'),('shipped','Shipped'),('delivered','Delivered'),('cancelled','Cancelled')] %}
+                        <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ lbl }}</option>
                       {% endfor %}
                     </select>
                     <button type="submit" class="btn-action btn-success" title="Save">
@@ -946,7 +930,7 @@
         <div class="admin-page-sub">Placed on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
       </div>
       <span class="status-badge status-{{ order.status }}" style="font-size:0.84rem;padding:0.35rem 0.9rem;">
-        {{ order.status|upper }}
+        {{ order.status.replace('_',' ')|upper }}
       </span>
     </div>
 
@@ -984,14 +968,27 @@
           <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
             <input type="hidden" name="from" value="detail">
             <div class="d-flex flex-column gap-2">
-              {% for s in statuses %}
+              {% set all_statuses = [
+                ('pending',        '⏳', 'Pending'),
+                ('confirmed',      '✅', 'Confirmed'),
+                ('order_received', '📋', 'Order Received'),
+                ('ready_to_ship',  '📦', 'Ready to Ship'),
+                ('shipped',        '🚚', 'Shipped'),
+                ('delivered',      '🎉', 'Delivered'),
+                ('cancelled',      '❌', 'Cancelled'),
+              ] %}
+              {% for s, icon, label in all_statuses %}
                 <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;
                               padding:0.55rem 0.75rem;border-radius:8px;
                               background:{% if order.status == s %}rgba(124,92,252,0.15){% else %}transparent{% endif %};
                               border:1px solid {% if order.status == s %}rgba(124,92,252,0.4){% else %}var(--border){% endif %}">
                   <input type="radio" name="status" value="{{ s }}" {% if order.status == s %}checked{% endif %}
                          style="accent-color:var(--primary);">
-                  <span class="status-badge status-{{ s }}">{{ s }}</span>
+                  <span style="font-size:1rem;">{{ icon }}</span>
+                  <span class="status-badge status-{{ s }}">{{ label }}</span>
+                  {% if s == 'ready_to_ship' %}
+                    <span style="font-size:0.65rem;color:#8888aa;margin-left:auto;">🔒 No cancel after this</span>
+                  {% endif %}
                 </label>
               {% endfor %}
             </div>
@@ -1036,44 +1033,25 @@
 
     <div class="table-wrap">
       <div class="table-scroll">
-        <table class="admin-table" style="min-width:600px;">
+        <table class="admin-table" style="min-width:540px;">
           <thead>
             <tr>
-              <th>Customer</th><th>Role</th><th>Orders</th><th>Total Spent</th><th>Joined</th><th>Actions</th>
+              <th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Joined</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for u in users %}
               <tr>
-                <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#947dff,#cabeff);
-                                display:flex;align-items:center;justify-content:center;
-                                font-weight:800;font-size:0.85rem;color:#2b0088;flex-shrink:0;">
-                      {{ u.name[0].upper() }}
-                    </div>
-                    <div>
-                      <div style="color:#fff;font-weight:600;font-size:0.88rem;">{{ u.name }}</div>
-                      <div style="color:var(--text-muted);font-size:0.75rem;">{{ u.email }}</div>
-                    </div>
-                  </div>
-                </td>
+                <td style="color:#fff;font-weight:600">{{ u.name }}</td>
+                <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.email }}</td>
                 <td>
                   {% if u.is_admin %}
-                    <span class="status-badge" style="background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.25)">⚡ Admin</span>
+                    <span class="status-badge" style="background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.25)">Admin</span>
                   {% else %}
                     <span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2)">Customer</span>
                   {% endif %}
                 </td>
-                <td>
-                  <span style="background:rgba(0,212,170,0.1);color:#00d4aa;border:1px solid rgba(0,212,170,0.2);
-                               border-radius:20px;padding:2px 10px;font-size:0.8rem;font-weight:700;">
-                    {{ order_counts.get(u.id, 0) }} orders
-                  </span>
-                </td>
-                <td style="color:#cabeff;font-weight:700;font-size:0.88rem;">
-                  ₱{{ "%.2f"|format(u.orders|sum(attribute='total_price')/100) if u.orders else "0.00" }}
-                </td>
+                <td style="color:var(--text-muted)">{{ u.orders|length }}</td>
                 <td style="color:var(--text-muted);font-size:0.8rem">{{ u.created_at.strftime('%b %d, %Y') }}</td>
                 <td>
                   {% if u.id != current_user.id %}
