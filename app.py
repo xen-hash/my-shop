@@ -9,21 +9,15 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 
-
-# ─────────────────────────────────────────────────────────────
-# LOGGING
-# ─────────────────────────────────────────────────────────────
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+# Track whether migrations have already run this process lifetime
+_migrations_done = False
 
-# ─────────────────────────────────────────────────────────────
-# APPLICATION FACTORY
-# ─────────────────────────────────────────────────────────────
 
 def create_app():
     app = Flask(
@@ -34,36 +28,34 @@ def create_app():
 
     # ── Configuration ─────────────────────────────────────────
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL", "sqlite:///gadgethub.db"
-    )
-    # Render's Postgres URLs start with postgres:// — SQLAlchemy needs postgresql://
-    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
-        app.config["SQLALCHEMY_DATABASE_URI"] = app.config[
-            "SQLALCHEMY_DATABASE_URI"
-        ].replace("postgres://", "postgresql://", 1)
 
+    db_url = os.environ.get("DATABASE_URL", "sqlite:///gadgethub.db")
+    # Render gives postgres:// but SQLAlchemy needs postgresql://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"]  = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
+        "pool_pre_ping": False,   # avoid extra ping on every connection
+        "pool_recycle":  1800,    # recycle every 30 min instead of 5
+        "pool_size":     3,
+        "max_overflow":  2,
     }
 
-    # OAuth (optional – only needed if social login is configured)
+    # OAuth
     app.config["GOOGLE_CLIENT_ID"]       = os.environ.get("GOOGLE_CLIENT_ID", "")
     app.config["GOOGLE_CLIENT_SECRET"]   = os.environ.get("GOOGLE_CLIENT_SECRET", "")
     app.config["FACEBOOK_CLIENT_ID"]     = os.environ.get("FACEBOOK_CLIENT_ID", "")
     app.config["FACEBOOK_CLIENT_SECRET"] = os.environ.get("FACEBOOK_CLIENT_SECRET", "")
 
-    # Mail (used by email_utils)
-    app.config["MAIL_SERVER"]         = os.environ.get("MAIL_SERVER",   "smtp.gmail.com")
+    # Mail
+    app.config["MAIL_SERVER"]         = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     app.config["MAIL_PORT"]           = int(os.environ.get("MAIL_PORT", 587))
     app.config["MAIL_USE_TLS"]        = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
     app.config["MAIL_USERNAME"]       = os.environ.get("MAIL_USERNAME", "")
     app.config["MAIL_PASSWORD"]       = os.environ.get("MAIL_PASSWORD", "")
     app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
-        "MAIL_DEFAULT_SENDER",
-        app.config["MAIL_USERNAME"]
+        "MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"]
     )
 
     # ── Extensions ────────────────────────────────────────────
@@ -80,10 +72,10 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # ── Database setup + auto-migrations ──────────────────────
+    # ── DB setup + one-time migrations ────────────────────────
     with app.app_context():
         db.create_all()
-        _run_migrations(db)   # pass db so _run_migrations always has it in scope
+        _run_migrations_once(db)
 
     # ── Blueprints ────────────────────────────────────────────
     from routes.shop   import shop_bp
@@ -102,28 +94,26 @@ def create_app():
     return app
 
 
-# ─────────────────────────────────────────────────────────────
-# AUTO-MIGRATIONS
-# db is passed as argument to avoid any scope/circular issues.
-# All ALTER TABLE statements use IF NOT EXISTS — safe to re-run.
-# ─────────────────────────────────────────────────────────────
+def _run_migrations_once(db):
+    """
+    Runs ALTER TABLE migrations only once per process lifetime.
+    The global flag prevents repeated DB round-trips on every request.
+    """
+    global _migrations_done
+    if _migrations_done:
+        return
 
-def _run_migrations(db):
     try:
         with db.engine.connect() as conn:
-            # Migration 1: add cancel_reason to orders
-            conn.execute(db.text("""
-                ALTER TABLE orders
-                ADD COLUMN IF NOT EXISTS cancel_reason TEXT
-            """))
-
-            # Migration 2: add is_deleted for soft deletes
-            conn.execute(db.text("""
-                ALTER TABLE orders
-                ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL
-            """))
-
+            conn.execute(db.text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL"
+            ))
             conn.commit()
-            logger.info("✅  Migrations: cancel_reason + is_deleted columns ready.")
+        logger.info("✅  Migrations done.")
     except Exception as e:
         logger.warning(f"⚠️  Migration warning (non-fatal): {e}")
+    finally:
+        _migrations_done = True   # never run again this process
