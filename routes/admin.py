@@ -18,6 +18,9 @@ import json
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
+# Statuses that are permanently locked — no further changes allowed
+TERMINAL_STATUSES = ["paid", "cancelled", "failed_to_deliver"]
+
 
 # ── Admin-only decorator ──────────────────────────────────────
 def admin_required(f):
@@ -338,6 +341,17 @@ def update_order_status(order_id):
     order = db.session.get(Order, order_id)
     if not order:
         flash("Order not found.", "danger")
+        return redirect(url_for("admin.orders"))
+
+    # Block changes if order is already in a terminal state
+    if order.status in TERMINAL_STATUSES:
+        flash(
+            f"\u26d4 Order #{order_id:04d} is already '{order.status.replace('_', ' ').title()}' "
+            f"and cannot be changed.",
+            "danger"
+        )
+        if request.form.get("from") == "detail":
+            return redirect(url_for("admin.order_detail", order_id=order_id))
         return redirect(url_for("admin.orders"))
 
     new_status = request.form.get("status")
