@@ -3,6 +3,9 @@ routes/orders.py – GadgetHub PH
 =================================
 Orders blueprint: checkout, order history, order detail,
 cancel order, review submission.
+
+ADDED: /api/orders/poll – lightweight JSON endpoint used by the
+       admin panel for near-real-time order updates (every ~1 s).
 """
 
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
@@ -57,7 +60,6 @@ def place_order():
     if not cart_items:
         return jsonify({"success": False, "message": "Your cart is empty."}), 400
 
-    # Only place order for in-stock items
     valid_items = [item for item in cart_items if item.product.stock > 0]
     if not valid_items:
         return jsonify({"success": False, "message": "All items in your cart are out of stock."}), 400
@@ -86,7 +88,6 @@ def place_order():
     CartItem.query.filter_by(user_id=current_user.id).delete()
     db.session.commit()
 
-    # Send confirmation email
     try:
         from email_utils import send_order_confirmation
         final_items = OrderItem.query.filter_by(order_id=order.id).all()
@@ -118,7 +119,6 @@ def cancel_order(order_id):
         user_id = current_user.id
     ).first_or_404()
 
-    # Check if cancellable
     if order.status not in CANCELLABLE_STATUSES:
         return jsonify({
             "success": False,
@@ -131,16 +131,13 @@ def cancel_order(order_id):
     if not reason:
         return jsonify({"success": False, "message": "Please provide a reason for cancellation."}), 400
 
-    # Restore stock
     for item in order.items:
         item.product.stock += item.quantity
 
-    old_status    = order.status
-    order.status  = "cancelled"
+    order.status        = "cancelled"
     order.cancel_reason = reason
     db.session.commit()
 
-    # Send cancellation email
     try:
         from email_utils import send_order_cancellation
         send_order_cancellation(

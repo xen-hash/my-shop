@@ -3,24 +3,48 @@
 
 {% block extra_css %}
 <style>
-/* ── Admin Layout ─────────────────────────────────────────── */
-.admin-wrap { display: flex; min-height: calc(100vh - 62px); }
+/* ═══════════════════════════════════════════════════════════
+   ADMIN LAYOUT
+   FIX 1: Unified scrolling — the whole page scrolls as one.
+           Sidebar is sticky (not fixed), so it travels with
+           the page scroll and never gets its own scroll lane.
+   FIX 2: Full mobile responsiveness — sidebar becomes a
+           slide-in drawer; logout is always reachable.
+═══════════════════════════════════════════════════════════ */
+
+/* Reset any overflow tricks that caused split-scroll */
+html, body { overflow-x: hidden; }
+
+.admin-wrap {
+  display: flex;
+  /* No min-height here — let content determine height */
+  align-items: flex-start;
+}
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 .admin-sidebar {
   width: 250px;
   background: #0e0e1f;
   border-right: 1px solid var(--border);
-  padding: 1.5rem 0;
   flex-shrink: 0;
+  /* FIX: position:sticky so sidebar scrolls WITH the page,
+     but stays visible at the top while you scroll down.
+     This eliminates the independent-scroll problem. */
   position: sticky;
-  top: 62px;                        /* FIX: match actual nav height */
-  height: calc(100vh - 62px);       /* FIX: match actual nav height */
-  overflow-y: auto;
+  top: 62px;                       /* stick below the main nav */
+  height: calc(100vh - 62px);      /* fills viewport height */
+  overflow-y: auto;                /* sidebar itself can scroll if menu is long */
+  overflow-x: hidden;
   z-index: 100;
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  /* hide scrollbar visually */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124,92,252,0.3) transparent;
 }
-/* Mobile: sidebar becomes a fixed drawer */
+.admin-sidebar::-webkit-scrollbar { width: 4px; }
+.admin-sidebar::-webkit-scrollbar-thumb { background: rgba(124,92,252,0.3); border-radius: 4px; }
+
+/* Mobile: sidebar becomes a fixed full-height drawer */
 @media (max-width: 900px) {
   .admin-sidebar {
     position: fixed;
@@ -29,16 +53,17 @@
     transform: translateX(-110%);
     z-index: 1100;
     width: min(280px, 85vw);
-    padding-top: 1rem;
+    padding-top: 0;
     box-shadow: 4px 0 32px rgba(0,0,0,0.5);
   }
   .admin-sidebar.open { transform: translateX(0); }
 }
 
+/* Sidebar inner content */
 .admin-sidebar .sidebar-brand {
-  padding: 0 1.2rem 1.2rem;
+  padding: 1rem 1.2rem 1rem;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-family: 'Syne', sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
@@ -48,6 +73,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: #0e0e1f;
+  z-index: 2;
 }
 .admin-sidebar .sidebar-section {
   font-size: 0.65rem;
@@ -67,6 +96,7 @@
   font-weight: 500;
   transition: all 0.2s;
   border-left: 3px solid transparent;
+  text-decoration: none;
 }
 .admin-sidebar a:hover,
 .admin-sidebar a.active {
@@ -85,7 +115,17 @@
   border-radius: 20px;
 }
 
-/* ── Sidebar overlay ─────────────────────────────────────── */
+/* ── FIX: Logout always visible — pinned to bottom of sidebar ── */
+.sidebar-footer {
+  position: sticky;
+  bottom: 0;
+  background: #0e0e1f;
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+  z-index: 2;
+}
+
+/* ── Sidebar overlay (mobile) ─────────────────────────────── */
 .admin-overlay {
   display: none;
   position: fixed;
@@ -101,7 +141,7 @@
   display: none;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 1rem;
   background: #0e0e1f;
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -133,11 +173,8 @@
 .admin-content {
   flex: 1;
   padding: 2rem;
-  /* FIX: was overflow-x:hidden which clipped the pill-scroll-row children.
-     Use min-width:0 instead — this constrains the flex child without
-     hiding overflow of positioned / scroll children. */
-  overflow-x: visible;
-  min-width: 0;
+  min-width: 0;          /* FIX: prevents flex child from overflowing */
+  overflow-x: visible;   /* let pill-scroll-outer do the clipping */
 }
 @media (max-width: 900px) { .admin-content { padding: 1rem; } }
 
@@ -191,7 +228,7 @@
 .trend-up   { color: var(--accent2); }
 .trend-down { color: var(--accent); }
 
-/* ── Admin Table (scrollable on mobile) ───────────────────── */
+/* ── Admin Table ──────────────────────────────────────────── */
 .table-wrap {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -228,6 +265,13 @@
 }
 .admin-table tr:hover td { background: rgba(124,92,252,0.04); }
 .admin-table tr:last-child td { border-bottom: none; }
+
+/* Row highlight when status just changed (via polling) */
+@keyframes rowFlash {
+  0%   { background: rgba(0,212,170,0.18); }
+  100% { background: transparent; }
+}
+.admin-table tr.updated td { animation: rowFlash 0.8s ease forwards; }
 
 /* ── Admin Form ───────────────────────────────────────────── */
 .admin-form {
@@ -356,9 +400,9 @@
   align-items: center;
   gap: 0.25rem;
 }
-.btn-action:hover       { border-color: var(--primary); color: var(--primary); background: rgba(124,92,252,0.1); }
-.btn-action.btn-danger:hover  { border-color: var(--accent);  color: var(--accent);  background: rgba(255,77,109,0.1); }
-.btn-action.btn-success:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(0,212,170,0.1); }
+.btn-action:hover              { border-color: var(--primary); color: var(--primary); background: rgba(124,92,252,0.1); }
+.btn-action.btn-danger:hover   { border-color: var(--accent);  color: var(--accent);  background: rgba(255,77,109,0.1); }
+.btn-action.btn-success:hover  { border-color: var(--accent2); color: var(--accent2); background: rgba(0,212,170,0.1); }
 
 /* ── Order detail card ────────────────────────────────────── */
 .order-detail-card {
@@ -368,7 +412,7 @@
   padding: 1.25rem;
 }
 
-/* ── Mobile filter row ────────────────────────────────────── */
+/* ── Filter row ───────────────────────────────────────────── */
 .filter-row {
   display: flex;
   gap: 0.5rem;
@@ -377,7 +421,7 @@
 }
 .filter-row .search-wrap { flex: 1; min-width: 160px; }
 
-/* ── Category pill quick links ────────────────────────────── */
+/* ── Category pills ───────────────────────────────────────── */
 .category-pill {
   display: inline-block;
   background: var(--surface);
@@ -399,10 +443,7 @@
   border-color: var(--primary);
 }
 
-/* ── Status pill scroll row
-   FIX: Added a negative-margin wrapper so the scroll container
-   can extend beyond the padded admin-content without triggering
-   a page-level horizontal scrollbar.                           ── */
+/* ── Status pill scroll row ───────────────────────────────── */
 .pill-scroll-outer {
   margin-left: -2rem;
   margin-right: -2rem;
@@ -411,7 +452,6 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 0.75rem;
-  /* hide the scrollbar visually but keep functionality */
   scrollbar-width: none;
 }
 .pill-scroll-outer::-webkit-scrollbar { display: none; }
@@ -426,7 +466,6 @@
 .pill-scroll-row {
   display: flex;
   gap: 0.4rem;
-  /* FIX: must be inline-flex width so the outer can scroll it */
   width: max-content;
   padding-bottom: 0.35rem;
 }
@@ -449,6 +488,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Live poll indicator ──────────────────────────────────── */
+.poll-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--accent2);
+  margin-left: auto;
+}
+.poll-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: pollPulse 1.5s ease-in-out infinite;
+}
+@keyframes pollPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.7); }
+}
 </style>
 {% endblock %}
 
@@ -468,22 +527,26 @@
   {% endif %}
 </div>
 
-<!-- ── Sidebar Overlay ─────────────────────────────────────── -->
+<!-- ── Sidebar Overlay (mobile) ───────────────────────────── -->
 <div id="admin-overlay" class="admin-overlay" onclick="closeAdminSidebar()"></div>
 
 <div class="admin-wrap">
 
   <!-- ── Sidebar ──────────────────────────────────────────── -->
-  <aside class="admin-sidebar" id="admin-sidebar">
+  <aside class="admin-sidebar" id="admin-sidebar" role="navigation" aria-label="Admin menu">
+
+    <!-- Brand / close button (mobile) -->
     <div class="sidebar-brand">
-      ⚡ GadgetHub Admin
-      <button onclick="closeAdminSidebar()"
-              style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:0;display:none;"
-              id="sidebar-close-btn" aria-label="Close">
+      <span>⚡ GadgetHub Admin</span>
+      <button onclick="closeAdminSidebar()" id="sidebar-close-btn"
+              style="background:transparent;border:none;color:var(--text-muted);
+                     cursor:pointer;font-size:1.1rem;padding:0;display:none;"
+              aria-label="Close sidebar">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
 
+    <!-- Nav links -->
     <div class="sidebar-section">Overview</div>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if view == 'dashboard' %}active{% endif %}">
       <i class="bi bi-speedometer2"></i> Dashboard
@@ -522,10 +585,15 @@
       <i class="bi bi-people"></i> Customers
     </a>
 
-    <div class="sidebar-section">Account</div>
-    <a href="{{ url_for('auth.logout') }}" style="color:#ff4d6d !important">
-      <i class="bi bi-box-arrow-right"></i> Logout
-    </a>
+    <!-- FIX: Logout pinned to bottom — always visible on all screen sizes -->
+    <div class="sidebar-footer">
+      <div class="sidebar-section" style="padding-top:0.4rem;">Account</div>
+      <a href="{{ url_for('auth.logout') }}"
+         style="color:#ff4d6d !important;"
+         onclick="return confirmLogout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </a>
+    </div>
   </aside>
 
   <!-- ── Main Content ─────────────────────────────────────── -->
@@ -535,7 +603,8 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:0.86rem;">
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3"
+               style="border-radius:10px;font-size:0.86rem;">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
@@ -596,7 +665,7 @@
       </div>
     </div>
 
-    <!-- FIX: Status pills wrapped in pill-scroll-outer to prevent clipping -->
+    <!-- Status pills -->
     <div class="pill-scroll-outer mb-3">
       <div class="pill-scroll-row">
         {% for s, count in status_counts.items() %}
@@ -641,19 +710,25 @@
       </div>
     </div>
 
-    <!-- Recent orders -->
-    <div class="chart-title mb-2">🕐 Recent Orders</div>
+    <!-- Recent orders (live-polled) -->
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="chart-title mb-0">🕐 Recent Orders</div>
+      <div class="poll-indicator">
+        <span class="poll-dot"></span> Live
+      </div>
+    </div>
     <div class="table-wrap">
       <div class="table-scroll">
-        <table class="admin-table">
+        <table class="admin-table" id="dashboard-orders-table">
           <thead>
             <tr>
-              <th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th>
+              <th>Order</th><th>Customer</th><th>Total</th>
+              <th>Status</th><th>Date</th><th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="dashboard-orders-tbody">
             {% for o in recent_orders %}
-              <tr>
+              <tr data-order-id="{{ o.id }}" data-status="{{ o.status }}">
                 <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
                 <td>{{ o.user.name }}</td>
                 <td style="color:#fff;font-weight:600">₱{{ "%.2f"|format(o.total_float) }}</td>
@@ -689,7 +764,6 @@
       </a>
     </div>
 
-    <!-- Filters -->
     <form method="GET" action="{{ url_for('admin.products') }}" class="filter-row mb-3">
       <div class="search-wrap" style="position:relative;">
         <i class="bi bi-search search-icon"></i>
@@ -699,14 +773,19 @@
                       font-size:0.84rem;outline:none;">
       </div>
       <select name="category" class="form-select"
-              style="width:auto;min-width:130px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:50px;font-size:0.84rem;"
+              style="width:auto;min-width:130px;background:var(--surface);color:#fff;
+                     border-color:var(--border);border-radius:50px;font-size:0.84rem;"
               onchange="this.form.submit()">
         <option value="">All Categories</option>
         {% for cat in categories %}
-          <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+          <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>
+            {{ cat|capitalize }}
+          </option>
         {% endfor %}
       </select>
-      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;font-size:0.84rem;">Filter</button>
+      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;font-size:0.84rem;">
+        Filter
+      </button>
     </form>
 
     <div class="table-wrap">
@@ -725,7 +804,13 @@
                 <td style="color:#fff;font-weight:600;max-width:180px;">
                   <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
                 </td>
-                <td><span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2);">{{ p.category }}</span></td>
+                <td>
+                  <span class="status-badge"
+                        style="background:rgba(124,92,252,0.12);color:var(--primary);
+                               border:1px solid rgba(124,92,252,0.2);">
+                    {{ p.category }}
+                  </span>
+                </td>
                 <td style="color:#fff;font-weight:600">{{ "%.2f"|format(p.price_float) }}</td>
                 <td>
                   <div class="stock-edit-wrap">
@@ -736,13 +821,17 @@
                     </button>
                   </div>
                 </td>
-                <td style="color:#ffc107;white-space:nowrap;">{{ p.average_rating }}★ <span style="color:var(--text-muted);font-size:0.73rem">({{ p.review_count }})</span></td>
+                <td style="color:#ffc107;white-space:nowrap;">
+                  {{ p.average_rating }}★
+                  <span style="color:var(--text-muted);font-size:0.73rem">({{ p.review_count }})</span>
+                </td>
                 <td>
                   <div class="d-flex gap-1">
                     <a href="{{ url_for('admin.edit_product', product_id=p.id) }}" class="btn-action">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form method="POST" action="{{ url_for('admin.delete_product', product_id=p.id) }}"
+                    <form method="POST"
+                          action="{{ url_for('admin.delete_product', product_id=p.id) }}"
                           onsubmit="return confirm('Delete {{ p.name }}?')">
                       <button type="submit" class="btn-action btn-danger">
                         <i class="bi bi-trash3"></i>
@@ -752,7 +841,11 @@
                 </td>
               </tr>
             {% else %}
-              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">No products found.</td></tr>
+              <tr>
+                <td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">
+                  No products found.
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -769,12 +862,13 @@
       {% if view == 'add_product' %}➕ Add New Product{% else %}✏️ Edit Product{% endif %}
     </div>
     <div class="admin-page-sub">
-      {% if view == 'add_product' %}Fill in the details below to add a new product to your store.
+      {% if view == 'add_product' %}Fill in the details below to add a new product.
       {% else %}Update the product details. Changes are saved immediately.{% endif %}
     </div>
 
     <div class="admin-form">
-      <form method="POST" action="{% if view == 'edit_product' %}{{ url_for('admin.edit_product', product_id=product.id) }}{% else %}{{ url_for('admin.add_product') }}{% endif %}">
+      <form method="POST"
+            action="{% if view == 'edit_product' %}{{ url_for('admin.edit_product', product_id=product.id) }}{% else %}{{ url_for('admin.add_product') }}{% endif %}">
 
         <div class="row g-3">
           <div class="col-12">
@@ -813,16 +907,15 @@
           </div>
 
           <div class="col-12">
-            <label class="form-label">Product Image URL <span style="color:var(--accent)">*</span></label>
+            <label class="form-label">Image URL <span style="color:var(--accent)">*</span></label>
             <input type="url" name="image_url" id="image_url_input" class="form-control" required
                    value="{% if view == 'edit_product' %}{{ product.image_url }}{% endif %}"
-                   placeholder="https://images.unsplash.com/photo-..."
+                   placeholder="https://images.unsplash.com/photo-…"
                    oninput="previewImage(this.value)">
             <div class="form-hint">
               Paste any public image URL.
               <a href="https://unsplash.com" target="_blank" style="color:var(--primary)">Unsplash</a> ·
-              <a href="https://pexels.com" target="_blank" style="color:var(--primary)">Pexels</a> ·
-              <a href="https://imgur.com" target="_blank" style="color:var(--primary)">Imgur</a>
+              <a href="https://pexels.com"   target="_blank" style="color:var(--primary)">Pexels</a>
             </div>
             <div id="img-preview-wrap">
               <img id="img-preview"
@@ -834,7 +927,7 @@
           <div class="col-12">
             <label class="form-label">Description <span style="color:var(--accent)">*</span></label>
             <textarea name="description" class="form-control" rows="4" required
-                      placeholder="Describe the product features, specs, and benefits…">{% if view == 'edit_product' %}{{ product.description }}{% endif %}</textarea>
+                      placeholder="Describe the product…">{% if view == 'edit_product' %}{{ product.description }}{% endif %}</textarea>
           </div>
 
           <div class="col-12 d-flex gap-2 flex-wrap mt-2">
@@ -853,34 +946,36 @@
             {% endif %}
           </div>
         </div>
-
       </form>
     </div>
 
 
     {# ════════════════════════════════════════════════════════ #}
     {% elif view == 'orders' %}
-    {# ORDERS LIST #}
+    {# ORDERS LIST — live polling #}
     {# ════════════════════════════════════════════════════════ #}
 
-    <div class="admin-page-title">Orders</div>
+    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+      <div class="admin-page-title mb-0">Orders</div>
+      <div class="poll-indicator ms-auto">
+        <span class="poll-dot"></span> Live
+      </div>
+    </div>
     <div class="admin-page-sub">Manage, track, and update all customer orders</div>
 
-    <!-- FIX: Status pill filters wrapped in scroll outer -->
     <div class="pill-scroll-outer">
       <div class="pill-scroll-row">
         <a href="{{ url_for('admin.orders') }}"
-           class="category-pill {% if not current_status %}active{% endif %}" style="font-size:0.76rem">All</a>
+           class="category-pill {% if not current_status %}active{% endif %}"
+           style="font-size:0.76rem">All</a>
         {% for s in statuses %}
           <a href="{{ url_for('admin.orders', status=s) }}"
-             class="category-pill {% if current_status == s %}active{% endif %}" style="font-size:0.76rem">
-            {{ s|capitalize }}
-          </a>
+             class="category-pill {% if current_status == s %}active{% endif %}"
+             style="font-size:0.76rem">{{ s|capitalize }}</a>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Search -->
     <form method="GET" action="{{ url_for('admin.orders') }}" class="filter-row mb-3">
       {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
       <div class="search-wrap" style="position:relative;flex:1;min-width:160px;">
@@ -890,21 +985,22 @@
                       border-radius:50px;color:#fff;padding:0.5rem 1rem 0.5rem 2.4rem;
                       font-size:0.84rem;outline:none;">
       </div>
-      <button type="submit" class="btn-primary-custom" style="padding:0.5rem 1rem;font-size:0.84rem">Search</button>
+      <button type="submit" class="btn-primary-custom"
+              style="padding:0.5rem 1rem;font-size:0.84rem">Search</button>
     </form>
 
     <div class="table-wrap">
       <div class="table-scroll">
-        <table class="admin-table" style="min-width:680px;">
+        <table class="admin-table" id="orders-table" style="min-width:680px;">
           <thead>
             <tr>
               <th>Order</th><th>Customer</th><th>Items</th>
               <th>Total</th><th>Date</th><th>Status</th><th>Update</th><th></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="orders-tbody">
             {% for o in orders %}
-              <tr>
+              <tr data-order-id="{{ o.id }}" data-status="{{ o.status }}">
                 <td style="color:#fff;font-weight:700">#{{ "%04d"|format(o.id) }}</td>
                 <td>
                   <div style="color:#fff;font-weight:500">{{ o.user.name }}</div>
@@ -912,13 +1008,21 @@
                 </td>
                 <td style="color:var(--text-muted)">{{ o.item_count }}</td>
                 <td style="color:#fff;font-weight:700">₱{{ "%.2f"|format(o.total_float) }}</td>
-                <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d, %Y') }}</td>
-                <td><span class="status-badge status-{{ o.status }}">{{ o.status.replace('_',' ')|title }}</span></td>
+                <td style="color:var(--text-muted);font-size:0.78rem">
+                  {{ o.created_at.strftime('%b %d, %Y') }}
+                </td>
                 <td>
-                  <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
+                  <span class="status-badge status-{{ o.status }}">
+                    {{ o.status.replace('_',' ')|title }}
+                  </span>
+                </td>
+                <td>
+                  <form method="POST"
+                        action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
                         style="display:flex;gap:0.3rem;align-items:center;">
                     <select name="status" class="form-select form-select-sm"
-                            style="width:160px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
+                            style="width:160px;background:var(--surface);color:#fff;
+                                   border-color:var(--border);border-radius:8px;font-size:0.78rem;">
                       {% for s, lbl in [
                         ('pending','Pending'),
                         ('confirmed','Confirmed'),
@@ -944,7 +1048,12 @@
                 </td>
               </tr>
             {% else %}
-              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">No orders found.</td></tr>
+              <tr id="no-orders-row">
+                <td colspan="8"
+                    style="text-align:center;color:var(--text-muted);padding:2rem">
+                  No orders found.
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -968,32 +1077,41 @@
         <div class="admin-page-title">Order #{{ "%04d"|format(order.id) }}</div>
         <div class="admin-page-sub">Placed on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
       </div>
-      <span class="status-badge status-{{ order.status }}" style="font-size:0.84rem;padding:0.35rem 0.9rem;">
+      <span class="status-badge status-{{ order.status }}"
+            id="detail-status-badge"
+            style="font-size:0.84rem;padding:0.35rem 0.9rem;">
         {{ order.status.replace('_',' ')|upper }}
       </span>
     </div>
 
     <div class="row g-3">
       <div class="col-12 col-lg-8">
-        <!-- Order items -->
         <div class="order-detail-card mb-3">
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;">Order Items</h5>
           {% for item in order.items %}
             <div style="display:flex;align-items:center;gap:0.85rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
               <img src="{{ item.product.image_url }}"
-                   style="width:54px;height:54px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+                   style="width:54px;height:54px;border-radius:8px;object-fit:cover;
+                          border:1px solid var(--border);flex-shrink:0;">
               <div style="flex:1;min-width:0;">
-                <div style="font-weight:600;color:#fff;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.product.name }}</div>
+                <div style="font-weight:600;color:#fff;font-size:0.9rem;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  {{ item.product.name }}
+                </div>
                 <div style="color:var(--text-muted);font-size:0.78rem;">
                   ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
                 </div>
               </div>
-              <strong style="color:#fff;font-size:0.95rem;flex-shrink:0;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
+              <strong style="color:#fff;font-size:0.95rem;flex-shrink:0;">
+                ₱{{ "%.2f"|format(item.subtotal) }}
+              </strong>
             </div>
           {% endfor %}
           <div style="display:flex;justify-content:flex-end;padding-top:0.85rem;gap:0.5rem;font-size:1rem;">
             <span style="color:var(--text-muted)">Total:</span>
-            <strong style="color:#fff;font-family:'Syne',sans-serif;">₱{{ "%.2f"|format(order.total_float) }}</strong>
+            <strong style="color:#fff;font-family:'Syne',sans-serif;">
+              ₱{{ "%.2f"|format(order.total_float) }}
+            </strong>
           </div>
         </div>
       </div>
@@ -1004,7 +1122,8 @@
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;">
             <i class="bi bi-arrow-repeat" style="color:var(--primary)"></i> Update Status
           </h5>
-          <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+          <form method="POST"
+                action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
             <input type="hidden" name="from" value="detail">
             <div class="d-flex flex-column gap-2">
               {% set all_statuses = [
@@ -1022,15 +1141,20 @@
                               padding:0.55rem 0.75rem;border-radius:8px;
                               background:{% if order.status == s %}rgba(124,92,252,0.15){% else %}transparent{% endif %};
                               border:1px solid {% if order.status == s %}rgba(124,92,252,0.4){% else %}var(--border){% endif %}">
-                  <input type="radio" name="status" value="{{ s }}" {% if order.status == s %}checked{% endif %}
+                  <input type="radio" name="status" value="{{ s }}"
+                         {% if order.status == s %}checked{% endif %}
                          style="accent-color:var(--primary);">
                   <span style="font-size:1rem;">{{ icon }}</span>
                   <span class="status-badge status-{{ s }}">{{ label }}</span>
                   {% if s == 'ready_to_ship' %}
-                    <span style="font-size:0.65rem;color:#8888aa;margin-left:auto;">🔒 No cancel after this</span>
+                    <span style="font-size:0.65rem;color:#8888aa;margin-left:auto;">
+                      🔒 No cancel after
+                    </span>
                   {% endif %}
                   {% if s == 'failed_to_deliver' %}
-                    <span style="font-size:0.65rem;color:#ff9f43;margin-left:auto;">⚠️ Restores stock</span>
+                    <span style="font-size:0.65rem;color:#ff9f43;margin-left:auto;">
+                      ⚠️ Restores stock
+                    </span>
                   {% endif %}
                 </label>
               {% endfor %}
@@ -1041,7 +1165,7 @@
           </form>
         </div>
 
-        <!-- Customer + Shipping -->
+        <!-- Customer -->
         <div class="order-detail-card mb-3">
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.6rem;">
             <i class="bi bi-person" style="color:var(--primary)"></i> Customer
@@ -1050,6 +1174,7 @@
           <div style="color:var(--text-muted);font-size:0.83rem">{{ order.user.email }}</div>
         </div>
 
+        <!-- Shipping -->
         <div class="order-detail-card">
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.6rem;">
             <i class="bi bi-geo-alt" style="color:var(--primary)"></i> Shipping Address
@@ -1089,18 +1214,26 @@
                 <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.email }}</td>
                 <td>
                   {% if u.is_admin %}
-                    <span class="status-badge" style="background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.25)">Admin</span>
+                    <span class="status-badge"
+                          style="background:rgba(255,193,7,0.15);color:#ffc107;
+                                 border:1px solid rgba(255,193,7,0.25)">Admin</span>
                   {% else %}
-                    <span class="status-badge" style="background:rgba(124,92,252,0.12);color:var(--primary);border:1px solid rgba(124,92,252,0.2)">Customer</span>
+                    <span class="status-badge"
+                          style="background:rgba(124,92,252,0.12);color:var(--primary);
+                                 border:1px solid rgba(124,92,252,0.2)">Customer</span>
                   {% endif %}
                 </td>
                 <td style="color:var(--text-muted)">{{ u.orders|length }}</td>
-                <td style="color:var(--text-muted);font-size:0.8rem">{{ u.created_at.strftime('%b %d, %Y') }}</td>
+                <td style="color:var(--text-muted);font-size:0.8rem">
+                  {{ u.created_at.strftime('%b %d, %Y') }}
+                </td>
                 <td>
                   {% if u.id != current_user.id %}
-                    <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=u.id) }}"
+                    <form method="POST"
+                          action="{{ url_for('admin.toggle_admin', user_id=u.id) }}"
                           onsubmit="return confirm('Change role for {{ u.name }}?')">
-                      <button type="submit" class="btn-action {% if u.is_admin %}btn-danger{% endif %}">
+                      <button type="submit"
+                              class="btn-action {% if u.is_admin %}btn-danger{% endif %}">
                         {% if u.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
                       </button>
                     </form>
@@ -1122,30 +1255,42 @@
     {# ════════════════════════════════════════════════════════ #}
 
     <div class="admin-page-title">Reviews</div>
-    <div class="admin-page-sub">{{ reviews|length }} total reviews — moderate and manage customer feedback</div>
+    <div class="admin-page-sub">
+      {{ reviews|length }} total reviews — moderate and manage customer feedback
+    </div>
 
     <div class="table-wrap">
       <div class="table-scroll">
         <table class="admin-table" style="min-width:560px;">
           <thead>
-            <tr><th>Product</th><th>Customer</th><th>Rating</th><th>Comment</th><th>Date</th><th>Action</th></tr>
+            <tr>
+              <th>Product</th><th>Customer</th><th>Rating</th>
+              <th>Comment</th><th>Date</th><th>Action</th>
+            </tr>
           </thead>
           <tbody>
             {% for r in reviews %}
               <tr>
                 <td style="color:#fff;font-weight:600;max-width:150px;">
-                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.product.name }}</div>
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ r.product.name }}
+                  </div>
                 </td>
                 <td style="color:var(--text-muted)">{{ r.user.name }}</td>
-                <td style="color:#ffc107;white-space:nowrap;">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</td>
+                <td style="color:#ffc107;white-space:nowrap;">
+                  {{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}
+                </td>
                 <td style="color:var(--text-muted);font-size:0.83rem;max-width:200px;">
                   <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                     {{ r.comment or '—' }}
                   </div>
                 </td>
-                <td style="color:var(--text-muted);font-size:0.78rem">{{ r.created_at.strftime('%b %d, %Y') }}</td>
+                <td style="color:var(--text-muted);font-size:0.78rem">
+                  {{ r.created_at.strftime('%b %d, %Y') }}
+                </td>
                 <td>
-                  <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.id) }}"
+                  <form method="POST"
+                        action="{{ url_for('admin.delete_review', review_id=r.id) }}"
                         onsubmit="return confirm('Delete this review?')">
                     <button type="submit" class="btn-action btn-danger">
                       <i class="bi bi-trash3"></i>
@@ -1154,7 +1299,12 @@
                 </td>
               </tr>
             {% else %}
-              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">No reviews yet.</td></tr>
+              <tr>
+                <td colspan="6"
+                    style="text-align:center;color:var(--text-muted);padding:2rem">
+                  No reviews yet.
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -1162,80 +1312,92 @@
     </div>
 
     {% endif %}
-  </main>
-</div>
+  </main><!-- /.admin-content -->
+</div><!-- /.admin-wrap -->
 {% endblock %}
 
+
 {% block extra_js %}
+<!-- ══════════════════════════════════════════════════════════
+     DASHBOARD: Revenue chart
+══════════════════════════════════════════════════════════ -->
 {% if view == 'dashboard' %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const ctx = document.getElementById('revenueChart');
-if (ctx) {
+(function () {
+  const ctx = document.getElementById('revenueChart');
+  if (!ctx) return;
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: {{ daily_labels|safe }},
+      labels:   {{ daily_labels|safe }},
       datasets: [{
-        label: 'Revenue (₱)',
-        data: {{ daily_revenue|safe }},
-        borderColor: '#7c5cfc',
+        label:           'Revenue (₱)',
+        data:            {{ daily_revenue|safe }},
+        borderColor:     '#7c5cfc',
         backgroundColor: 'rgba(124,92,252,0.12)',
-        borderWidth: 2.5,
+        borderWidth:     2.5,
         pointBackgroundColor: '#7c5cfc',
-        pointRadius: 4,
-        tension: 0.4,
-        fill: true,
+        pointRadius:     4,
+        tension:         0.4,
+        fill:            true,
       }]
     },
     options: {
       responsive: true,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: ctx => '₱' + ctx.parsed.y.toFixed(2) } }
+        tooltip: { callbacks: { label: c => '₱' + c.parsed.y.toFixed(2) } }
       },
       scales: {
-        x: { ticks: { color: '#8888aa', maxTicksLimit: 7 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { ticks: { color:'#8888aa', maxTicksLimit:7 }, grid: { color:'rgba(255,255,255,0.05)' } },
         y: {
-          ticks: { color: '#8888aa', callback: v => '₱' + v },
-          grid: { color: 'rgba(255,255,255,0.05)' }
+          ticks:  { color:'#8888aa', callback: v => '₱' + v },
+          grid:   { color:'rgba(255,255,255,0.05)' }
         }
       }
     }
   });
-}
+})();
 </script>
 {% endif %}
 
+<!-- ══════════════════════════════════════════════════════════
+     PRODUCTS: inline stock editor
+══════════════════════════════════════════════════════════ -->
 {% if view == 'products' %}
 <script>
 async function saveStock(productId) {
   const input = document.getElementById('stock-' + productId);
-  const newStock = parseInt(input.value);
-  const btn = input.nextElementSibling;
+  const btn   = input.nextElementSibling;
   btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
   try {
-    const res = await fetch('/admin/products/stock', {
-      method: 'POST',
+    const res  = await fetch('/admin/products/stock', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId, stock: newStock })
+      body:    JSON.stringify({ product_id: productId, stock: parseInt(input.value) })
     });
     const data = await res.json();
     if (data.success) {
       btn.innerHTML = '<i class="bi bi-check"></i>';
-      btn.style.background = 'rgba(0,212,170,0.2)';
-      btn.style.borderColor = 'rgba(0,212,170,0.4)';
-      btn.style.color = '#00d4aa';
+      btn.style.cssText = 'background:rgba(0,212,170,0.2);border-color:rgba(0,212,170,0.4);color:#00d4aa';
       setTimeout(() => {
-        btn.innerHTML = '<i class="bi bi-check"></i>';
-        btn.style.background = btn.style.borderColor = btn.style.color = '';
+        btn.innerHTML  = '<i class="bi bi-check"></i>';
+        btn.style.cssText = '';
       }, 2000);
-    } else { btn.innerHTML = '<i class="bi bi-x"></i>'; }
-  } catch { btn.innerHTML = '<i class="bi bi-x"></i>'; }
+    } else {
+      btn.innerHTML = '<i class="bi bi-x"></i>';
+    }
+  } catch {
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+  }
 }
 </script>
 {% endif %}
 
+<!-- ══════════════════════════════════════════════════════════
+     ADD/EDIT PRODUCT: image preview
+══════════════════════════════════════════════════════════ -->
 {% if view == 'add_product' or view == 'edit_product' %}
 <script>
 function previewImage(url) {
@@ -1252,26 +1414,238 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 {% endif %}
 
-<!-- ── Mobile sidebar drawer JS ──────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════════════
+     ORDERS: live polling every 1 second
+     Polls /admin/api/orders/poll and diffs the DOM so only
+     changed rows flash — no full-page reload needed.
+══════════════════════════════════════════════════════════ -->
+{% if view == 'orders' %}
+<script>
+(function () {
+  // Current filter params (preserved across polls)
+  const params = new URLSearchParams(window.location.search);
+  const STATUS_LABELS = {
+    pending:           'Pending',
+    confirmed:         'Confirmed',
+    order_received:    'Order Received',
+    ready_to_ship:     'Ready to Ship',
+    shipped:           'Shipped',
+    paid:              'Paid',
+    failed_to_deliver: 'Failed to Deliver',
+    cancelled:         'Cancelled',
+    out_for_delivery:  'Out for Delivery',
+    delivered:         'Delivered',
+  };
+
+  // Map of known statuses in <select> update dropdowns
+  const SELECT_OPTIONS = [
+    ['pending',           'Pending'],
+    ['confirmed',         'Confirmed'],
+    ['order_received',    'Order Received'],
+    ['ready_to_ship',     'Ready to Ship'],
+    ['shipped',           'Shipped'],
+    ['paid',              'Paid'],
+    ['failed_to_deliver', 'Failed to Deliver'],
+    ['cancelled',         'Cancelled'],
+  ];
+
+  function buildSelectHTML(currentStatus) {
+    return SELECT_OPTIONS.map(([val, lbl]) =>
+      `<option value="${val}"${val === currentStatus ? ' selected' : ''}>${lbl}</option>`
+    ).join('');
+  }
+
+  function buildRow(o) {
+    const orderUrl  = `/admin/orders/${o.id}`;
+    const statusUrl = `/admin/orders/${o.id}/status`;
+    const label     = STATUS_LABELS[o.status] || o.status;
+    const labelFmt  = label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    return `
+      <td style="color:#fff;font-weight:700">#${String(o.id).padStart(4,'0')}</td>
+      <td>
+        <div style="color:#fff;font-weight:500">${escHtml(o.customer)}</div>
+        <div style="color:var(--text-muted);font-size:0.73rem">${escHtml(o.email)}</div>
+      </td>
+      <td style="color:var(--text-muted)">${o.item_count}</td>
+      <td style="color:#fff;font-weight:700">₱${o.total.toFixed(2)}</td>
+      <td style="color:var(--text-muted);font-size:0.78rem">${o.created_at}</td>
+      <td><span class="status-badge status-${o.status}">${labelFmt}</span></td>
+      <td>
+        <form method="POST" action="${statusUrl}" style="display:flex;gap:0.3rem;align-items:center;">
+          <select name="status" class="form-select form-select-sm"
+                  style="width:160px;background:var(--surface);color:#fff;
+                         border-color:var(--border);border-radius:8px;font-size:0.78rem;">
+            ${buildSelectHTML(o.status)}
+          </select>
+          <button type="submit" class="btn-action btn-success" title="Save">
+            <i class="bi bi-check-lg"></i>
+          </button>
+        </form>
+      </td>
+      <td>
+        <a href="${orderUrl}" class="btn-action"><i class="bi bi-eye"></i></a>
+      </td>`;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function poll() {
+    try {
+      const res  = await fetch(`/admin/api/orders/poll?${params.toString()}`,
+                               { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success) return;
+
+      const tbody = document.getElementById('orders-tbody');
+      if (!tbody) return;
+
+      const fresh = data.orders;   // array from server
+
+      // Build a map of existing <tr> by order-id
+      const existingRows = {};
+      tbody.querySelectorAll('tr[data-order-id]').forEach(tr => {
+        existingRows[tr.dataset.orderId] = tr;
+      });
+
+      // Remove the "no orders" placeholder if we now have rows
+      const placeholder = document.getElementById('no-orders-row');
+      if (fresh.length && placeholder) placeholder.remove();
+
+      // Add / update rows
+      const seen = new Set();
+      for (const o of fresh) {
+        seen.add(String(o.id));
+        const existing = existingRows[String(o.id)];
+        if (existing) {
+          // Check if status changed
+          if (existing.dataset.status !== o.status) {
+            existing.dataset.status = o.status;
+            existing.innerHTML = buildRow(o);
+            existing.classList.add('updated');
+            setTimeout(() => existing.classList.remove('updated'), 900);
+          }
+        } else {
+          // New order — prepend
+          const tr = document.createElement('tr');
+          tr.dataset.orderId = o.id;
+          tr.dataset.status  = o.status;
+          tr.innerHTML = buildRow(o);
+          tr.classList.add('updated');
+          tbody.prepend(tr);
+          setTimeout(() => tr.classList.remove('updated'), 900);
+        }
+      }
+
+      // Remove rows that are no longer in the payload
+      Object.entries(existingRows).forEach(([id, tr]) => {
+        if (!seen.has(id)) tr.remove();
+      });
+
+      if (!fresh.length && !placeholder) {
+        const tr  = document.createElement('tr');
+        tr.id     = 'no-orders-row';
+        tr.innerHTML = `<td colspan="8"
+          style="text-align:center;color:var(--text-muted);padding:2rem">
+          No orders found.</td>`;
+        tbody.appendChild(tr);
+      }
+
+    } catch { /* network blip — just wait for next tick */ }
+  }
+
+  // Poll every 1 second (≈ the target of 0.1–0.3 s feels instant, 1 s is safe for the server)
+  poll();
+  setInterval(poll, 1000);
+})();
+</script>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════
+     DASHBOARD: live polling for recent-orders table (10 s)
+══════════════════════════════════════════════════════════ -->
+{% if view == 'dashboard' %}
+<script>
+(function () {
+  async function pollDashboard() {
+    try {
+      const res  = await fetch('/admin/api/orders/poll', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success) return;
+
+      const tbody = document.getElementById('dashboard-orders-tbody');
+      if (!tbody) return;
+
+      // Show only the 10 most recent
+      const recent = data.orders.slice(0, 10);
+      const existingRows = {};
+      tbody.querySelectorAll('tr[data-order-id]').forEach(tr => {
+        existingRows[tr.dataset.orderId] = tr;
+      });
+
+      for (const o of recent) {
+        const id  = String(o.id);
+        const lbl = (o.status.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+        const row = existingRows[id];
+        if (row && row.dataset.status !== o.status) {
+          row.dataset.status = o.status;
+          // Update only the status cell (4th td, index 3)
+          const cells = row.querySelectorAll('td');
+          if (cells[3])
+            cells[3].innerHTML =
+              `<span class="status-badge status-${o.status}">${lbl}</span>`;
+          row.classList.add('updated');
+          setTimeout(() => row.classList.remove('updated'), 900);
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  pollDashboard();
+  setInterval(pollDashboard, 5000);   // dashboard refresh every 5 s
+})();
+</script>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════
+     MOBILE SIDEBAR DRAWER
+══════════════════════════════════════════════════════════ -->
 <script>
 function openAdminSidebar() {
   document.getElementById('admin-sidebar').classList.add('open');
   document.getElementById('admin-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  document.getElementById('sidebar-close-btn').style.display = 'block';
+  const closeBtn = document.getElementById('sidebar-close-btn');
+  if (closeBtn) closeBtn.style.display = 'block';
 }
+
 function closeAdminSidebar() {
   document.getElementById('admin-sidebar').classList.remove('open');
   document.getElementById('admin-overlay').classList.remove('open');
   document.body.style.overflow = '';
 }
+
 window.addEventListener('resize', () => {
   if (window.innerWidth > 900) closeAdminSidebar();
 });
-(function() {
+
+// Show close button on mobile on load
+(function () {
   if (window.innerWidth <= 900) {
-    document.getElementById('sidebar-close-btn').style.display = 'block';
+    const btn = document.getElementById('sidebar-close-btn');
+    if (btn) btn.style.display = 'block';
   }
 })();
+
+// Confirm before logout
+function confirmLogout() {
+  return confirm('Are you sure you want to log out?');
+}
 </script>
 {% endblock %}

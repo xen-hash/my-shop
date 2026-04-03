@@ -4,6 +4,12 @@ admin.py – GadgetHub PH
 Admin blueprint: dashboard, product management, order management,
 revenue analytics, stock management, user management.
 Protected – only accessible by users with is_admin=True.
+
+ADDED: GET /admin/api/orders/poll
+       Lightweight JSON endpoint that returns the current list of orders
+       (optionally filtered by status). The admin front-end polls this
+       every second so order updates appear near-instantly without a
+       full page reload.
 """
 
 from flask import (
@@ -18,10 +24,7 @@ import json
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-# Statuses that are permanently locked — no further changes allowed
-TERMINAL_STATUSES = ["paid", "cancelled", "failed_to_deliver", "delivered"]
-
-# Statuses where an order can be soft-deleted by admin
+TERMINAL_STATUSES  = ["paid", "cancelled", "failed_to_deliver", "delivered"]
 DELETABLE_STATUSES = ["paid", "delivered"]
 
 
@@ -51,7 +54,6 @@ def dashboard():
         db.func.sum(Order.total_price)
     ).filter(Order.status != "pending").scalar() or 0
 
-    # Revenue last 7 days
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
     recent_revenue = db.session.query(
         db.func.sum(Order.total_price)
@@ -60,16 +62,14 @@ def dashboard():
         Order.status != "pending"
     ).scalar() or 0
 
-    # Orders by status
     status_counts = {}
     for s in Order.STATUSES:
         status_counts[s] = Order.query.filter_by(status=s).count()
 
-    # Daily revenue for chart (last 7 days)
     daily_revenue = []
     daily_labels  = []
     for i in range(6, -1, -1):
-        day    = datetime.utcnow() - timedelta(days=i)
+        day       = datetime.utcnow() - timedelta(days=i)
         day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
         day_end   = day_start + timedelta(days=1)
         rev = db.session.query(db.func.sum(Order.total_price)).filter(
@@ -80,8 +80,8 @@ def dashboard():
         daily_revenue.append(float(rev))
         daily_labels.append(day.strftime("%b %d"))
 
-    recent_orders = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc()).limit(10).all()
-    low_stock     = Product.query.filter(Product.stock <= 5).order_by(Product.stock.asc()).all()
+    recent_orders  = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc()).limit(10).all()
+    low_stock      = Product.query.filter(Product.stock <= 5).order_by(Product.stock.asc()).all()
     pending_orders = Order.query.filter_by(status="pending", is_deleted=False).count()
 
     return render_template(
@@ -100,6 +100,69 @@ def dashboard():
         pending_orders  = pending_orders,
         title           = "Admin Dashboard – GadgetHub PH"
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# REAL-TIME POLL ENDPOINT  (NEW)
+# GET /admin/api/orders/poll?status=&q=&after=<ISO-timestamp>
+# Returns a JSON snapshot of all non-deleted orders so the
+# browser can diff & update the table without a full reload.
+# ─────────────────────────────────────────────────────────────
+
+@admin_bp.route("/api/orders/poll")
+@login_required
+@admin_required
+def poll_orders():
+    status = request.args.get("status", "").strip()
+    search = request.args.get("q", "").strip()
+
+    query = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc())
+
+    if status and status in Order.STATUSES:
+        query = query.filter_by(status=status)
+
+    if search:
+        try:
+            oid   = int(search.lstrip("#"))
+            query = query.filter(Order.id == oid)
+        except ValueError:
+            query = query.join(User).filter(User.name.ilike(f"%{search}%"))
+
+    orders = query.all()
+
+    # Build lightweight payload – only what the table needs
+    payload = []
+    for o in orders:
+        payload.append({
+            "id":          o.id,
+            "customer":    o.user.name,
+            "email":       o.user.email,
+            "item_count":  o.item_count,
+            "total":       round(float(o.total_float), 2),
+            "status":      o.status,
+            "created_at":  o.created_at.strftime("%b %d, %Y"),
+        })
+
+    return jsonify({"success": True, "orders": payload})
+
+
+# ─────────────────────────────────────────────────────────────
+# REAL-TIME POLL: single order status  (NEW)
+# GET /admin/api/orders/<id>/status
+# ─────────────────────────────────────────────────────────────
+
+@admin_bp.route("/api/orders/<int:order_id>/status")
+@login_required
+@admin_required
+def poll_order_status(order_id):
+    order = db.session.get(Order, order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Order not found"}), 404
+    return jsonify({
+        "success": True,
+        "id":      order.id,
+        "status":  order.status,
+    })
 
 
 # ─────────────────────────────────────────────────────────────
@@ -122,12 +185,12 @@ def products():
     all_products = query.order_by(Product.created_at.desc()).all()
     return render_template(
         "admin.html",
-        view       = "products",
-        products   = all_products,
-        categories = Product.CATEGORIES,
+        view             = "products",
+        products         = all_products,
+        categories       = Product.CATEGORIES,
         current_category = category,
-        search     = search,
-        title      = "Manage Products – GadgetHub PH"
+        search           = search,
+        title            = "Manage Products – GadgetHub PH"
     )
 
 
@@ -291,9 +354,8 @@ def orders():
         query = query.filter_by(status=status)
 
     if search:
-        # Search by order ID or customer name
         try:
-            oid = int(search.lstrip("#"))
+            oid   = int(search.lstrip("#"))
             query = query.filter(Order.id == oid)
         except ValueError:
             query = query.join(User).filter(User.name.ilike(f"%{search}%"))
@@ -346,7 +408,6 @@ def update_order_status(order_id):
         flash("Order not found.", "danger")
         return redirect(url_for("admin.orders"))
 
-    # Block changes if order is already in a terminal state
     if order.status in TERMINAL_STATUSES:
         flash(
             f"⛔ Order #{order_id:04d} is already '{order.status.replace('_', ' ').title()}' "
@@ -366,18 +427,15 @@ def update_order_status(order_id):
     old_status   = order.status
     order.status = new_status
 
-    # Store a reason when admin marks failed_to_deliver so stock can be restored
     if new_status == "failed_to_deliver" and old_status != "failed_to_deliver":
         reason = request.form.get("fail_reason", "").strip()
         order.cancel_reason = reason or "Failed to deliver – marked by admin"
-        # Restore stock
         for item in order.items:
             item.product.stock += item.quantity
 
     db.session.commit()
     flash(f"✅ Order #{order_id:04d} updated to '{new_status}'.", "success")
 
-    # ── Send email notification on status change ──────────────
     if old_status != new_status:
         try:
             from email_utils import send_order_status_update
@@ -395,7 +453,6 @@ def update_order_status(order_id):
     if request.form.get("from") == "detail":
         return redirect(url_for("admin.order_detail", order_id=order_id))
     return redirect(url_for("admin.orders"))
-
 
 
 # ─────────────────────────────────────────────────────────────
@@ -419,7 +476,6 @@ def delete_order(order_id):
         )
         return redirect(url_for("admin.orders"))
 
-    # Soft delete — keeps record in DB so revenue/totals stay accurate
     order.is_deleted = True
     db.session.commit()
     flash(f"🗑️ Order #{order_id:04d} has been removed from the list.", "success")
@@ -436,7 +492,6 @@ def delete_order(order_id):
 def users():
     all_users = User.query.order_by(User.created_at.desc()).all()
 
-    # Build order count map
     from sqlalchemy import func
     order_counts = dict(
         db.session.query(Order.user_id, func.count(Order.id))
