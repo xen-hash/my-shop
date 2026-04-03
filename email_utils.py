@@ -287,3 +287,142 @@ Thank you for shopping with GadgetHub PH! 🇵🇭
         html_body  = html,
         text_body  = plain,
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# ORDER STATUS UPDATE EMAIL
+# ─────────────────────────────────────────────────────────────
+
+def send_order_status_update(user, order, new_status):
+    """Send email when admin updates order status."""
+
+    order_num = f"GH-{order.id:04d}"
+    total     = float(order.total_price) / 100
+
+    status_config = {
+        "confirmed": {
+            "emoji":   "✅",
+            "title":   "Order Confirmed!",
+            "message": "Great news! Your order has been confirmed and is being prepared.",
+            "color":   "#00d4aa",
+        },
+        "shipped": {
+            "emoji":   "🚚",
+            "title":   "Your Order is On Its Way!",
+            "message": "Your order has been shipped and is heading your way. Please prepare to receive your package.",
+            "color":   "#947dff",
+        },
+        "delivered": {
+            "emoji":   "📦",
+            "title":   "Order Delivered!",
+            "message": "Your order has been marked as delivered. We hope you love your new gadget!",
+            "color":   "#ffc107",
+        },
+        "cancelled": {
+            "emoji":   "❌",
+            "title":   "Order Cancelled",
+            "message": "Your order has been cancelled. If you have any questions please contact us.",
+            "color":   "#ff4d6d",
+        },
+    }
+
+    cfg = status_config.get(new_status, {
+        "emoji":   "📋",
+        "title":   "Order Status Updated",
+        "message": f"Your order status has been updated to: {new_status.capitalize()}.",
+        "color":   "#cabeff",
+    })
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0d0820;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0820;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0"
+             style="max-width:600px;width:100%;background:#150726;border-radius:20px;overflow:hidden;border:1px solid #2d1f44;">
+        <tr>
+          <td style="background:linear-gradient(135deg,#1a0c2b,#271938);padding:40px;text-align:center;border-bottom:1px solid #2d1f44;">
+            <div style="font-size:28px;font-weight:800;margin-bottom:20px;">
+              <span style="color:#cabeff;">Gadget</span><span style="color:#947dff;">Hub</span><span style="color:#cabeff;"> PH</span>
+            </div>
+            <div style="font-size:52px;margin-bottom:16px;">{cfg['emoji']}</div>
+            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#fff;">{cfg['title']}</h1>
+            <p style="margin:0;color:#c9c4d8;font-size:15px;">Hi <strong style="color:#cabeff;">{user.name.split()[0]}</strong>, here's an update on your order.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 40px;text-align:center;border-bottom:1px solid #2d1f44;">
+            <div style="display:inline-block;background:{cfg['color']}22;border:2px solid {cfg['color']};border-radius:50px;padding:10px 32px;margin-bottom:20px;">
+              <span style="color:{cfg['color']};font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:1.5px;">{new_status}</span>
+            </div>
+            <p style="margin:0 auto;color:#c9c4d8;font-size:14px;line-height:1.7;max-width:420px;">{cfg['message']}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px;border-bottom:1px solid #2d1f44;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:50%;padding-right:8px;">
+                  <div style="background:#1e1133;border-radius:12px;padding:16px;">
+                    <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Order Number</div>
+                    <div style="color:#cabeff;font-size:18px;font-weight:800;">#{order_num}</div>
+                  </div>
+                </td>
+                <td style="width:50%;padding-left:8px;">
+                  <div style="background:#1e1133;border-radius:12px;padding:16px;">
+                    <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Total Amount</div>
+                    <div style="color:#eedbff;font-size:16px;font-weight:800;">&#8369;{total:,.2f}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 40px;border-bottom:1px solid #2d1f44;">
+            <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Shipping Address</div>
+            <div style="color:#c9c4d8;font-size:14px;line-height:1.6;background:#1e1133;border-radius:10px;padding:14px 16px;">{order.shipping_address}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 40px;text-align:center;">
+            <a href="https://my-shop-44hu.onrender.com/orders/{order.id}"
+               style="display:inline-block;padding:14px 36px;border-radius:12px;background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;font-weight:800;font-size:15px;text-decoration:none;">
+              View My Order
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#0d0820;padding:24px 40px;text-align:center;border-top:1px solid #2d1f44;">
+            <p style="margin:0 0 8px;color:#8888aa;font-size:12px;">© 2025 GadgetHub PH · Made with ❤️ for Filipinos</p>
+            <p style="margin:0;color:#3d2e4f;font-size:11px;">You received this because you have an order with GadgetHub PH.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    plain = f"""GadgetHub PH – Order Update
+
+Hi {user.name},
+
+Your order #{order_num} status: {new_status.upper()}
+
+{cfg['message']}
+
+Order Total: &#8369;{total:,.2f}
+Shipping to: {order.shipping_address}
+
+View your order: https://my-shop-44hu.onrender.com/orders/{order.id}
+
+Thank you for shopping with GadgetHub PH!"""
+
+    send_email(
+        subject    = f"{cfg['emoji']} Order #{order_num} – {cfg['title']} | GadgetHub PH",
+        recipients = [user.email],
+        html_body  = html,
+        text_body  = plain,
+    )

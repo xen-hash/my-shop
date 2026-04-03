@@ -335,7 +335,7 @@ def order_detail(order_id):
 @login_required
 @admin_required
 def update_order_status(order_id):
-    order      = db.session.get(Order, order_id)
+    order = db.session.get(Order, order_id)
     if not order:
         flash("Order not found.", "danger")
         return redirect(url_for("admin.orders"))
@@ -346,11 +346,26 @@ def update_order_status(order_id):
         flash("Invalid status.", "danger")
         return redirect(url_for("admin.orders"))
 
+    old_status   = order.status
     order.status = new_status
     db.session.commit()
     flash(f"✅ Order #{order_id:04d} updated to '{new_status}'.", "success")
 
-    # Return to order detail if came from there
+    # ── Send email notification on status change ──────────────
+    if old_status != new_status:
+        try:
+            from email_utils import send_order_status_update
+            send_order_status_update(
+                user       = order.user,
+                order      = order,
+                new_status = new_status
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Status email failed for order #{order_id}: {e}"
+            )
+
     if request.form.get("from") == "detail":
         return redirect(url_for("admin.order_detail", order_id=order_id))
     return redirect(url_for("admin.orders"))
@@ -365,11 +380,20 @@ def update_order_status(order_id):
 @admin_required
 def users():
     all_users = User.query.order_by(User.created_at.desc()).all()
+
+    # Build order count map
+    from sqlalchemy import func
+    order_counts = dict(
+        db.session.query(Order.user_id, func.count(Order.id))
+        .group_by(Order.user_id).all()
+    )
+
     return render_template(
         "admin.html",
-        view  = "users",
-        users = all_users,
-        title = "Manage Users – GadgetHub PH"
+        view         = "users",
+        users        = all_users,
+        order_counts = order_counts,
+        title        = "Manage Users – GadgetHub PH"
     )
 
 
