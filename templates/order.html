@@ -9,11 +9,15 @@
   display: inline-flex; align-items: center; gap: 0.35rem;
   border-radius: 50px; padding: 0.3rem 0.9rem;
   font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase;
 }
-.status-pending   { background:rgba(255,193,7,0.12);  color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
-.status-paid      { background:rgba(0,212,170,0.12);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
-.status-shipped   { background:rgba(124,92,252,0.12); color:var(--primary); border:1px solid rgba(124,92,252,0.3); }
-.status-delivered { background:rgba(0,212,170,0.12);  color:var(--accent2); border:1px solid rgba(0,212,170,0.3); }
+.status-pending        { background:rgba(255,193,7,0.12);  color:#ffc107;   border:1px solid rgba(255,193,7,0.3); }
+.status-confirmed      { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
+.status-order_received { background:rgba(124,92,252,0.12); color:#947dff;   border:1px solid rgba(124,92,252,0.3); }
+.status-ready_to_ship  { background:rgba(255,159,67,0.12); color:#ff9f43;   border:1px solid rgba(255,159,67,0.3); }
+.status-shipped        { background:rgba(148,125,255,0.15);color:#cabeff;   border:1px solid rgba(148,125,255,0.3); }
+.status-delivered      { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
+.status-cancelled      { background:rgba(255,77,109,0.12); color:#ff4d6d;   border:1px solid rgba(255,77,109,0.3); }
 
 /* ── Order Card (list) ───────────────────────────────────── */
 .order-card {
@@ -37,7 +41,6 @@
   to   { opacity:1; transform: translateY(0); }
 }
 
-/* Product thumb stack */
 .order-thumb-stack { display:flex; align-items:center; }
 .order-thumb-stack img {
   width: 48px; height: 48px; border-radius: 10px;
@@ -46,6 +49,104 @@
 }
 .order-thumb-stack img:first-child { margin-left: 0; }
 .order-thumb-stack:hover img { transform: translateX(4px); }
+
+/* ── Cancel Button ───────────────────────────────────────── */
+.btn-cancel-order {
+  background: transparent;
+  border: 1.5px solid rgba(255,77,109,0.4);
+  color: #ff4d6d;
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.btn-cancel-order:hover {
+  background: rgba(255,77,109,0.1);
+  border-color: #ff4d6d;
+}
+
+/* ── Cancel Modal ────────────────────────────────────────── */
+.cancel-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s, visibility 0.25s;
+}
+.cancel-modal-overlay.open { opacity: 1; visibility: visible; }
+.cancel-modal {
+  background: #1a0c2b;
+  border: 1px solid rgba(255,77,109,0.25);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 100%;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.25s cubic-bezier(0.34,1.2,0.64,1);
+}
+.cancel-modal-overlay.open .cancel-modal { transform: translateY(0) scale(1); }
+.cancel-modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+.cancel-reason-input {
+  width: 100%;
+  background: #271938 !important;
+  border: 1.5px solid rgba(255,77,109,0.25) !important;
+  border-radius: 10px;
+  color: #fff !important;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-shadow: none !important;
+  margin-top: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.cancel-reason-input:focus { border-color: #ff4d6d !important; }
+.cancel-reason-input::placeholder { color: #8888aa; }
+.btn-confirm-cancel {
+  background: linear-gradient(135deg, #ff6b8a, #ff4d6d);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s;
+  flex: 1;
+}
+.btn-confirm-cancel:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255,77,109,0.35); }
+.btn-confirm-cancel:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-keep-order {
+  background: rgba(148,125,255,0.1);
+  color: #cabeff;
+  border: 1.5px solid rgba(148,125,255,0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s;
+  flex: 1;
+}
+.btn-keep-order:hover { background: rgba(148,125,255,0.2); }
 
 /* ── Star Rating UI ──────────────────────────────────────── */
 .star-rating { display:flex; flex-direction:row-reverse; gap:4px; }
@@ -56,12 +157,9 @@
 }
 .star-rating label:hover,
 .star-rating label:hover ~ label,
-.star-rating input:checked ~ label {
-  color: #ffc107;
-}
+.star-rating input:checked ~ label { color: #ffc107; }
 .star-rating label:hover { transform: scale(1.25); }
 
-/* ── Review Card ─────────────────────────────────────────── */
 .review-submitted {
   background: rgba(0,212,170,0.08);
   border: 1px solid rgba(0,212,170,0.2);
@@ -70,7 +168,6 @@
 }
 .review-stars { color: #ffc107; font-size: 1rem; letter-spacing: 1px; }
 
-/* ── Review Form ─────────────────────────────────────────── */
 .review-form-wrap {
   background: rgba(124,92,252,0.06);
   border: 1px solid rgba(124,92,252,0.18);
@@ -84,7 +181,6 @@
   resize: vertical; min-height: 70px; transition: border-color 0.2s;
 }
 .review-textarea:focus { outline: none; border-color: var(--primary); }
-
 .btn-review-submit {
   background: var(--primary); color: #fff;
   border: none; border-radius: 8px;
@@ -95,7 +191,6 @@
 .btn-review-submit:hover { background: #6a4ae0; transform: scale(1.03); }
 .btn-review-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* Review toast */
 .review-toast {
   position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
   background: var(--accent2); color: #0d0d1a;
@@ -106,6 +201,59 @@
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
 }
 .review-toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── Status Tracker ──────────────────────────────────────── */
+.status-tracker { display:flex; flex-direction:column; gap:0; margin-top:0.5rem; }
+.tracker-step {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.6rem 0;
+  position: relative;
+}
+.tracker-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 14px; top: 36px;
+  width: 2px; height: calc(100% - 8px);
+  background: rgba(72,69,85,0.3);
+}
+.tracker-step.done::after { background: rgba(0,212,170,0.3); }
+.tracker-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; flex-shrink: 0;
+  border: 2px solid rgba(72,69,85,0.3);
+  background: #1a0c2b;
+  transition: all 0.3s;
+}
+.tracker-step.done .tracker-dot {
+  border-color: #00d4aa;
+  background: rgba(0,212,170,0.12);
+}
+.tracker-step.current .tracker-dot {
+  border-color: #cabeff;
+  background: rgba(148,125,255,0.15);
+  box-shadow: 0 0 12px rgba(148,125,255,0.3);
+}
+.tracker-step.cancelled-step .tracker-dot {
+  border-color: #ff4d6d;
+  background: rgba(255,77,109,0.1);
+}
+.tracker-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #8888aa;
+  padding-top: 4px;
+}
+.tracker-step.done .tracker-label,
+.tracker-step.current .tracker-label { color: #fff; font-weight: 700; }
+.tracker-step.cancelled-step .tracker-label { color: #ff4d6d; font-weight: 700; }
+.tracker-current-badge {
+  font-size: 0.6rem; font-weight: 800;
+  background: rgba(148,125,255,0.2); color: #cabeff;
+  border: 1px solid rgba(148,125,255,0.3);
+  border-radius: 20px; padding: 1px 6px; margin-left: 6px;
+  vertical-align: middle;
+}
 </style>
 {% endblock %}
 
@@ -140,12 +288,38 @@
         {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}
       </p>
     </div>
-    <span class="order-status-badge status-{{ order.status }}">
-      {% if order.status == 'pending' %}⏳{% elif order.status == 'paid' %}💳
-      {% elif order.status == 'shipped' %}🚚{% elif order.status == 'delivered' %}✅{% endif %}
-      {{ order.status|upper }}
-    </span>
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+      <span class="order-status-badge status-{{ order.status }}">
+        {% if order.status == 'pending' %}⏳
+        {% elif order.status == 'confirmed' %}✅
+        {% elif order.status == 'order_received' %}📋
+        {% elif order.status == 'ready_to_ship' %}📦
+        {% elif order.status == 'shipped' %}🚚
+        {% elif order.status == 'delivered' %}🎉
+        {% elif order.status == 'cancelled' %}❌
+        {% endif %}
+        {{ order.status.replace('_',' ')|upper }}
+      </span>
+
+      {% if order.status in cancellable_statuses %}
+        <button class="btn-cancel-order" onclick="openCancelModal({{ order.id }})">
+          <i class="bi bi-x-circle"></i> Cancel Order
+        </button>
+      {% endif %}
+    </div>
   </div>
+
+  <!-- Cancelled reason banner -->
+  {% if order.status == 'cancelled' and order.cancel_reason %}
+    <div style="background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);
+                border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:.75rem;align-items:flex-start;">
+      <span style="font-size:1.2rem;flex-shrink:0;">❌</span>
+      <div>
+        <div style="color:#ff4d6d;font-weight:700;font-size:.88rem;margin-bottom:.2rem;">Order Cancelled</div>
+        <div style="color:#c9c4d8;font-size:.85rem;">Reason: {{ order.cancel_reason }}</div>
+      </div>
+    </div>
+  {% endif %}
 
   <div class="row g-4">
     <!-- Items + Review Section -->
@@ -160,54 +334,54 @@
           {% set user_review = item.product.reviews | selectattr('user_id', 'equalto', current_user.id) | list | first %}
           <div style="padding:1rem 0; border-bottom:1px solid var(--border);">
 
-            <!-- Product row -->
             <div style="display:flex; align-items:center; gap:1rem;">
               <img src="{{ item.product.image_url }}"
                    style="width:68px;height:68px;border-radius:12px;object-fit:cover;flex-shrink:0;">
               <div style="flex:1;">
                 <div style="font-weight:700; color:#fff; font-size:1rem;">{{ item.product.name }}</div>
                 <div style="color:var(--text-muted); font-size:0.82rem; margin-top:0.2rem;">
-                  ₱{{ "%.2f"|format(item.unit_price|float) }} × {{ item.quantity }}
+                  ₱{{ "%.2f"|format(item.unit_price|float / 100) }} × {{ item.quantity }}
                 </div>
               </div>
-              <strong style="color:#fff; flex-shrink:0;">₱{{ "%.2f"|format(item.subtotal) }}</strong>
+              <strong style="color:#fff; flex-shrink:0;">
+                ₱{{ "%.2f"|format(item.quantity * item.unit_price|float / 100) }}
+              </strong>
             </div>
 
-            <!-- Review Section -->
-            {% if user_review %}
-              <!-- Already reviewed -->
-              <div class="review-submitted">
-                <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">Your review</div>
-                <div class="review-stars">
-                  {% for i in range(1, 6) %}{{ '★' if i <= user_review.rating else '☆' }}{% endfor %}
+            {% if order.status == 'delivered' %}
+              {% if user_review %}
+                <div class="review-submitted">
+                  <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">Your review</div>
+                  <div class="review-stars">
+                    {% for i in range(1, 6) %}{{ '★' if i <= user_review.rating else '☆' }}{% endfor %}
+                  </div>
+                  {% if user_review.comment %}
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin:0.4rem 0 0;">
+                      {{ user_review.comment }}
+                    </p>
+                  {% endif %}
                 </div>
-                {% if user_review.comment %}
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.4rem 0 0;">
-                    {{ user_review.comment }}
-                  </p>
-                {% endif %}
-              </div>
-            {% else %}
-              <!-- Review form -->
-              <div class="review-form-wrap" id="review-wrap-{{ item.product_id }}">
-                <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
-                  ⭐ Rate this product
+              {% else %}
+                <div class="review-form-wrap" id="review-wrap-{{ item.product_id }}">
+                  <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
+                    ⭐ Rate this product
+                  </div>
+                  <div class="star-rating" id="stars-{{ item.product_id }}">
+                    {% for i in [5,4,3,2,1] %}
+                      <input type="radio" id="star{{ i }}-{{ item.product_id }}"
+                             name="rating-{{ item.product_id }}" value="{{ i }}">
+                      <label for="star{{ i }}-{{ item.product_id }}">★</label>
+                    {% endfor %}
+                  </div>
+                  <textarea class="review-textarea mt-2"
+                            id="comment-{{ item.product_id }}"
+                            placeholder="Write a comment (optional)…"></textarea>
+                  <button class="btn-review-submit mt-2"
+                          onclick="submitReview({{ order.id }}, {{ item.product_id }}, this)">
+                    Submit Review
+                  </button>
                 </div>
-                <div class="star-rating" id="stars-{{ item.product_id }}">
-                  {% for i in [5,4,3,2,1] %}
-                    <input type="radio" id="star{{ i }}-{{ item.product_id }}"
-                           name="rating-{{ item.product_id }}" value="{{ i }}">
-                    <label for="star{{ i }}-{{ item.product_id }}" title="{{ i }} star{{ 's' if i > 1 }}">★</label>
-                  {% endfor %}
-                </div>
-                <textarea class="review-textarea mt-2"
-                          id="comment-{{ item.product_id }}"
-                          placeholder="Write a comment (optional)…"></textarea>
-                <button class="btn-review-submit mt-2"
-                        onclick="submitReview({{ order.id }}, {{ item.product_id }}, this)">
-                  Submit Review
-                </button>
-              </div>
+              {% endif %}
             {% endif %}
 
           </div>
@@ -222,10 +396,11 @@
       </div>
     </div>
 
-    <!-- Shipping Info -->
+    <!-- Shipping Info + Status Tracker -->
     <div class="col-lg-4">
       <div style="background:var(--card-bg); border:1px solid var(--border);
                   border-radius:var(--radius); padding:1.5rem;">
+
         <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
           Shipping Address
         </h4>
@@ -233,38 +408,77 @@
           <strong style="color:#fff;">{{ current_user.name }}</strong><br>
           {{ order.shipping_address or 'No address provided.' }}
         </p>
+
         <hr style="border-color:var(--border);">
+
         <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">
           Payment
         </h4>
         <p style="color:var(--text-muted); font-size:0.9rem;">💵 Cash on Delivery (COD)</p>
 
         <hr style="border-color:var(--border);">
-        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">
+
+        <h4 style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:1rem;">
           Order Status
         </h4>
-        <!-- Progress tracker -->
-        <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.5rem;">
-          {% for s, icon in [('pending','⏳'),('paid','💳'),('shipped','🚚'),('delivered','✅')] %}
-            {% set active = order.status == s %}
-            {% set done_statuses = ['pending','paid','shipped','delivered'] %}
-            {% set is_done = done_statuses.index(order.status) >= done_statuses.index(s) %}
-            <div style="display:flex; align-items:center; gap:0.6rem; opacity:{{ '1' if is_done else '0.35' }};">
-              <span style="font-size:1rem;">{{ icon }}</span>
-              <span style="font-size:0.85rem; font-weight:{{ '700' if active else '400' }};
-                           color:{{ 'var(--accent2)' if active else '#fff' }};">
-                {{ s|capitalize }}
-              </span>
-              {% if active %}
-                <span style="background:rgba(0,212,170,0.15); color:var(--accent2);
-                             font-size:0.65rem; font-weight:700; padding:0.1rem 0.5rem;
-                             border-radius:20px; border:1px solid rgba(0,212,170,0.3);">
-                  CURRENT
-                </span>
-              {% endif %}
+
+        {% if order.status == 'cancelled' %}
+          <div style="background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);
+                      border-radius:10px;padding:1rem;text-align:center;">
+            <div style="font-size:2rem;margin-bottom:.5rem;">❌</div>
+            <div style="color:#ff4d6d;font-weight:800;font-size:.9rem;">Order Cancelled</div>
+            {% if order.cancel_reason %}
+              <div style="color:#8888aa;font-size:.78rem;margin-top:.4rem;">"{{ order.cancel_reason }}"</div>
+            {% endif %}
+          </div>
+        {% else %}
+          {% set all_statuses = [
+            ('pending',        '⏳', 'Order Placed'),
+            ('confirmed',      '✅', 'Confirmed'),
+            ('order_received', '📋', 'Order Received'),
+            ('ready_to_ship',  '📦', 'Ready to Ship'),
+            ('shipped',        '🚚', 'Shipped'),
+            ('delivered',      '🎉', 'Delivered'),
+          ] %}
+          {% set status_order = ['pending','confirmed','order_received','ready_to_ship','shipped','delivered'] %}
+          {% set current_idx = status_order.index(order.status) if order.status in status_order else 0 %}
+
+          <div class="status-tracker">
+            {% for s, icon, label in all_statuses %}
+              {% set s_idx = status_order.index(s) %}
+              {% set is_done = s_idx < current_idx %}
+              {% set is_current = s == order.status %}
+              <div class="tracker-step {{ 'done' if is_done else '' }} {{ 'current' if is_current else '' }}">
+                <div class="tracker-dot">{{ icon }}</div>
+                <div class="tracker-label">
+                  {{ label }}
+                  {% if is_current %}<span class="tracker-current-badge">NOW</span>{% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if order.status in ['pending', 'confirmed'] %}
+            <div style="margin-top:1rem;background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);
+                        border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#ffc107;">
+              <i class="bi bi-info-circle"></i>
+              You can still cancel this order before it is ready to ship.
             </div>
-          {% endfor %}
-        </div>
+          {% elif order.status == 'order_received' %}
+            <div style="margin-top:1rem;background:rgba(148,125,255,0.08);border:1px solid rgba(148,125,255,0.2);
+                        border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#cabeff;">
+              <i class="bi bi-info-circle"></i>
+              Your order has been received. Cancellation may still be possible.
+            </div>
+          {% elif order.status == 'ready_to_ship' %}
+            <div style="margin-top:1rem;background:rgba(255,159,67,0.08);border:1px solid rgba(255,159,67,0.2);
+                        border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#ff9f43;">
+              <i class="bi bi-lock-fill"></i>
+              Order is being packed. Cancellation is no longer available.
+            </div>
+          {% endif %}
+        {% endif %}
+
       </div>
     </div>
   </div>
@@ -283,11 +497,11 @@
       {% for o in orders %}
         <div class="order-card" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
 
-          <!-- Product thumbnails + name -->
           <div style="display:flex; align-items:center; gap:1rem; flex:1; min-width:0;">
             <div class="order-thumb-stack">
               {% for item in o.items[:3] %}
-                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"
+                     {% if o.status == 'cancelled' %}style="filter:grayscale(60%);opacity:0.7;"{% endif %}>
               {% endfor %}
             </div>
             <div style="min-width:0;">
@@ -307,13 +521,24 @@
                 {{ o.created_at.strftime('%B %d, %Y') }} &nbsp;·&nbsp;
                 {{ o.item_count }} item(s)
               </div>
+              {% if o.status == 'cancelled' and o.cancel_reason %}
+                <div style="font-size:0.72rem;color:#ff4d6d;margin-top:.2rem;">
+                  Cancelled: "{{ o.cancel_reason[:50] }}{% if o.cancel_reason|length > 50 %}…{% endif %}"
+                </div>
+              {% endif %}
             </div>
           </div>
 
           <span class="order-status-badge status-{{ o.status }}">
-            {% if o.status == 'pending' %}⏳{% elif o.status == 'paid' %}💳
-            {% elif o.status == 'shipped' %}🚚{% elif o.status == 'delivered' %}✅{% endif %}
-            {{ o.status|upper }}
+            {% if o.status == 'pending' %}⏳
+            {% elif o.status == 'confirmed' %}✅
+            {% elif o.status == 'order_received' %}📋
+            {% elif o.status == 'ready_to_ship' %}📦
+            {% elif o.status == 'shipped' %}🚚
+            {% elif o.status == 'delivered' %}🎉
+            {% elif o.status == 'cancelled' %}❌
+            {% endif %}
+            {{ o.status.replace('_',' ')|upper }}
           </span>
 
           <div style="font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; color:#fff; flex-shrink:0;">
@@ -343,14 +568,88 @@
   {% endif %}
 
 </div>
+
+<!-- ── CANCEL ORDER MODAL ─────────────────────────────────────── -->
+<div class="cancel-modal-overlay" id="cancelModal" onclick="closeCancelModal(event)">
+  <div class="cancel-modal">
+    <div style="font-size:2rem;margin-bottom:.75rem;">😔</div>
+    <div class="cancel-modal-title">Cancel Order?</div>
+    <p style="color:#8888aa;font-size:.88rem;line-height:1.6;margin-bottom:.25rem;">
+      Please tell us why you're cancelling. Your stock will be restored automatically.
+    </p>
+    <textarea class="cancel-reason-input" id="cancelReasonInput"
+              placeholder="e.g. Changed my mind, Found a better price, Ordered by mistake…"></textarea>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button class="btn-keep-order" onclick="closeCancelModal()">
+        <i class="bi bi-arrow-left"></i> Keep Order
+      </button>
+      <button class="btn-confirm-cancel" id="confirmCancelBtn" onclick="confirmCancel()">
+        <i class="bi bi-x-circle"></i> Yes, Cancel Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="review-toast" class="review-toast">✅ Review submitted! Thank you!</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+let cancelOrderId = null;
+
+function openCancelModal(orderId) {
+  cancelOrderId = orderId;
+  document.getElementById('cancelReasonInput').value = '';
+  document.getElementById('cancelModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCancelModal(e) {
+  if (e && e.target !== document.getElementById('cancelModal')) return;
+  document.getElementById('cancelModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function confirmCancel() {
+  const reason = document.getElementById('cancelReasonInput').value.trim();
+  if (!reason) {
+    document.getElementById('cancelReasonInput').style.borderColor = '#ff4d6d';
+    document.getElementById('cancelReasonInput').placeholder = 'Please enter a reason to continue…';
+    document.getElementById('cancelReasonInput').focus();
+    return;
+  }
+
+  const btn = document.getElementById('confirmCancelBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Cancelling…';
+
+  try {
+    const res = await fetch(`/orders/${cancelOrderId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      document.getElementById('cancelModal').classList.remove('open');
+      document.body.style.overflow = '';
+      // Reload to show updated status
+      window.location.reload();
+    } else {
+      alert(data.message || 'Could not cancel order. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-x-circle"></i> Yes, Cancel Order';
+    }
+  } catch {
+    alert('Network error. Please try again.');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-x-circle"></i> Yes, Cancel Order';
+  }
+}
+
 async function submitReview(orderId, productId, btn) {
-  const ratingInput = document.querySelector(
-    `input[name="rating-${productId}"]:checked`
-  );
+  const ratingInput = document.querySelector(`input[name="rating-${productId}"]:checked`);
   if (!ratingInput) {
     alert('Please select a star rating first!');
     return;
@@ -370,7 +669,6 @@ async function submitReview(orderId, productId, btn) {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      // Replace form with submitted review
       const wrap = document.getElementById(`review-wrap-${productId}`);
       const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
       wrap.innerHTML = `
@@ -379,15 +677,12 @@ async function submitReview(orderId, productId, btn) {
           <div class="review-stars">${stars}</div>
           ${comment ? `<p style="color:var(--text-muted); font-size:0.85rem; margin:0.4rem 0 0;">${comment}</p>` : ''}
         </div>`;
-
-      // Show toast
       const toast = document.getElementById('review-toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
+      if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
     } else {
       btn.disabled = false;
       btn.innerHTML = 'Submit Review';
-      alert(data.message || 'Could not submit review. Try again.');
+      alert(data.message || 'Could not submit review.');
     }
   } catch {
     btn.disabled = false;

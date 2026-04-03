@@ -2,10 +2,9 @@
 routes/cart.py – GadgetHub PH
 ==============================
 Cart blueprint: add, update, remove cart items.
-All routes return JSON for use with fetch() in the frontend.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from flask_login import login_required, current_user
 from models import db, CartItem, Product
 
@@ -19,14 +18,22 @@ cart_bp = Blueprint("cart", __name__, url_prefix="/cart")
 @cart_bp.route("/")
 @login_required
 def view_cart():
-    from flask import render_template
-    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
-    cart_total = sum(item.subtotal for item in cart_items)
+    all_items = CartItem.query.filter_by(user_id=current_user.id).all()
+
+    # Separate in-stock and out-of-stock items
+    in_stock_items  = [item for item in all_items if item.product.stock > 0]
+    out_stock_items = [item for item in all_items if item.product.stock == 0]
+
+    # Cart total is only from in-stock items
+    cart_total = sum(item.subtotal for item in in_stock_items)
+
     return render_template(
         "cart.html",
-        cart_items=cart_items,
-        cart_total=cart_total,
-        title="My Cart – GadgetHub PH"
+        in_stock_items  = in_stock_items,
+        out_stock_items = out_stock_items,
+        cart_items      = in_stock_items,   # kept for backward compat
+        cart_total      = cart_total,
+        title           = "My Cart – GadgetHub PH"
     )
 
 
@@ -48,10 +55,9 @@ def add_to_cart():
     if product.stock == 0:
         return jsonify({"success": False, "message": "This product is out of stock."}), 400
 
-    # Check if already in cart
     item = CartItem.query.filter_by(
-        user_id=current_user.id,
-        product_id=product_id
+        user_id    = current_user.id,
+        product_id = product_id
     ).first()
 
     if item:

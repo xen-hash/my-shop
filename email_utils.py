@@ -426,3 +426,113 @@ Thank you for shopping with GadgetHub PH!"""
         html_body  = html,
         text_body  = plain,
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# ORDER CANCELLATION EMAIL
+# ─────────────────────────────────────────────────────────────
+
+def send_order_cancellation(user, order, reason):
+    """Send email when customer cancels their order."""
+
+    order_num = f"GH-{order.id:04d}"
+    total     = float(order.total_price) / 100
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0d0820;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0820;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0"
+             style="max-width:600px;width:100%;background:#150726;border-radius:20px;overflow:hidden;border:1px solid #2d1f44;">
+        <tr>
+          <td style="background:linear-gradient(135deg,#1a0c2b,#271938);padding:40px;text-align:center;border-bottom:1px solid #2d1f44;">
+            <div style="font-size:28px;font-weight:800;margin-bottom:20px;">
+              <span style="color:#cabeff;">Gadget</span><span style="color:#947dff;">Hub</span><span style="color:#cabeff;"> PH</span>
+            </div>
+            <div style="font-size:52px;margin-bottom:16px;">❌</div>
+            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#fff;">Order Cancelled</h1>
+            <p style="margin:0;color:#c9c4d8;font-size:15px;">Hi <strong style="color:#cabeff;">{user.name.split()[0]}</strong>, your order has been cancelled.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 40px;border-bottom:1px solid #2d1f44;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:50%;padding-right:8px;">
+                  <div style="background:#1e1133;border-radius:12px;padding:16px;">
+                    <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Order Number</div>
+                    <div style="color:#cabeff;font-size:18px;font-weight:800;">#{order_num}</div>
+                  </div>
+                </td>
+                <td style="width:50%;padding-left:8px;">
+                  <div style="background:#1e1133;border-radius:12px;padding:16px;">
+                    <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Refund Amount</div>
+                    <div style="color:#00d4aa;font-size:16px;font-weight:800;">&#8369;{total:,.2f}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 40px;border-bottom:1px solid #2d1f44;">
+            <div style="color:#8888aa;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Cancellation Reason</div>
+            <div style="color:#c9c4d8;font-size:14px;line-height:1.6;background:#1e1133;border-radius:10px;padding:14px 16px;
+                        border-left:3px solid #ff4d6d;">
+              {reason}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px;border-bottom:1px solid #2d1f44;">
+            <div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:12px;padding:16px 20px;text-align:center;">
+              <p style="margin:0;color:#c9c4d8;font-size:13px;line-height:1.6;">
+                ✅ <strong style="color:#00d4aa;">Stock has been restored.</strong><br>
+                If this was a COD order, no payment was made so no refund is needed.<br>
+                Questions? Reply to this email or message us on Facebook.
+              </p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px;text-align:center;">
+            <a href="https://my-shop-44hu.onrender.com"
+               style="display:inline-block;padding:14px 36px;border-radius:12px;background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;font-weight:800;font-size:15px;text-decoration:none;">
+              Continue Shopping →
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#0d0820;padding:24px 40px;text-align:center;border-top:1px solid #2d1f44;">
+            <p style="margin:0 0 8px;color:#8888aa;font-size:12px;">© 2025 GadgetHub PH · Made with ❤️ for Filipinos</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    plain = f"""GadgetHub PH – Order Cancelled
+
+Hi {user.name},
+
+Your order #{order_num} has been cancelled.
+
+Cancellation Reason: {reason}
+Order Total: &#8369;{total:,.2f}
+
+Stock has been restored. If this was a COD order, no payment was made.
+
+Continue shopping: https://my-shop-44hu.onrender.com
+
+Thank you, GadgetHub PH"""
+
+    send_email(
+        subject    = f"❌ Order #{order_num} Cancelled | GadgetHub PH",
+        recipients = [user.email],
+        html_body  = html,
+        text_body  = plain,
+    )
