@@ -66,6 +66,7 @@ def place_order():
     db.session.flush()  # get order.id before commit
 
     # Create order items & reduce stock
+    created_items = []
     for item in cart_items:
         order_item = OrderItem(
             order_id   = order.id,
@@ -74,6 +75,7 @@ def place_order():
             unit_price = item.product.price
         )
         db.session.add(order_item)
+        created_items.append(order_item)
 
         # Reduce stock
         item.product.stock -= item.quantity
@@ -82,6 +84,24 @@ def place_order():
     CartItem.query.filter_by(user_id=current_user.id).delete()
 
     db.session.commit()
+
+    # ── Send order confirmation email (non-blocking) ──────────
+    try:
+        from email_utils import send_order_confirmation
+
+        # Re-fetch order items with product relationship loaded
+        final_items = OrderItem.query.filter_by(order_id=order.id).all()
+        send_order_confirmation(
+            user        = current_user,
+            order       = order,
+            order_items = final_items
+        )
+    except Exception as e:
+        # Email failure must NEVER break the order — just log it
+        import logging
+        logging.getLogger(__name__).warning(
+            f"Order #{order.id} confirmation email failed: {e}"
+        )
 
     return jsonify({
         "success":  True,
@@ -136,7 +156,6 @@ def order_detail(order_id):
 @orders_bp.route("/<int:order_id>/review", methods=["POST"])
 @login_required
 def submit_review(order_id):
-    # Verify order belongs to user
     order = Order.query.filter_by(
         id      = order_id,
         user_id = current_user.id
@@ -154,12 +173,10 @@ def submit_review(order_id):
     if not (1 <= rating <= 5):
         return jsonify({"success": False, "message": "Rating must be between 1 and 5."}), 400
 
-    # Verify the product is actually part of this order
     item = next((i for i in order.items if i.product_id == product_id), None)
     if not item:
         return jsonify({"success": False, "message": "Product not in this order."}), 400
 
-    # Upsert review
     existing = Review.query.filter_by(
         user_id    = current_user.id,
         product_id = product_id
