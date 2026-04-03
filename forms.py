@@ -2,10 +2,12 @@
 forms.py – GadgetHub PH
 =======================
 WTForms form classes for user authentication.
+FIX: Added BooleanField 'remember' to LoginForm so users can
+     opt-in to a persistent session instead of it being forced on.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, BooleanField
 from wtforms.validators import (
     DataRequired, Email, EqualTo, Length, ValidationError
 )
@@ -46,6 +48,8 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[
         DataRequired()
     ])
+    # FIX: opt-in remember me — default False so sessions expire on browser close
+    remember = BooleanField("Remember me for 1 day", default=False)
     submit = SubmitField("Log In")
 
 

@@ -4,7 +4,7 @@
 {% block extra_css %}
 <style>
 /* ── Admin Layout ─────────────────────────────────────────── */
-.admin-wrap { display: flex; min-height: calc(100vh - 70px); }
+.admin-wrap { display: flex; min-height: calc(100vh - 62px); }
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 .admin-sidebar {
@@ -14,8 +14,8 @@
   padding: 1.5rem 0;
   flex-shrink: 0;
   position: sticky;
-  top: 70px;
-  height: calc(100vh - 70px);
+  top: 62px;                        /* FIX: match actual nav height */
+  height: calc(100vh - 62px);       /* FIX: match actual nav height */
   overflow-y: auto;
   z-index: 100;
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -133,7 +133,10 @@
 .admin-content {
   flex: 1;
   padding: 2rem;
-  overflow-x: hidden;
+  /* FIX: was overflow-x:hidden which clipped the pill-scroll-row children.
+     Use min-width:0 instead — this constrains the flex child without
+     hiding overflow of positioned / scroll children. */
+  overflow-x: visible;
   min-width: 0;
 }
 @media (max-width: 900px) { .admin-content { padding: 1rem; } }
@@ -203,7 +206,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 560px; /* prevents collapse on narrow screens */
+  min-width: 560px;
 }
 .admin-table th {
   background: var(--surface);
@@ -267,6 +270,8 @@
 .status-shipped           { background:rgba(124,92,252,0.15); color:#7c5cfc; border:1px solid rgba(124,92,252,0.25); }
 .status-failed_to_deliver { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
 .status-cancelled         { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
+.status-out_for_delivery  { background:rgba(255,159,67,0.15); color:#ff9f43; border:1px solid rgba(255,159,67,0.25); }
+.status-delivered         { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
 
 /* ── Page header ──────────────────────────────────────────── */
 .admin-page-title {
@@ -394,16 +399,37 @@
   border-color: var(--primary);
 }
 
-/* ── Status pill scroll row on mobile ────────────────────── */
+/* ── Status pill scroll row
+   FIX: Added a negative-margin wrapper so the scroll container
+   can extend beyond the padded admin-content without triggering
+   a page-level horizontal scrollbar.                           ── */
+.pill-scroll-outer {
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0.75rem;
+  /* hide the scrollbar visually but keep functionality */
+  scrollbar-width: none;
+}
+.pill-scroll-outer::-webkit-scrollbar { display: none; }
+@media (max-width: 900px) {
+  .pill-scroll-outer {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
 .pill-scroll-row {
   display: flex;
   gap: 0.4rem;
-  overflow-x: auto;
+  /* FIX: must be inline-flex width so the outer can scroll it */
+  width: max-content;
   padding-bottom: 0.35rem;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 0.75rem;
 }
-.pill-scroll-row::-webkit-scrollbar { display: none; }
 
 /* ── Low stock list ───────────────────────────────────────── */
 .low-stock-item {
@@ -570,14 +596,16 @@
       </div>
     </div>
 
-    <!-- Order status pills -->
-    <div class="pill-scroll-row mb-3">
-      {% for s, count in status_counts.items() %}
-        <a href="{{ url_for('admin.orders', status=s) }}" class="category-pill" style="font-size:0.76rem">
-          <span class="status-badge status-{{ s }}" style="font-size:0.62rem;">{{ s }}</span>
-          &nbsp;{{ count }}
-        </a>
-      {% endfor %}
+    <!-- FIX: Status pills wrapped in pill-scroll-outer to prevent clipping -->
+    <div class="pill-scroll-outer mb-3">
+      <div class="pill-scroll-row">
+        {% for s, count in status_counts.items() %}
+          <a href="{{ url_for('admin.orders', status=s) }}" class="category-pill" style="font-size:0.76rem">
+            <span class="status-badge status-{{ s }}" style="font-size:0.62rem;">{{ s }}</span>
+            &nbsp;{{ count }}
+          </a>
+        {% endfor %}
+      </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -838,16 +866,18 @@
     <div class="admin-page-title">Orders</div>
     <div class="admin-page-sub">Manage, track, and update all customer orders</div>
 
-    <!-- Status pill filters -->
-    <div class="pill-scroll-row">
-      <a href="{{ url_for('admin.orders') }}"
-         class="category-pill {% if not current_status %}active{% endif %}" style="font-size:0.76rem">All</a>
-      {% for s in statuses %}
-        <a href="{{ url_for('admin.orders', status=s) }}"
-           class="category-pill {% if current_status == s %}active{% endif %}" style="font-size:0.76rem">
-          {{ s|capitalize }}
-        </a>
-      {% endfor %}
+    <!-- FIX: Status pill filters wrapped in scroll outer -->
+    <div class="pill-scroll-outer">
+      <div class="pill-scroll-row">
+        <a href="{{ url_for('admin.orders') }}"
+           class="category-pill {% if not current_status %}active{% endif %}" style="font-size:0.76rem">All</a>
+        {% for s in statuses %}
+          <a href="{{ url_for('admin.orders', status=s) }}"
+             class="category-pill {% if current_status == s %}active{% endif %}" style="font-size:0.76rem">
+            {{ s|capitalize }}
+          </a>
+        {% endfor %}
+      </div>
     </div>
 
     <!-- Search -->
@@ -1235,11 +1265,9 @@ function closeAdminSidebar() {
   document.getElementById('admin-overlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-// Close on resize to desktop
 window.addEventListener('resize', () => {
   if (window.innerWidth > 900) closeAdminSidebar();
 });
-// Show close button inside sidebar on mobile
 (function() {
   if (window.innerWidth <= 900) {
     document.getElementById('sidebar-close-btn').style.display = 'block';

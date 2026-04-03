@@ -3,6 +3,9 @@ auth.py – GadgetHub PH
 ==============================
 Authentication blueprint: Register, Login, Logout, Profile.
 Social Login: Google OAuth2, Facebook OAuth2 (via Authlib).
+FIX: Removed remember=True from all login_user() calls.
+     Session now expires when the browser is closed unless
+     the user explicitly ticks "Remember me".
 """
 
 from flask import (
@@ -71,7 +74,8 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        login_user(user)
+        # FIX: do NOT remember – session expires on browser close
+        login_user(user, remember=False)
         flash(f"Welcome to GadgetHub, {user.name}! 🎉", "success")
         return redirect(url_for("shop.index"))
 
@@ -95,7 +99,10 @@ def login():
         ).first()
 
         if user and user.check_password(form.password.data):
-            login_user(user, remember=True)
+            # FIX: only remember if the user explicitly ticked the checkbox
+            remember = getattr(form, 'remember', None)
+            remember_me = remember.data if remember else False
+            login_user(user, remember=remember_me)
             flash(f"Welcome back, {user.name}! 👋", "success")
             next_page = request.args.get("next")
             return redirect(next_page or url_for("shop.index"))
@@ -123,6 +130,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    session.clear()          # FIX: wipe the entire Flask session on logout
     flash("You have been logged out.", "info")
     return redirect(url_for("auth.login"))
 
@@ -222,5 +230,6 @@ def _social_login(email: str, name: str):
     else:
         flash(f"Welcome back, {user.name}! 👋", "success")
 
-    login_user(user, remember=True)
+    # FIX: social logins do NOT set a persistent remember-me cookie
+    login_user(user, remember=False)
     return redirect(url_for("shop.index"))

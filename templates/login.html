@@ -14,7 +14,7 @@
           <p class="auth-subtitle">Log in to your GadgetHub account</p>
         </div>
 
-        <!-- Social Login Buttons — always show Google -->
+        <!-- Social Login Buttons -->
         <div class="d-flex flex-column gap-2 mb-4">
           <a href="{{ url_for('auth.google_login') }}"
              class="social-btn social-btn-google">
@@ -57,13 +57,22 @@
             {% endfor %}
           </div>
 
-          <div class="mb-4">
+          <div class="mb-3">
             <label class="form-label">{{ form.password.label.text }}</label>
             {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
                placeholder="Enter your password", autocomplete="current-password") }}
             {% for error in form.password.errors %}
               <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
+          </div>
+
+          <!-- FIX: Remember me checkbox — opt-in only -->
+          <div class="mb-4 d-flex align-items-center gap-2">
+            {{ form.remember(style="accent-color:#947dff;width:16px;height:16px;cursor:pointer;") }}
+            <label for="{{ form.remember.id }}"
+                   style="font-size:0.84rem;color:var(--text-muted);cursor:pointer;margin:0;">
+              {{ form.remember.label.text }}
+            </label>
           </div>
 
           <div class="d-grid">
