@@ -9,6 +9,7 @@ from flask import Flask
 from config import config
 from models import db, bcrypt
 from flask_login import LoginManager
+from email_utils import mail
 import os
 
 
@@ -20,6 +21,7 @@ def create_app(env=None):
 
     db.init_app(app)
     bcrypt.init_app(app)
+    mail.init_app(app)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
