@@ -259,14 +259,14 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-.status-pending        { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.25); }
-.status-confirmed      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
-.status-order_received { background:rgba(148,125,255,0.15);color:#cabeff; border:1px solid rgba(148,125,255,0.25); }
-.status-ready_to_ship  { background:rgba(255,159,67,0.15); color:#ff9f43; border:1px solid rgba(255,159,67,0.25); }
-.status-paid           { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
-.status-shipped        { background:rgba(124,92,252,0.15); color:#7c5cfc; border:1px solid rgba(124,92,252,0.25); }
-.status-delivered      { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
-.status-cancelled      { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
+.status-pending           { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.25); }
+.status-confirmed         { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.status-order_received    { background:rgba(148,125,255,0.15);color:#cabeff; border:1px solid rgba(148,125,255,0.25); }
+.status-ready_to_ship     { background:rgba(255,159,67,0.15); color:#ff9f43; border:1px solid rgba(255,159,67,0.25); }
+.status-paid              { background:rgba(0,212,170,0.15);  color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.status-shipped           { background:rgba(124,92,252,0.15); color:#7c5cfc; border:1px solid rgba(124,92,252,0.25); }
+.status-failed_to_deliver { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
+.status-cancelled         { background:rgba(255,77,109,0.15); color:#ff4d6d; border:1px solid rgba(255,77,109,0.25); }
 
 /* ── Page header ──────────────────────────────────────────── */
 .admin-page-title {
@@ -888,8 +888,17 @@
                   <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
                         style="display:flex;gap:0.3rem;align-items:center;">
                     <select name="status" class="form-select form-select-sm"
-                            style="width:130px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
-                      {% for s, lbl in [('pending','Pending'),('confirmed','Confirmed'),('order_received','Order Received'),('ready_to_ship','Ready to Ship'),('shipped','Shipped'),('delivered','Delivered'),('cancelled','Cancelled')] %}
+                            style="width:160px;background:var(--surface);color:#fff;border-color:var(--border);border-radius:8px;font-size:0.78rem;">
+                      {% for s, lbl in [
+                        ('pending','Pending'),
+                        ('confirmed','Confirmed'),
+                        ('order_received','Order Received'),
+                        ('ready_to_ship','Ready to Ship'),
+                        ('shipped','Shipped'),
+                        ('paid','Paid'),
+                        ('failed_to_deliver','Failed to Deliver'),
+                        ('cancelled','Cancelled'),
+                      ] %}
                         <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ lbl }}</option>
                       {% endfor %}
                     </select>
@@ -969,13 +978,14 @@
             <input type="hidden" name="from" value="detail">
             <div class="d-flex flex-column gap-2">
               {% set all_statuses = [
-                ('pending',        '⏳', 'Pending'),
-                ('confirmed',      '✅', 'Confirmed'),
-                ('order_received', '📋', 'Order Received'),
-                ('ready_to_ship',  '📦', 'Ready to Ship'),
-                ('shipped',        '🚚', 'Shipped'),
-                ('delivered',      '🎉', 'Delivered'),
-                ('cancelled',      '❌', 'Cancelled'),
+                ('pending',           '⏳', 'Pending'),
+                ('confirmed',         '✅', 'Confirmed'),
+                ('order_received',    '📋', 'Order Received'),
+                ('ready_to_ship',     '📦', 'Ready to Ship'),
+                ('shipped',           '🚚', 'Shipped'),
+                ('paid',              '💰', 'Paid'),
+                ('failed_to_deliver', '⚠️', 'Failed to Deliver'),
+                ('cancelled',         '❌', 'Cancelled'),
               ] %}
               {% for s, icon, label in all_statuses %}
                 <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;
@@ -988,6 +998,9 @@
                   <span class="status-badge status-{{ s }}">{{ label }}</span>
                   {% if s == 'ready_to_ship' %}
                     <span style="font-size:0.65rem;color:#8888aa;margin-left:auto;">🔒 No cancel after this</span>
+                  {% endif %}
+                  {% if s == 'failed_to_deliver' %}
+                    <span style="font-size:0.65rem;color:#ff9f43;margin-left:auto;">⚠️ Restores stock</span>
                   {% endif %}
                 </label>
               {% endfor %}

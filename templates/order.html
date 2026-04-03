@@ -11,13 +11,14 @@
   font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
   text-transform: uppercase;
 }
-.status-pending        { background:rgba(255,193,7,0.12);  color:#ffc107;   border:1px solid rgba(255,193,7,0.3); }
-.status-confirmed      { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
-.status-order_received { background:rgba(124,92,252,0.12); color:#947dff;   border:1px solid rgba(124,92,252,0.3); }
-.status-ready_to_ship  { background:rgba(255,159,67,0.12); color:#ff9f43;   border:1px solid rgba(255,159,67,0.3); }
-.status-shipped        { background:rgba(148,125,255,0.15);color:#cabeff;   border:1px solid rgba(148,125,255,0.3); }
-.status-delivered      { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
-.status-cancelled      { background:rgba(255,77,109,0.12); color:#ff4d6d;   border:1px solid rgba(255,77,109,0.3); }
+.status-pending           { background:rgba(255,193,7,0.12);  color:#ffc107;   border:1px solid rgba(255,193,7,0.3); }
+.status-confirmed         { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
+.status-order_received    { background:rgba(124,92,252,0.12); color:#947dff;   border:1px solid rgba(124,92,252,0.3); }
+.status-ready_to_ship     { background:rgba(255,159,67,0.12); color:#ff9f43;   border:1px solid rgba(255,159,67,0.3); }
+.status-shipped           { background:rgba(148,125,255,0.15);color:#cabeff;   border:1px solid rgba(148,125,255,0.3); }
+.status-paid              { background:rgba(0,212,170,0.12);  color:#00d4aa;   border:1px solid rgba(0,212,170,0.3); }
+.status-failed_to_deliver { background:rgba(255,77,109,0.12); color:#ff4d6d;   border:1px solid rgba(255,77,109,0.3); }
+.status-cancelled         { background:rgba(255,77,109,0.12); color:#ff4d6d;   border:1px solid rgba(255,77,109,0.3); }
 
 /* ── Order Card (list) ───────────────────────────────────── */
 .order-card {
@@ -295,7 +296,8 @@
         {% elif order.status == 'order_received' %}📋
         {% elif order.status == 'ready_to_ship' %}📦
         {% elif order.status == 'shipped' %}🚚
-        {% elif order.status == 'delivered' %}🎉
+        {% elif order.status == 'paid' %}💰
+        {% elif order.status == 'failed_to_deliver' %}⚠️
         {% elif order.status == 'cancelled' %}❌
         {% endif %}
         {{ order.status.replace('_',' ')|upper }}
@@ -310,12 +312,14 @@
   </div>
 
   <!-- Cancelled reason banner -->
-  {% if order.status == 'cancelled' and order.cancel_reason %}
+  {% if order.status in ['cancelled', 'failed_to_deliver'] and order.cancel_reason %}
     <div style="background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);
                 border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:.75rem;align-items:flex-start;">
-      <span style="font-size:1.2rem;flex-shrink:0;">❌</span>
+      <span style="font-size:1.2rem;flex-shrink:0;">{% if order.status == 'cancelled' %}❌{% else %}⚠️{% endif %}</span>
       <div>
-        <div style="color:#ff4d6d;font-weight:700;font-size:.88rem;margin-bottom:.2rem;">Order Cancelled</div>
+        <div style="color:#ff4d6d;font-weight:700;font-size:.88rem;margin-bottom:.2rem;">
+          {% if order.status == 'cancelled' %}Order Cancelled{% else %}Failed to Deliver{% endif %}
+        </div>
         <div style="color:#c9c4d8;font-size:.85rem;">Reason: {{ order.cancel_reason }}</div>
       </div>
     </div>
@@ -348,7 +352,7 @@
               </strong>
             </div>
 
-            {% if order.status == 'delivered' %}
+            {% if order.status == 'paid' %}
               {% if user_review %}
                 <div class="review-submitted">
                   <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">Your review</div>
@@ -422,25 +426,28 @@
           Order Status
         </h4>
 
-        {% if order.status == 'cancelled' %}
+        {% if order.status in ['cancelled', 'failed_to_deliver'] %}
           <div style="background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);
                       border-radius:10px;padding:1rem;text-align:center;">
-            <div style="font-size:2rem;margin-bottom:.5rem;">❌</div>
-            <div style="color:#ff4d6d;font-weight:800;font-size:.9rem;">Order Cancelled</div>
+            <div style="font-size:2rem;margin-bottom:.5rem;">{% if order.status == 'cancelled' %}❌{% else %}⚠️{% endif %}</div>
+            <div style="color:#ff4d6d;font-weight:800;font-size:.9rem;">
+              {% if order.status == 'cancelled' %}Order Cancelled{% else %}Failed to Deliver{% endif %}
+            </div>
             {% if order.cancel_reason %}
               <div style="color:#8888aa;font-size:.78rem;margin-top:.4rem;">"{{ order.cancel_reason }}"</div>
             {% endif %}
           </div>
         {% else %}
           {% set all_statuses = [
-            ('pending',        '⏳', 'Order Placed'),
-            ('confirmed',      '✅', 'Confirmed'),
-            ('order_received', '📋', 'Order Received'),
-            ('ready_to_ship',  '📦', 'Ready to Ship'),
-            ('shipped',        '🚚', 'Shipped'),
-            ('delivered',      '🎉', 'Delivered'),
+            ('pending',           '⏳', 'Order Placed'),
+            ('confirmed',         '✅', 'Confirmed'),
+            ('order_received',    '📋', 'Order Received'),
+            ('ready_to_ship',     '📦', 'Ready to Ship'),
+            ('shipped',           '🚚', 'Shipped'),
+            ('paid',              '💰', 'Paid'),
+            ('failed_to_deliver', '⚠️', 'Failed to Deliver'),
           ] %}
-          {% set status_order = ['pending','confirmed','order_received','ready_to_ship','shipped','delivered'] %}
+          {% set status_order = ['pending','confirmed','order_received','ready_to_ship','shipped','paid','failed_to_deliver'] %}
           {% set current_idx = status_order.index(order.status) if order.status in status_order else 0 %}
 
           <div class="status-tracker">
@@ -448,7 +455,7 @@
               {% set s_idx = status_order.index(s) %}
               {% set is_done = s_idx < current_idx %}
               {% set is_current = s == order.status %}
-              <div class="tracker-step {{ 'done' if is_done else '' }} {{ 'current' if is_current else '' }}">
+              <div class="tracker-step {{ 'done' if is_done else '' }} {{ 'current' if is_current else '' }} {{ 'cancelled-step' if s == 'failed_to_deliver' and is_current else '' }}">
                 <div class="tracker-dot">{{ icon }}</div>
                 <div class="tracker-label">
                   {{ label }}
@@ -476,6 +483,18 @@
               <i class="bi bi-lock-fill"></i>
               Order is being packed. Cancellation is no longer available.
             </div>
+          {% elif order.status == 'paid' %}
+            <div style="margin-top:1rem;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);
+                        border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#00d4aa;">
+              <i class="bi bi-check-circle-fill"></i>
+              Payment confirmed. Your order is complete. Thank you!
+            </div>
+          {% elif order.status == 'failed_to_deliver' %}
+            <div style="margin-top:1rem;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);
+                        border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#ff4d6d;">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              Delivery was unsuccessful. Please contact us to arrange re-delivery.
+            </div>
           {% endif %}
         {% endif %}
 
@@ -501,7 +520,7 @@
             <div class="order-thumb-stack">
               {% for item in o.items[:3] %}
                 <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"
-                     {% if o.status == 'cancelled' %}style="filter:grayscale(60%);opacity:0.7;"{% endif %}>
+                     {% if o.status in ['cancelled', 'failed_to_deliver'] %}style="filter:grayscale(60%);opacity:0.7;"{% endif %}>
               {% endfor %}
             </div>
             <div style="min-width:0;">
@@ -521,9 +540,9 @@
                 {{ o.created_at.strftime('%B %d, %Y') }} &nbsp;·&nbsp;
                 {{ o.item_count }} item(s)
               </div>
-              {% if o.status == 'cancelled' and o.cancel_reason %}
+              {% if o.status in ['cancelled', 'failed_to_deliver'] and o.cancel_reason %}
                 <div style="font-size:0.72rem;color:#ff4d6d;margin-top:.2rem;">
-                  Cancelled: "{{ o.cancel_reason[:50] }}{% if o.cancel_reason|length > 50 %}…{% endif %}"
+                  {% if o.status == 'cancelled' %}Cancelled{% else %}Failed to deliver{% endif %}: "{{ o.cancel_reason[:50] }}{% if o.cancel_reason|length > 50 %}…{% endif %}"
                 </div>
               {% endif %}
             </div>
@@ -535,7 +554,8 @@
             {% elif o.status == 'order_received' %}📋
             {% elif o.status == 'ready_to_ship' %}📦
             {% elif o.status == 'shipped' %}🚚
-            {% elif o.status == 'delivered' %}🎉
+            {% elif o.status == 'paid' %}💰
+            {% elif o.status == 'failed_to_deliver' %}⚠️
             {% elif o.status == 'cancelled' %}❌
             {% endif %}
             {{ o.status.replace('_',' ')|upper }}

@@ -306,17 +306,35 @@ def send_order_status_update(user, order, new_status):
             "message": "Great news! Your order has been confirmed and is being prepared.",
             "color":   "#00d4aa",
         },
+        "order_received": {
+            "emoji":   "📋",
+            "title":   "Order Received",
+            "message": "We have received your order and it is being reviewed.",
+            "color":   "#cabeff",
+        },
+        "ready_to_ship": {
+            "emoji":   "📦",
+            "title":   "Ready to Ship!",
+            "message": "Your order has been packed and is ready for pickup by our courier.",
+            "color":   "#ff9f43",
+        },
         "shipped": {
             "emoji":   "🚚",
             "title":   "Your Order is On Its Way!",
             "message": "Your order has been shipped and is heading your way. Please prepare to receive your package.",
             "color":   "#947dff",
         },
-        "delivered": {
-            "emoji":   "📦",
-            "title":   "Order Delivered!",
-            "message": "Your order has been marked as delivered. We hope you love your new gadget!",
-            "color":   "#ffc107",
+        "paid": {
+            "emoji":   "💰",
+            "title":   "Payment Received!",
+            "message": "We have confirmed your payment. Your order is now complete. Thank you for shopping with us!",
+            "color":   "#00d4aa",
+        },
+        "failed_to_deliver": {
+            "emoji":   "⚠️",
+            "title":   "Delivery Unsuccessful",
+            "message": "Unfortunately our courier was unable to deliver your package. Please contact us so we can arrange re-delivery.",
+            "color":   "#ff4d6d",
         },
         "cancelled": {
             "emoji":   "❌",

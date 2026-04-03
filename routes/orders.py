@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 # Statuses where customer is still allowed to cancel
 CANCELLABLE_STATUSES = ["pending", "confirmed", "order_received"]
 
+# Statuses that are terminal — no further changes allowed
+TERMINAL_STATUSES = ["cancelled", "paid", "failed_to_deliver"]
+
 
 # ─────────────────────────────────────────────────────────────
 # CHECKOUT PAGE

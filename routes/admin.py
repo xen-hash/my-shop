@@ -348,6 +348,15 @@ def update_order_status(order_id):
 
     old_status   = order.status
     order.status = new_status
+
+    # Store a reason when admin marks failed_to_deliver so stock can be restored
+    if new_status == "failed_to_deliver" and old_status != "failed_to_deliver":
+        reason = request.form.get("fail_reason", "").strip()
+        order.cancel_reason = reason or "Failed to deliver – marked by admin"
+        # Restore stock
+        for item in order.items:
+            item.product.stock += item.quantity
+
     db.session.commit()
     flash(f"✅ Order #{order_id:04d} updated to '{new_status}'.", "success")
 

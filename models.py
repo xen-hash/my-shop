@@ -198,18 +198,31 @@ class Order(db.Model):
     """
     A completed (or pending) purchase by a registered user.
 
-    Status lifecycle:  pending → paid → shipped → delivered
+    Status lifecycle:
+      pending → confirmed → order_received → ready_to_ship → shipped → paid → failed_to_deliver
+                                                                              ↘ (stock restored on cancel)
+    Customer can cancel while status in: pending, confirmed, order_received
     """
 
     __tablename__ = "orders"
 
-    STATUSES = ["pending", "paid", "shipped", "delivered"]
+    STATUSES = [
+        "pending",
+        "confirmed",
+        "order_received",
+        "ready_to_ship",
+        "shipped",
+        "paid",
+        "failed_to_deliver",
+        "cancelled",
+    ]
 
     id          = db.Column(db.Integer,      primary_key=True)
     user_id     = db.Column(db.Integer,      db.ForeignKey("users.id"), nullable=False)
     total_price = db.Column(db.Numeric(10, 2), nullable=False)
     status      = db.Column(db.String(20),   default="pending", nullable=False)
     shipping_address = db.Column(db.Text,    nullable=True)   # snapshot at checkout
+    cancel_reason    = db.Column(db.Text,    nullable=True)   # set on cancel/failed_to_deliver
     created_at  = db.Column(db.DateTime,     default=datetime.utcnow)
 
     # ── Relationships ─────────────────────────────────────────────────────────
