@@ -70,10 +70,12 @@
   .qty-btn{background:transparent;border:none;color:#cabeff;width:44px;height:48px;
     font-size:1.4rem;font-weight:700;cursor:pointer;transition:background .15s;line-height:1;}
   .qty-btn:hover{background:rgba(148,125,255,.25);}
-  .qty-input{width:52px;height:48px;background:#1e1133;border:none;border-left:1px solid rgba(148,125,255,.2);
-    border-right:1px solid rgba(148,125,255,.2);color:#fff;
+  .qty-input{width:52px;height:48px;background:#1e1133 !important;border:none !important;
+    border-left:1px solid rgba(148,125,255,.2) !important;
+    border-right:1px solid rgba(148,125,255,.2) !important;
+    color:#fff !important;
     text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.05rem;outline:none;
-    -moz-appearance:textfield;}
+    -moz-appearance:textfield;box-shadow:none !important;}
   .qty-input::-webkit-inner-spin-button,.qty-input::-webkit-outer-spin-button{-webkit-appearance:none;}
   .qty-label{font-size:.75rem;color:#8888aa;font-weight:600;letter-spacing:.5px;align-self:center;flex-shrink:0;}
 
@@ -218,7 +220,8 @@
           <span class="qty-label">QTY</span>
           <div class="qty-control">
             <button class="qty-btn" onclick="changeQty(-1)" aria-label="Decrease quantity">−</button>
-            <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly class="qty-input">
+            <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly class="qty-input"
+                   style="background:#1e1133!important;color:#fff!important;border:none!important;box-shadow:none!important;">
             <button class="qty-btn" onclick="changeQty(1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
