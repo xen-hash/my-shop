@@ -86,11 +86,11 @@ def create_app():
         _run_migrations()
 
     # ── Blueprints ────────────────────────────────────────────
-    from shop   import shop_bp
-    from auth   import auth_bp
-    from cart   import cart_bp
-    from orders import orders_bp
-    from admin  import admin_bp
+    from routes.shop   import shop_bp
+    from routes.auth   import auth_bp
+    from routes.cart   import cart_bp
+    from routes.orders import orders_bp
+    from routes.admin  import admin_bp
 
     app.register_blueprint(shop_bp)
     app.register_blueprint(auth_bp)
