@@ -63,21 +63,37 @@
   .stock-out{background:rgba(255,77,109,.1);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);}
 
   /* Qty + cart */
-  .add-cart-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+  .add-cart-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap;}
+  .action-row{display:flex;gap:.6rem;margin-bottom:1.25rem;flex-wrap:wrap;}
   .qty-control{display:flex;align-items:center;background:#271938;
-    border:1px solid rgba(72,69,85,.35);border-radius:12px;overflow:hidden;flex-shrink:0;}
-  .qty-btn{background:transparent;border:none;color:#fff;width:42px;height:46px;
-    font-size:1.2rem;font-weight:700;cursor:pointer;transition:background .2s;}
-  .qty-btn:hover{background:rgba(148,125,255,.2);}
-  .qty-input{width:48px;height:46px;background:transparent;border:none;color:#fff;
-    text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;outline:none;}
-  .btn-add-to-cart{flex:1;min-width:140px;padding:.85rem 1.25rem;border-radius:12px;font-weight:800;
-    font-size:.92rem;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+    border:2px solid rgba(148,125,255,.35);border-radius:12px;overflow:hidden;flex-shrink:0;}
+  .qty-btn{background:transparent;border:none;color:#cabeff;width:44px;height:48px;
+    font-size:1.4rem;font-weight:700;cursor:pointer;transition:background .15s;line-height:1;}
+  .qty-btn:hover{background:rgba(148,125,255,.25);}
+  .qty-input{width:52px;height:48px;background:#1e1133;border:none;border-left:1px solid rgba(148,125,255,.2);
+    border-right:1px solid rgba(148,125,255,.2);color:#fff;
+    text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.05rem;outline:none;
+    -moz-appearance:textfield;}
+  .qty-input::-webkit-inner-spin-button,.qty-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+  .qty-label{font-size:.75rem;color:#8888aa;font-weight:600;letter-spacing:.5px;align-self:center;flex-shrink:0;}
+
+  .btn-add-to-cart{flex:1;min-width:130px;padding:.85rem 1.1rem;border-radius:12px;font-weight:800;
+    font-size:.9rem;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
     background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-    box-shadow:0 0 20px rgba(148,125,255,.3);transition:all .2s;
-    display:flex;align-items:center;justify-content:center;gap:.5rem;}
-  .btn-add-to-cart:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(148,125,255,.4);}
+    box-shadow:0 0 20px rgba(148,125,255,.3);transition:transform .1s,box-shadow .1s,background .1s;
+    display:flex;align-items:center;justify-content:center;gap:.45rem;}
+  .btn-add-to-cart:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(148,125,255,.45);}
+  .btn-add-to-cart:active{transform:scale(.97);}
   .btn-add-to-cart:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  .btn-buy-now{flex:1;min-width:130px;padding:.85rem 1.1rem;border-radius:12px;font-weight:800;
+    font-size:.9rem;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+    background:linear-gradient(135deg,#ffcf72,#ff9f43);color:#1a0a00;
+    box-shadow:0 0 20px rgba(255,159,67,.25);transition:transform .1s,box-shadow .1s;
+    display:flex;align-items:center;justify-content:center;gap:.45rem;}
+  .btn-buy-now:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,159,67,.4);}
+  .btn-buy-now:active{transform:scale(.97);}
+  .btn-buy-now:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
 
   /* Meta table */
   .product-meta{background:#1a1a2e;border:1px solid rgba(72,69,85,.2);
@@ -199,19 +215,27 @@
 
       {% if product.stock > 0 %}
         <div class="add-cart-row">
+          <span class="qty-label">QTY</span>
           <div class="qty-control">
-            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <button class="qty-btn" onclick="changeQty(-1)" aria-label="Decrease quantity">−</button>
             <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly class="qty-input">
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
+            <button class="qty-btn" onclick="changeQty(1)" aria-label="Increase quantity">+</button>
           </div>
+        </div>
+        <div class="action-row">
           <button id="addCartBtn" onclick="addToCartDetail({{ product.id }})" class="btn-add-to-cart">
-            <span class="material-symbols-outlined" style="font-size:1.05rem;">add_shopping_cart</span> Add to Cart
+            <span class="material-symbols-outlined" style="font-size:1rem;">add_shopping_cart</span> Add to Cart
+          </button>
+          <button id="buyNowBtn" onclick="buyNow({{ product.id }})" class="btn-buy-now">
+            <span class="material-symbols-outlined" style="font-size:1rem;">bolt</span> Buy Now
           </button>
         </div>
       {% else %}
-        <button disabled class="btn-add-to-cart" style="margin-bottom:1.25rem;">
-          <span class="material-symbols-outlined" style="font-size:1.05rem;">cancel</span> Out of Stock
-        </button>
+        <div class="action-row" style="margin-bottom:1.25rem;">
+          <button disabled class="btn-add-to-cart" style="flex:1;">
+            <span class="material-symbols-outlined" style="font-size:1rem;">cancel</span> Out of Stock
+          </button>
+        </div>
       {% endif %}
 
       <div class="product-meta">
@@ -310,8 +334,13 @@ async function addToCartDetail(productId) {
   const qty = parseInt(document.getElementById('qty').value);
   const btn = document.getElementById('addCartBtn');
   const original = btn.innerHTML;
+
+  // Instant optimistic feedback (~0ms)
   btn.disabled = true;
-  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">hourglass_top</span> Adding…';
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">check</span> Added!';
+  btn.style.background = 'linear-gradient(135deg,#00d4aa,#00a884)';
+  btn.style.color = '#000';
+
   try {
     const res = await fetch('/cart/add', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -319,15 +348,54 @@ async function addToCartDetail(productId) {
     });
     const data = await res.json();
     if (res.ok && data.success) {
-      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">check</span> Added!';
-      btn.style.background = 'linear-gradient(135deg,#00d4aa,#00a884)';
-      btn.style.color = '#000';
       updateCartBadge(data.cart_count);
-      setTimeout(() => { btn.innerHTML=original; btn.style.background=''; btn.style.color=''; btn.disabled=false; }, 2000);
-    } else if (res.status===401) {
-      window.location.href='/login';
-    } else { btn.innerHTML=original; btn.disabled=false; }
-  } catch { btn.innerHTML=original; btn.disabled=false; }
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 1200);
+    } else if (res.status === 401) {
+      window.location.href = '/login';
+    } else {
+      btn.innerHTML = original;
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.disabled = false;
+    }
+  } catch {
+    btn.innerHTML = original;
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.disabled = false;
+  }
+}
+
+async function buyNow(productId) {
+  const qty = parseInt(document.getElementById('qty').value);
+  const btn = document.getElementById('buyNowBtn');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">hourglass_top</span> Please wait…';
+
+  try {
+    const res = await fetch('/cart/add', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({product_id:productId, quantity:qty})
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      window.location.href = '/orders/checkout';
+    } else if (res.status === 401) {
+      window.location.href = '/login';
+    } else {
+      btn.innerHTML = original;
+      btn.disabled = false;
+    }
+  } catch {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
 }
 </script>
 {% endblock %}

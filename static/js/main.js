@@ -114,9 +114,13 @@ async function addToCart(productId, btn, event) {
 
   createRipple(btn, event);
 
+  // Optimistic instant feedback
   const original = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+  btn.innerHTML = '<i class="bi bi-check-lg"></i> Added!';
+  btn.style.background = 'linear-gradient(135deg,#00d4aa,#00a884)';
+  btn.style.color = '#000';
+  btn.style.transform  = 'scale(1.08)';
 
   try {
     const res = await fetch('/cart/add', {
@@ -127,37 +131,93 @@ async function addToCart(productId, btn, event) {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      btn.innerHTML = '<i class="bi bi-check-lg"></i> Added!';
-      btn.style.background = 'var(--accent2)';
-      btn.style.transform  = 'scale(1.06)';
+      burstConfetti(btn);
       updateCartBadge(data.cart_count);
       setTimeout(() => {
         btn.innerHTML        = original;
         btn.style.background = '';
+        btn.style.color      = '';
         btn.style.transform  = '';
         btn.disabled         = false;
-      }, 1800);
+      }, 1400);
     } else if (res.status === 401) {
       window.location.href = '/login';
     } else {
       btn.innerHTML = original;
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.transform  = '';
       btn.disabled  = false;
-      alert(data.message || 'Could not add to cart.');
     }
   } catch {
     btn.innerHTML = original;
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.transform  = '';
     btn.disabled  = false;
   }
 }
 
 // ── Update cart badge in navbar ──────────────────────────────
 function updateCartBadge(count) {
-  const badge = document.querySelector('.cart-badge');
-  if (!badge) return;
-  badge.textContent = count;
-  badge.style.transition = 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)';
-  badge.style.transform  = 'scale(1.6)';
-  setTimeout(() => badge.style.transform = 'scale(1)', 300);
+  // base.html uses .gh-cart-badge — fix the wrong selector bug
+  let badge = document.querySelector('.gh-cart-badge');
+  const cartBtn = document.querySelector('.gh-icon-btn[href*="cart"]') ||
+                  document.querySelector('a[href*="/cart"]');
+
+  if (!badge && cartBtn && count > 0) {
+    badge = document.createElement('span');
+    badge.className = 'gh-cart-badge';
+    cartBtn.style.position = 'relative';
+    cartBtn.appendChild(badge);
+  }
+  if (badge) {
+    badge.textContent = count;
+    badge.style.animation = 'none';
+    badge.offsetHeight; // reflow
+    badge.style.animation = '';
+    // bounce
+    badge.style.transition = 'transform .25s cubic-bezier(.34,1.56,.64,1)';
+    badge.style.transform = 'scale(1.7)';
+    setTimeout(() => badge.style.transform = 'scale(1)', 300);
+    if (count === 0) badge.remove();
+  }
+}
+
+// ── Confetti burst on add to cart ───────────────────────────
+function burstConfetti(btn) {
+  const colors = ['#cabeff','#947dff','#ff4d6d','#00d4aa','#ffc107','#ff9f43'];
+  const rect   = btn.getBoundingClientRect();
+  const cx     = rect.left + rect.width  / 2;
+  const cy     = rect.top  + rect.height / 2;
+  for (let i = 0; i < 18; i++) {
+    const dot = document.createElement('div');
+    const angle  = (Math.PI * 2 / 18) * i;
+    const spread = 60 + Math.random() * 40;
+    Object.assign(dot.style, {
+      position:  'fixed',
+      left:       cx + 'px',
+      top:        cy + 'px',
+      width:      (4 + Math.random() * 4) + 'px',
+      height:     (4 + Math.random() * 4) + 'px',
+      borderRadius: Math.random() > .5 ? '50%' : '2px',
+      background: colors[Math.floor(Math.random() * colors.length)],
+      pointerEvents: 'none',
+      zIndex:    '99999',
+      transform: 'translate(-50%,-50%)',
+      transition: `transform .65s cubic-bezier(.2,.8,.3,1), opacity .65s ease`,
+      opacity:   '1',
+    });
+    document.body.appendChild(dot);
+    requestAnimationFrame(() => {
+      dot.style.transform = `translate(
+        calc(-50% + ${Math.cos(angle) * spread}px),
+        calc(-50% + ${Math.sin(angle) * spread}px)
+      ) scale(0)`;
+      dot.style.opacity = '0';
+    });
+    setTimeout(() => dot.remove(), 700);
+  }
 }
 
 // ── Auto-dismiss flash alerts ────────────────────────────────
