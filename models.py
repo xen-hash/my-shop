@@ -77,6 +77,10 @@ class Product(db.Model):
     reviews     = db.relationship("Review",    backref="product", lazy="dynamic", cascade="all, delete-orphan")
 
     @property
+    def price_float(self) -> float:
+        return float(self.price)
+
+    @property
     def average_rating(self) -> float:
         reviews = self.reviews.all()
         if not reviews:
@@ -141,6 +145,14 @@ class Order(db.Model):
 
     # Relationships
     items = db.relationship("OrderItem", backref="order", lazy="joined", cascade="all, delete-orphan")
+
+    @property
+    def total_float(self) -> float:
+        return float(self.total_price)
+
+    @property
+    def item_count(self) -> int:
+        return sum(item.quantity for item in self.items)
 
     def __repr__(self):
         return f"<Order #{self.id} status={self.status}>"
