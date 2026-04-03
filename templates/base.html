@@ -4,28 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}GadgetHub PH{% endblock %}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:wght@300..700&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:wght@300..700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode:"class",
-      theme:{ extend:{
-        colors:{
-          "on-surface":"#eedbff","on-background":"#eedbff","surface-container-low":"#231534",
-          "primary-fixed-dim":"#cabeff","surface-container-highest":"#3d2e4f",
-          "outline":"#938ea1","outline-variant":"#484555","on-primary":"#32009a",
-          "on-surface-variant":"#c9c4d8","background":"#1a0c2b","surface":"#1a0c2b",
-          "surface-container":"#271938","surface-container-lowest":"#150726",
-          "surface-container-high":"#322343","primary":"#cabeff",
-          "on-primary-container":"#2b0088","primary-container":"#947dff","surface-bright":"#413353",
-        },
-        fontFamily:{"headline":["Space Grotesk","sans-serif"],"body":["Inter","sans-serif"]},
-      }},
-    }
-  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <style>
     .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;vertical-align:middle;}
@@ -184,8 +168,7 @@
     {% else %}
       <a href="{{ url_for('auth.login') }}" class="gh-link d-none d-md-inline" style="color:rgba(202,190,255,.7);">Login</a>
       <a href="{{ url_for('auth.register') }}"
-         class="d-none d-md-inline px-3 py-2 rounded-lg text-sm font-bold no-underline"
-         style="background:#947dff;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.8rem;">Sign Up</a>
+         style="display:inline;padding:.45rem .9rem;border-radius:.5rem;font-size:.8rem;font-weight:700;text-decoration:none;background:#947dff;color:#fff;font-family:'Space Grotesk',sans-serif;">Sign Up</a>
     {% endif %}
     <button class="gh-hamburger" onclick="openDrawer()" aria-label="Open menu">
       <span class="material-symbols-outlined" style="font-size:1.6rem;">menu</span>
@@ -254,7 +237,7 @@
   <!-- FOOTER -->
   <footer class="gh-footer">
     <div class="gh-footer-grid">
-      <div style="grid-column:1/-1;" class="sm:col-auto">
+      <div style="grid-column:1/-1;">
         <div class="gh-footer-col-title" style="font-size:.9rem;letter-spacing:-.3px;">GadgetHub PH 🇵🇭</div>
         <p style="color:rgba(202,190,255,.45);font-size:.8rem;line-height:1.6;max-width:260px;">
           Curated tech accessories for every Filipino. Delivered fast, everywhere.
@@ -299,7 +282,7 @@
   </footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
   // ── Scroll progress bar ──────────────────────────────────────
   const progressBar = document.getElementById('scroll-progress');
@@ -307,7 +290,6 @@
     const scrollTop = document.documentElement.scrollTop;
     const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     progressBar.style.width = (scrollTop / scrollHeight * 100) + '%';
-    // Nav scroll class
     document.querySelector('.gh-nav').classList.toggle('scrolled', scrollTop > 20);
   }, { passive: true });
 

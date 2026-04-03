@@ -3,13 +3,6 @@
    cart badge bounce, and smooth page transitions.
 */
 
-// ── Page entrance transition ─────────────────────────────────
-document.body.style.opacity = '0';
-document.body.style.transition = 'opacity 0.35s ease';
-window.addEventListener('load', () => {
-  document.body.style.opacity = '1';
-});
-
 // Smooth exit on nav links
 document.querySelectorAll('a[href]').forEach(link => {
   const href = link.getAttribute('href');
@@ -20,7 +13,9 @@ document.querySelectorAll('a[href]').forEach(link => {
     if (dest && dest !== window.location.href) {
       e.preventDefault();
       document.body.style.opacity = '0';
-      setTimeout(() => window.location.href = dest, 280);
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.22s ease';
+      setTimeout(() => window.location.href = dest, 220);
     }
   });
 });
