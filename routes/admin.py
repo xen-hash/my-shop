@@ -19,7 +19,10 @@ import json
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # Statuses that are permanently locked — no further changes allowed
-TERMINAL_STATUSES = ["paid", "cancelled", "failed_to_deliver"]
+TERMINAL_STATUSES = ["paid", "cancelled", "failed_to_deliver", "delivered"]
+
+# Statuses where an order can be soft-deleted by admin
+DELETABLE_STATUSES = ["paid", "delivered"]
 
 
 # ── Admin-only decorator ──────────────────────────────────────
@@ -77,9 +80,9 @@ def dashboard():
         daily_revenue.append(float(rev))
         daily_labels.append(day.strftime("%b %d"))
 
-    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
+    recent_orders = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc()).limit(10).all()
     low_stock     = Product.query.filter(Product.stock <= 5).order_by(Product.stock.asc()).all()
-    pending_orders = Order.query.filter_by(status="pending").count()
+    pending_orders = Order.query.filter_by(status="pending", is_deleted=False).count()
 
     return render_template(
         "admin.html",
@@ -282,7 +285,7 @@ def update_stock():
 def orders():
     status  = request.args.get("status", "")
     search  = request.args.get("q", "")
-    query   = Order.query.order_by(Order.created_at.desc())
+    query   = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc())
 
     if status and status in Order.STATUSES:
         query = query.filter_by(status=status)
@@ -346,7 +349,7 @@ def update_order_status(order_id):
     # Block changes if order is already in a terminal state
     if order.status in TERMINAL_STATUSES:
         flash(
-            f"\u26d4 Order #{order_id:04d} is already '{order.status.replace('_', ' ').title()}' "
+            f"⛔ Order #{order_id:04d} is already '{order.status.replace('_', ' ').title()}' "
             f"and cannot be changed.",
             "danger"
         )
@@ -391,6 +394,35 @@ def update_order_status(order_id):
 
     if request.form.get("from") == "detail":
         return redirect(url_for("admin.order_detail", order_id=order_id))
+    return redirect(url_for("admin.orders"))
+
+
+
+# ─────────────────────────────────────────────────────────────
+# DELETE ORDER (soft delete)
+# ─────────────────────────────────────────────────────────────
+
+@admin_bp.route("/orders/<int:order_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_order(order_id):
+    order = db.session.get(Order, order_id)
+    if not order:
+        flash("Order not found.", "danger")
+        return redirect(url_for("admin.orders"))
+
+    if order.status not in DELETABLE_STATUSES:
+        flash(
+            f"⛔ Only paid or delivered orders can be removed. "
+            f"This order is '{order.status.replace('_', ' ').title()}'.",
+            "danger"
+        )
+        return redirect(url_for("admin.orders"))
+
+    # Soft delete — keeps record in DB so revenue/totals stay accurate
+    order.is_deleted = True
+    db.session.commit()
+    flash(f"🗑️ Order #{order_id:04d} has been removed from the list.", "success")
     return redirect(url_for("admin.orders"))
 
 

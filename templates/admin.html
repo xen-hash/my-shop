@@ -885,12 +885,6 @@
                 <td style="color:var(--text-muted);font-size:0.78rem">{{ o.created_at.strftime('%b %d, %Y') }}</td>
                 <td><span class="status-badge status-{{ o.status }}">{{ o.status.replace('_',' ')|title }}</span></td>
                 <td>
-                  {% set terminal = ['paid', 'cancelled', 'failed_to_deliver'] %}
-                  {% if o.status in terminal %}
-                    <span style="font-size:0.73rem;color:var(--text-muted);display:flex;align-items:center;gap:0.3rem;">
-                      <i class="bi bi-lock-fill" style="color:#ff4d6d;"></i> Locked
-                    </span>
-                  {% else %}
                   <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}"
                         style="display:flex;gap:0.3rem;align-items:center;">
                     <select name="status" class="form-select form-select-sm"
@@ -912,7 +906,6 @@
                       <i class="bi bi-check-lg"></i>
                     </button>
                   </form>
-                  {% endif %}
                 </td>
                 <td>
                   <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn-action">
@@ -981,41 +974,6 @@
           <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;">
             <i class="bi bi-arrow-repeat" style="color:var(--primary)"></i> Update Status
           </h5>
-          {% set terminal = ['paid', 'cancelled', 'failed_to_deliver'] %}
-          {% if order.status in terminal %}
-            <div style="padding:1rem;border-radius:10px;background:rgba(255,77,109,0.08);
-                        border:1px solid rgba(255,77,109,0.25);text-align:center;">
-              <i class="bi bi-lock-fill" style="color:#ff4d6d;font-size:1.4rem;"></i>
-              <div style="color:#ff4d6d;font-weight:700;margin-top:0.4rem;">Order Locked</div>
-              <div style="color:var(--text-muted);font-size:0.8rem;margin-top:0.25rem;">
-                This order is <strong style="color:#fff;">{{ order.status.replace('_',' ').title() }}</strong>
-                and cannot be changed.
-              </div>
-            </div>
-            {% set all_statuses = [
-              ('pending',           '⏳', 'Pending'),
-              ('confirmed',         '✅', 'Confirmed'),
-              ('order_received',    '📋', 'Order Received'),
-              ('ready_to_ship',     '📦', 'Ready to Ship'),
-              ('shipped',           '🚚', 'Shipped'),
-              ('paid',              '💰', 'Paid'),
-              ('failed_to_deliver', '⚠️', 'Failed to Deliver'),
-              ('cancelled',         '❌', 'Cancelled'),
-            ] %}
-            <div class="d-flex flex-column gap-2 mt-3">
-              {% for s, icon, label in all_statuses %}
-                <label style="display:flex;align-items:center;gap:0.75rem;
-                              padding:0.55rem 0.75rem;border-radius:8px;opacity:0.5;cursor:not-allowed;
-                              background:{% if order.status == s %}rgba(124,92,252,0.15){% else %}transparent{% endif %};
-                              border:1px solid {% if order.status == s %}rgba(124,92,252,0.4){% else %}var(--border){% endif %}">
-                  <input type="radio" name="status" value="{{ s }}" {% if order.status == s %}checked{% endif %}
-                         disabled style="accent-color:var(--primary);">
-                  <span style="font-size:1rem;">{{ icon }}</span>
-                  <span class="status-badge status-{{ s }}">{{ label }}</span>
-                </label>
-              {% endfor %}
-            </div>
-          {% else %}
           <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
             <input type="hidden" name="from" value="detail">
             <div class="d-flex flex-column gap-2">
@@ -1051,7 +1009,6 @@
               <i class="bi bi-check-lg"></i> Save Status
             </button>
           </form>
-          {% endif %}
         </div>
 
         <!-- Customer + Shipping -->
