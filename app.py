@@ -50,17 +50,17 @@ def create_app():
     }
 
     # OAuth (optional – only needed if social login is configured)
-    app.config["GOOGLE_CLIENT_ID"]     = os.environ.get("GOOGLE_CLIENT_ID", "")
-    app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    app.config["GOOGLE_CLIENT_ID"]       = os.environ.get("GOOGLE_CLIENT_ID", "")
+    app.config["GOOGLE_CLIENT_SECRET"]   = os.environ.get("GOOGLE_CLIENT_SECRET", "")
     app.config["FACEBOOK_CLIENT_ID"]     = os.environ.get("FACEBOOK_CLIENT_ID", "")
     app.config["FACEBOOK_CLIENT_SECRET"] = os.environ.get("FACEBOOK_CLIENT_SECRET", "")
 
     # Mail (used by email_utils)
-    app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER",   "smtp.gmail.com")
-    app.config["MAIL_PORT"]     = int(os.environ.get("MAIL_PORT", 587))
-    app.config["MAIL_USE_TLS"]  = os.environ.get("MAIL_USE_TLS",  "true").lower() == "true"
-    app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "")
-    app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
+    app.config["MAIL_SERVER"]         = os.environ.get("MAIL_SERVER",   "smtp.gmail.com")
+    app.config["MAIL_PORT"]           = int(os.environ.get("MAIL_PORT", 587))
+    app.config["MAIL_USE_TLS"]        = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
+    app.config["MAIL_USERNAME"]       = os.environ.get("MAIL_USERNAME", "")
+    app.config["MAIL_PASSWORD"]       = os.environ.get("MAIL_PASSWORD", "")
     app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
         "MAIL_DEFAULT_SENDER",
         app.config["MAIL_USERNAME"]
@@ -72,8 +72,8 @@ def create_app():
 
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
-    login_manager.login_message = "Please log in to access this page."
+    login_manager.login_view          = "auth.login"
+    login_manager.login_message       = "Please log in to access this page."
     login_manager.login_message_category = "warning"
 
     @login_manager.user_loader
@@ -83,14 +83,14 @@ def create_app():
     # ── Database setup + auto-migrations ──────────────────────
     with app.app_context():
         db.create_all()
-        _run_migrations()
+        _run_migrations(db)   # pass db so _run_migrations always has it in scope
 
     # ── Blueprints ────────────────────────────────────────────
-    from shop   import shop_bp
-    from auth   import auth_bp
-    from cart   import cart_bp
-    from orders import orders_bp
-    from admin  import admin_bp
+    from routes.shop   import shop_bp
+    from routes.auth   import auth_bp
+    from routes.cart   import cart_bp
+    from routes.orders import orders_bp
+    from routes.admin  import admin_bp
 
     app.register_blueprint(shop_bp)
     app.register_blueprint(auth_bp)
@@ -104,11 +104,11 @@ def create_app():
 
 # ─────────────────────────────────────────────────────────────
 # AUTO-MIGRATIONS
-# Runs on every startup — all statements use IF NOT EXISTS
-# so they are completely safe to re-run.
+# db is passed as argument to avoid any scope/circular issues.
+# All ALTER TABLE statements use IF NOT EXISTS — safe to re-run.
 # ─────────────────────────────────────────────────────────────
 
-def _run_migrations():
+def _run_migrations(db):
     try:
         with db.engine.connect() as conn:
             # Migration 1: add cancel_reason to orders
@@ -122,6 +122,7 @@ def _run_migrations():
                 ALTER TABLE orders
                 ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL
             """))
+
             conn.commit()
             logger.info("✅  Migrations: cancel_reason + is_deleted columns ready.")
     except Exception as e:
