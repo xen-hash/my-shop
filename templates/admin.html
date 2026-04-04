@@ -1100,6 +1100,15 @@ html, body { overflow-x: hidden; }
             </div>
           </div>
 
+          <!-- ── DYNAMIC SPECS SECTION ─────────────────────── -->
+          <div class="col-12" id="specs-section" style="display:none;">
+            <label class="form-label">
+              📋 Specifications
+              <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;"> — auto-detected by category</span>
+            </label>
+            <div id="specs-fields" class="row g-2"></div>
+          </div>
+
           <div class="col-12">
             <label class="form-label">Description <span style="color:var(--accent)">*</span></label>
             <textarea name="description" class="form-control" rows="4" required
@@ -1590,10 +1599,46 @@ function previewImg(inputId, previewId) {
   img.onload  = () => img.classList.add('loaded');
   img.onerror = () => img.classList.remove('loaded');
 }
+
+// ── Dynamic spec fields per category ────────────────────────
+const SPEC_FIELDS = {
+  phones:     [{n:'display',l:'Display',p:'6.7" AMOLED 120Hz'},{n:'ram',l:'RAM',p:'8GB'},{n:'storage',l:'Storage',p:'256GB'},{n:'battery',l:'Battery',p:'5000mAh'},{n:'os',l:'OS',p:'Android 14'},{n:'camera',l:'Camera',p:'108MP Triple'}],
+  tablets:    [{n:'display',l:'Display',p:'11" LCD 90Hz'},{n:'ram',l:'RAM',p:'6GB'},{n:'storage',l:'Storage',p:'128GB'},{n:'battery',l:'Battery',p:'7000mAh'},{n:'os',l:'OS',p:'Android 13'},{n:'camera',l:'Camera',p:'13MP'}],
+  laptops:    [{n:'display',l:'Display',p:'15.6" FHD IPS'},{n:'processor',l:'Processor',p:'Intel i5-13th Gen'},{n:'ram',l:'RAM',p:'16GB DDR5'},{n:'storage',l:'Storage',p:'512GB SSD'},{n:'os',l:'OS',p:'Windows 11'},{n:'battery',l:'Battery',p:'72Wh'}],
+  earbuds:    [{n:'driver',l:'Driver',p:'10mm Dynamic'},{n:'battery',l:'Battery',p:'30hr total'},{n:'bluetooth',l:'Bluetooth',p:'BT 5.3'},{n:'anc',l:'ANC',p:'Yes / No'}],
+  chargers:   [{n:'wattage',l:'Wattage',p:'65W'},{n:'ports',l:'Ports',p:'2x USB-C, 1x USB-A'},{n:'standard',l:'Standard',p:'PD 3.0 / QC 4+'}],
+  powerbanks: [{n:'capacity',l:'Capacity',p:'20000mAh'},{n:'wattage',l:'Wattage',p:'22.5W'},{n:'ports',l:'Ports',p:'2x USB-A, 1x USB-C'}],
+  accessories:[],
+};
+
+// Existing specs (populated in edit mode)
+const EXISTING_SPECS = {% if view == 'edit_product' and product.specs %}{{ product.specs|tojson }}{% else %}{}{% endif %};
+
+function updateSpecFields(category) {
+  const section   = document.getElementById('specs-section');
+  const container = document.getElementById('specs-fields');
+  const fields    = SPEC_FIELDS[category] || [];
+  if (!fields.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  container.innerHTML = fields.map(f => `
+    <div class="col-6 col-md-4">
+      <label class="form-label" style="font-size:0.78rem;">${f.l}</label>
+      <input type="text" name="spec_${f.n}" class="form-control"
+             placeholder="${f.p}"
+             value="${EXISTING_SPECS[f.n] || ''}">
+    </div>`).join('');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   previewImg('img1_input','prev1');
   previewImg('img2_input','prev2');
   previewImg('img3_input','prev3');
+  // Init spec fields
+  const catSelect = document.querySelector('select[name="category"]');
+  if (catSelect) {
+    catSelect.addEventListener('change', e => updateSpecFields(e.target.value));
+    updateSpecFields(catSelect.value);
+  }
 });
 </script>
 {% endif %}

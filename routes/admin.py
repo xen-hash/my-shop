@@ -26,6 +26,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+# ── Spec collection helper ────────────────────────────────────
+def _collect_specs(form, category: str) -> dict:
+    """Read spec fields from form based on category. Returns cleaned dict."""
+    from models import Product as _P
+    fields = _P.SPEC_FIELDS.get(category, [])
+    specs = {}
+    for field in fields:
+        val = form.get(f"spec_{field['name']}", "").strip()
+        if val:
+            specs[field["name"]] = val
+    return specs
+
+
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 TERMINAL_STATUSES  = ["paid", "cancelled", "failed_to_deliver", "delivered"]
@@ -207,6 +221,9 @@ def add_product():
         image_url_2 = request.form.get("image_url_2", "").strip() or None
         image_url_3 = request.form.get("image_url_3", "").strip() or None
 
+        # Collect specs based on category
+        specs = _collect_specs(request.form, category)
+
         errors = []
         if not name:        errors.append("Product name is required.")
         if not description: errors.append("Description is required.")
@@ -231,6 +248,7 @@ def add_product():
                 image_url   = image_url,
                 image_url_2 = image_url_2,
                 image_url_3 = image_url_3,
+                specs       = specs or None,
             )
             db.session.add(product)
             db.session.commit()
@@ -271,6 +289,7 @@ def edit_product(product_id):
         product.image_url   = request.form.get("image_url", "").strip()
         product.image_url_2 = request.form.get("image_url_2", "").strip() or None
         product.image_url_3 = request.form.get("image_url_3", "").strip() or None
+        product.specs       = _collect_specs(request.form, product.category) or None
 
         try:
             db.session.commit()

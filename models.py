@@ -1,11 +1,10 @@
 """
 models.py – GadgetHub PH
 =========================
-SQLAlchemy ORM models for all database tables.
-
 UPDATED:
-- Product: added image_url_2, image_url_3 (optional extra product images)
-- Order:   is_deleted soft-delete retained for dashboard safety
+- Product: added specs (JSONB), image_url_2/3
+- Product: CATEGORIES expanded to include phones, tablets, laptops
+- Order:   is_deleted soft-delete
 """
 
 from flask_sqlalchemy import SQLAlchemy
@@ -53,7 +52,56 @@ class User(UserMixin, db.Model):
 class Product(db.Model):
     __tablename__ = "products"
 
-    CATEGORIES = ["earbuds", "chargers", "powerbanks", "accessories"]
+    # ── NEW: expanded categories ──────────────────────────────
+    CATEGORIES = [
+        "earbuds", "chargers", "powerbanks", "accessories",
+        "phones", "tablets", "laptops"
+    ]
+
+    # Spec field definitions per category (used by admin form + product page)
+    SPEC_FIELDS = {
+        "phones": [
+            {"name": "display",  "label": "Display",   "placeholder": "6.7\" AMOLED 120Hz"},
+            {"name": "ram",      "label": "RAM",        "placeholder": "8GB"},
+            {"name": "storage",  "label": "Storage",    "placeholder": "256GB"},
+            {"name": "battery",  "label": "Battery",    "placeholder": "5000mAh"},
+            {"name": "os",       "label": "OS",         "placeholder": "Android 14"},
+            {"name": "camera",   "label": "Camera",     "placeholder": "108MP Triple"},
+        ],
+        "tablets": [
+            {"name": "display",  "label": "Display",   "placeholder": "11\" LCD 90Hz"},
+            {"name": "ram",      "label": "RAM",        "placeholder": "6GB"},
+            {"name": "storage",  "label": "Storage",    "placeholder": "128GB"},
+            {"name": "battery",  "label": "Battery",    "placeholder": "7000mAh"},
+            {"name": "os",       "label": "OS",         "placeholder": "Android 13"},
+            {"name": "camera",   "label": "Camera",     "placeholder": "13MP"},
+        ],
+        "laptops": [
+            {"name": "display",    "label": "Display",    "placeholder": "15.6\" FHD IPS"},
+            {"name": "processor",  "label": "Processor",  "placeholder": "Intel i5-13th Gen"},
+            {"name": "ram",        "label": "RAM",        "placeholder": "16GB DDR5"},
+            {"name": "storage",    "label": "Storage",    "placeholder": "512GB SSD"},
+            {"name": "os",         "label": "OS",         "placeholder": "Windows 11"},
+            {"name": "battery",    "label": "Battery",    "placeholder": "72Wh / ~8hrs"},
+        ],
+        "earbuds": [
+            {"name": "driver",     "label": "Driver",     "placeholder": "10mm Dynamic"},
+            {"name": "battery",    "label": "Battery",    "placeholder": "30hr total"},
+            {"name": "bluetooth",  "label": "Bluetooth",  "placeholder": "BT 5.3"},
+            {"name": "anc",        "label": "ANC",        "placeholder": "Yes / No"},
+        ],
+        "chargers": [
+            {"name": "wattage",    "label": "Wattage",    "placeholder": "65W"},
+            {"name": "ports",      "label": "Ports",      "placeholder": "2x USB-C, 1x USB-A"},
+            {"name": "standard",   "label": "Standard",   "placeholder": "PD 3.0 / QC 4+"},
+        ],
+        "powerbanks": [
+            {"name": "capacity",   "label": "Capacity",   "placeholder": "20000mAh"},
+            {"name": "wattage",    "label": "Wattage",    "placeholder": "22.5W"},
+            {"name": "ports",      "label": "Ports",      "placeholder": "2x USB-A, 1x USB-C"},
+        ],
+        "accessories": [],
+    }
 
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(200), nullable=False)
@@ -62,8 +110,9 @@ class Product(db.Model):
     stock       = db.Column(db.Integer, default=0, nullable=False)
     category    = db.Column(db.String(50), nullable=False)
     image_url   = db.Column(db.String(500), nullable=False)
-    image_url_2 = db.Column(db.String(500), nullable=True)   # NEW
-    image_url_3 = db.Column(db.String(500), nullable=True)   # NEW
+    image_url_2 = db.Column(db.String(500), nullable=True)
+    image_url_3 = db.Column(db.String(500), nullable=True)
+    specs       = db.Column(db.JSON, nullable=True)   # NEW — structured specs
     created_at  = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     order_items = db.relationship("OrderItem", backref="product", lazy="dynamic")
@@ -82,7 +131,6 @@ class Product(db.Model):
             return 0.0
         return round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
 
-    # Alias — existing templates use average_rating
     @property
     def average_rating(self) -> float:
         return self.avg_rating
@@ -99,6 +147,11 @@ class Product(db.Model):
         if self.image_url_3:
             imgs.append(self.image_url_3)
         return imgs
+
+    @property
+    def spec_fields(self) -> list:
+        """Returns the spec field definitions for this product's category."""
+        return self.SPEC_FIELDS.get(self.category, [])
 
     def __repr__(self):
         return f"<Product {self.name}>"

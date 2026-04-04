@@ -196,7 +196,7 @@
     <div class="hero-stats">
       <div class="hero-stat"><strong data-count="500" data-suffix="+">500+</strong><span>Happy Customers</span></div>
       <div class="hero-stat"><strong data-count="{{ products.total }}" data-suffix="">{{ products.total }}</strong><span>Products</span></div>
-      <div class="hero-stat"><strong data-count="4" data-suffix="">4</strong><span>Categories</span></div>
+      <div class="hero-stat"><strong data-count="7" data-suffix="">7</strong><span>Categories</span></div>
     </div>
   </div>
 </section>
@@ -207,7 +207,7 @@
     <a href="{{ url_for('shop.index') }}" class="cat-pill{% if not current_category %} active{% endif %}">All</a>
     {% for cat in categories %}
       <a href="{{ url_for('shop.index', category=cat) }}" class="cat-pill{% if current_category == cat %} active{% endif %}">
-        {% if cat=='earbuds' %}🎧{% elif cat=='chargers' %}⚡{% elif cat=='powerbanks' %}🔋{% else %}📱{% endif %} {{ cat|capitalize }}
+        {% if cat=='earbuds' %}🎧{% elif cat=='chargers' %}⚡{% elif cat=='powerbanks' %}🔋{% elif cat=='phones' %}📲{% elif cat=='tablets' %}📟{% elif cat=='laptops' %}💻{% else %}📱{% endif %} {{ cat|capitalize }}
       </a>
     {% endfor %}
   </div>

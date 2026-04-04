@@ -97,6 +97,18 @@
   .btn-buy-now:active{transform:scale(.97);}
   .btn-buy-now:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
 
+  /* Specs table */
+  .specs-card{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);
+    border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.25rem;}
+  .specs-title{font-weight:700;color:#fff;font-size:.95rem;margin-bottom:.85rem;
+    display:flex;align-items:center;gap:.4rem;}
+  .specs-table{width:100%;border-collapse:collapse;}
+  .specs-table tr{border-bottom:1px solid rgba(255,255,255,.06);}
+  .specs-table tr:last-child{border-bottom:none;}
+  .spec-key{color:#8888aa;font-size:.78rem;font-weight:600;text-transform:uppercase;
+    letter-spacing:.5px;padding:.45rem .9rem .45rem 0;width:38%;vertical-align:middle;}
+  .spec-val{color:#eedbff;font-size:.88rem;font-weight:500;padding:.45rem 0;vertical-align:middle;}
+
   /* Meta table */
   .product-meta{background:#1a1a2e;border:1px solid rgba(72,69,85,.2);
     border-radius:12px;padding:1rem 1.25rem;}
@@ -239,6 +251,22 @@
             <span class="material-symbols-outlined" style="font-size:1rem;">cancel</span> Out of Stock
           </button>
         </div>
+      {% endif %}
+
+      {% if product.specs %}
+      <div class="specs-card">
+        <div class="specs-title">📋 Specifications</div>
+        <table class="specs-table">
+          {% for key, val in product.specs.items() %}
+            {% if val %}
+              <tr>
+                <td class="spec-key">{{ key|capitalize }}</td>
+                <td class="spec-val">{{ val }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </table>
+      </div>
       {% endif %}
 
       <div class="product-meta">
