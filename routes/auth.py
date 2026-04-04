@@ -70,9 +70,8 @@ def register():
 
     if form.validate_on_submit():
         user = User(
-            name    = form.name.data.strip(),
-            email   = form.email.data.lower().strip(),
-            address = form.address.data.strip() if form.address.data else None,
+            name  = form.name.data.strip(),
+            email = form.email.data.lower().strip(),
         )
         user.set_password(form.password.data)
         db.session.add(user)
@@ -159,8 +158,9 @@ def profile():
     form = UpdateProfileForm(obj=current_user)
 
     if form.validate_on_submit():
-        current_user.name    = form.name.data.strip()
-        current_user.address = form.address.data.strip()
+        current_user.name = form.name.data.strip()
+        if hasattr(current_user, 'address') and form.address.data is not None:
+            current_user.address = form.address.data.strip()
         db.session.commit()
         flash("Profile updated successfully!", "success")
         return redirect(url_for("auth.profile"))
@@ -193,15 +193,29 @@ def google_login():
 @auth_bp.route("/login/google/callback")
 def google_callback():
     try:
-        oauth = get_oauth()
+        oauth    = get_oauth()
         token    = oauth.google.authorize_access_token()
-        userinfo = token.get("userinfo") or oauth.google.parse_id_token(token)
-        return _social_login(
-            email = userinfo["email"],
-            name  = userinfo.get("name", userinfo["email"].split("@")[0]),
-        )
+
+        # Try getting userinfo from token first, then fallback to userinfo endpoint
+        userinfo = token.get("userinfo")
+        if not userinfo:
+            import requests as _req
+            resp     = oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo",
+                                        token=token)
+            userinfo = resp.json()
+
+        email = userinfo.get("email")
+        name  = userinfo.get("name") or (email.split("@")[0] if email else "User")
+
+        if not email:
+            raise ValueError("Google did not return an email address.")
+
+        return _social_login(email=email, name=name)
+
     except Exception as e:
-        flash("Google login failed. Please try again.", "danger")
+        import logging
+        logging.getLogger(__name__).error(f"Google OAuth error: {e}", exc_info=True)
+        flash(f"Google login failed: {str(e)}", "danger")
         return redirect(url_for("auth.login"))
 
 
@@ -242,9 +256,9 @@ def _social_login(email: str, name: str):
     user = User.query.filter_by(email=email.lower()).first()
     if not user:
         user = User(
-            name     = name,
-            email    = email.lower(),
-            password = "",
+            name          = name,
+            email         = email.lower(),
+            password_hash = None,   # OAuth users have no password
         )
         db.session.add(user)
         db.session.commit()

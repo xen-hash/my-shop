@@ -62,22 +62,18 @@ def create_app():
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            # pool_pre_ping: tests every connection before use —
-            # if the connection was dropped by Supabase it gets
-            # replaced automatically instead of raising an error.
             "pool_pre_ping":    True,
-            "pool_recycle":     120,   # recycle connections every 2 min (Supabase drops idle ones)
-            "pool_size":        3,     # keep fewer persistent connections on free tier
-            "max_overflow":     5,
-            "pool_timeout":     20,
+            "pool_recycle":     300,
+            "pool_size":        5,
+            "max_overflow":     10,
+            "pool_timeout":     10,
             "pool_use_lifo":    True,
             "connect_args": {
-                "connect_timeout":        15,
+                "connect_timeout":        10,
                 "keepalives":             1,
-                "keepalives_idle":        10,   # send keepalive after 10s idle
+                "keepalives_idle":        30,
                 "keepalives_interval":    5,
-                "keepalives_count":       5,
-                "sslmode":                "require",
+                "keepalives_count":       3,
             },
         }
 
@@ -99,7 +95,9 @@ def create_app():
 
     # ── Extensions ────────────────────────────────────────────
     from models import db, User
+    from email_utils import mail
     db.init_app(app)
+    mail.init_app(app)   # ← Flask-Mail must be initialized or emails silently fail
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -179,6 +177,9 @@ def _run_migrations_once(db):
             ))
             conn.execute(db.text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS picture VARCHAR(500)"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT"
             ))
 
             # ── orders table ──────────────────────────────────

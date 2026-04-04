@@ -28,6 +28,7 @@ class User(UserMixin, db.Model):
     google_id   = db.Column(db.String(120), unique=True, nullable=True)
     facebook_id = db.Column(db.String(120), unique=True, nullable=True)
     picture     = db.Column(db.String(500), nullable=True)
+    address     = db.Column(db.Text, nullable=True)
 
     orders  = db.relationship("Order",    backref="user", lazy="dynamic")
     cart    = db.relationship("CartItem", backref="user", lazy="dynamic")
