@@ -183,7 +183,7 @@
     <span class="gh-brand" style="font-size:1.1rem;">Gadget<span>Hub</span> PH</span>
     <button onclick="closeDrawer()" class="gh-hamburger" aria-label="Close"><span class="material-symbols-outlined" style="font-size:1.5rem;">close</span></button>
   </div>
-  <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:0.5rem;">
+  <nav style="flex:1;overflow-y:auto;">
     <a href="{{ url_for('shop.index') }}" class="gh-drawer-link">🛍️ All Products</a>
     <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-drawer-link">🎧 Earbuds</a>
     <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-drawer-link">⚡ Chargers</a>
@@ -197,25 +197,24 @@
       🛒 My Cart {% if current_user.cart_count > 0 %}<span style="background:#ff4d6d;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;">{{ current_user.cart_count }}</span>{% endif %}
     </a>
     {% if current_user.is_admin %}<a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>{% endif %}
+    <div class="gh-drawer-divider"></div>
+    {# LOGOUT — placed inside nav so it is always reachable on any screen size #}
+    <a href="{{ url_for('auth.logout') }}" class="gh-drawer-link"
+       style="color:#ff4d6d!important;background:rgba(255,77,109,.08);
+              border:1px solid rgba(255,77,109,.2);margin-top:.25rem;">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;vertical-align:middle;">logout</span>
+      Logout
+    </a>
+    {% else %}
+    <div class="gh-drawer-divider"></div>
+    <a href="{{ url_for('auth.login') }}" class="gh-drawer-link">🔑 Login</a>
+    <a href="{{ url_for('auth.register') }}" class="gh-drawer-link"
+       style="background:linear-gradient(135deg,rgba(202,190,255,.15),rgba(148,125,255,.15));
+              border:1px solid rgba(148,125,255,.3);color:#cabeff;">
+      ✨ Create Account
+    </a>
     {% endif %}
   </nav>
-  <div style="flex-shrink:0;padding-top:1rem;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('auth.logout') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:rgba(255,77,109,.12);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);
-                text-decoration:none;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Logout</a>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                border:1px solid rgba(148,125,255,.3);color:#cabeff;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Login</a>
-      <a href="{{ url_for('auth.register') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Create Account</a>
-    {% endif %}
-  </div>
 </div>
 
 <!-- PAGE BODY -->
