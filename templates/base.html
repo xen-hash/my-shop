@@ -64,7 +64,7 @@
     .gh-drawer{position:fixed;top:0;left:0;width:min(300px,85vw);bottom:0;z-index:1001;
       background:#150726;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
       transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-      display:flex;flex-direction:column;padding:1.25rem;overflow-y:auto;}
+      display:flex;flex-direction:column;padding:1.25rem;overflow:hidden;}
     .gh-drawer.open{transform:translateX(0);}
     .gh-drawer-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
     .gh-drawer-link{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;
@@ -183,7 +183,7 @@
     <span class="gh-brand" style="font-size:1.1rem;">Gadget<span>Hub</span> PH</span>
     <button onclick="closeDrawer()" class="gh-hamburger" aria-label="Close"><span class="material-symbols-outlined" style="font-size:1.5rem;">close</span></button>
   </div>
-  <nav style="flex:1;">
+  <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:0.5rem;">
     <a href="{{ url_for('shop.index') }}" class="gh-drawer-link">🛍️ All Products</a>
     <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-drawer-link">🎧 Earbuds</a>
     <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-drawer-link">⚡ Chargers</a>
@@ -199,7 +199,7 @@
     {% if current_user.is_admin %}<a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>{% endif %}
     {% endif %}
   </nav>
-  <div style="padding-top:1.25rem;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
+  <div style="flex-shrink:0;padding-top:1rem;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
     {% if current_user.is_authenticated %}
       <a href="{{ url_for('auth.logout') }}"
          style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
