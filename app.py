@@ -63,16 +63,16 @@ def create_app():
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_pre_ping":    True,
-            "pool_recycle":     300,
-            "pool_size":        5,
-            "max_overflow":     10,
-            "pool_timeout":     10,
+            "pool_recycle":     60,    # recycle every 60s — Supabase free tier drops idle fast
+            "pool_size":        2,     # minimal pool on free tier
+            "max_overflow":     3,
+            "pool_timeout":     30,
             "pool_use_lifo":    True,
             "connect_args": {
                 "connect_timeout":        10,
                 "keepalives":             1,
-                "keepalives_idle":        30,
-                "keepalives_interval":    5,
+                "keepalives_idle":        5,    # keepalive after 5s idle
+                "keepalives_interval":    2,
                 "keepalives_count":       3,
             },
         }
@@ -126,6 +126,19 @@ def create_app():
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
 
+    # ── Auto-retry on SSL/connection drops ──────────────────
+    # Supabase free tier drops connections aggressively.
+    # This retries failed DB requests once before giving up.
+    @app.before_request
+    def ensure_db_connection():
+        """Ping the DB before each request; reconnect if needed."""
+        from sqlalchemy import text
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+        except Exception:
+            db.engine.dispose()   # kill the whole pool and start fresh
+
     logger.info("✅  GadgetHub PH app started successfully.")
     return app
 
@@ -166,8 +179,13 @@ def _run_migrations_once(db):
     try:
         with db.engine.connect() as conn:
             # ── users table ───────────────────────────────────
+            # Live DB uses 'password' column (not password_hash)
             conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(256)"
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(256)"
+            ))
+            # Make password nullable so OAuth users (Google/Facebook) can have NULL password
+            conn.execute(db.text(
+                "ALTER TABLE users ALTER COLUMN password DROP NOT NULL"
             ))
             conn.execute(db.text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(120)"

@@ -258,7 +258,7 @@ def _social_login(email: str, name: str):
         user = User(
             name          = name,
             email         = email.lower(),
-            password_hash = None,   # OAuth users have no password
+            password      = None,   # OAuth users have no password (column is 'password' in DB)
         )
         db.session.add(user)
         db.session.commit()
