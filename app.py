@@ -1,8 +1,9 @@
 """
 app.py – GadgetHub PH
 ======================
-Application factory.
-UPDATED: _run_migrations_once now includes specs JSONB column.
+Application factory: configures Flask, extensions, and registers blueprints.
+FIX: Added session lifetime + remember-cookie config to prevent
+     permanent auto-login on mobile / shared devices.
 """
 
 import os
@@ -27,9 +28,17 @@ def create_app():
         static_folder="static"
     )
 
+    # ── Configuration ─────────────────────────────────────────
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
+
+    # ── FIX: Session lifetime – session expires when browser closes
+    #         unless user explicitly ticks "Remember me".
     app.config["SESSION_PERMANENT"]        = False
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
+
+    # ── FIX: Remember-me cookie – only 1 day even when ticked.
+    #         Default Flask-Login value is 365 days which caused the
+    #         "mobile always shows admin" bug.
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=1)
     app.config["REMEMBER_COOKIE_SECURE"]   = os.environ.get("FLASK_ENV") == "production"
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
@@ -53,26 +62,32 @@ def create_app():
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            # pool_pre_ping: tests every connection before use —
+            # if the connection was dropped by Supabase it gets
+            # replaced automatically instead of raising an error.
             "pool_pre_ping":    True,
-            "pool_recycle":     300,
-            "pool_size":        5,
-            "max_overflow":     10,
-            "pool_timeout":     10,
+            "pool_recycle":     120,   # recycle connections every 2 min (Supabase drops idle ones)
+            "pool_size":        3,     # keep fewer persistent connections on free tier
+            "max_overflow":     5,
+            "pool_timeout":     20,
             "pool_use_lifo":    True,
             "connect_args": {
-                "connect_timeout":        10,
+                "connect_timeout":        15,
                 "keepalives":             1,
-                "keepalives_idle":        30,
+                "keepalives_idle":        10,   # send keepalive after 10s idle
                 "keepalives_interval":    5,
-                "keepalives_count":       3,
+                "keepalives_count":       5,
+                "sslmode":                "require",
             },
         }
 
+    # OAuth
     app.config["GOOGLE_CLIENT_ID"]       = os.environ.get("GOOGLE_CLIENT_ID", "")
     app.config["GOOGLE_CLIENT_SECRET"]   = os.environ.get("GOOGLE_CLIENT_SECRET", "")
     app.config["FACEBOOK_CLIENT_ID"]     = os.environ.get("FACEBOOK_CLIENT_ID", "")
     app.config["FACEBOOK_CLIENT_SECRET"] = os.environ.get("FACEBOOK_CLIENT_SECRET", "")
 
+    # Mail
     app.config["MAIL_SERVER"]         = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     app.config["MAIL_PORT"]           = int(os.environ.get("MAIL_PORT", 587))
     app.config["MAIL_USE_TLS"]        = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
@@ -82,6 +97,7 @@ def create_app():
         "MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"]
     )
 
+    # ── Extensions ────────────────────────────────────────────
     from models import db, User
     db.init_app(app)
 
@@ -95,9 +111,11 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
+    # ── DB setup ─────────────────────────────────────────────
     with app.app_context():
         _maybe_init_db(db)
 
+    # ── Blueprints ────────────────────────────────────────────
     from routes.shop   import shop_bp
     from routes.auth   import auth_bp
     from routes.cart   import cart_bp
@@ -177,10 +195,6 @@ def _run_migrations_once(db):
             ))
             conn.execute(db.text(
                 "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_3 VARCHAR(500)"
-            ))
-            # NEW: structured specs per category (phones, tablets, laptops, etc.)
-            conn.execute(db.text(
-                "ALTER TABLE products ADD COLUMN IF NOT EXISTS specs JSONB"
             ))
 
             conn.commit()

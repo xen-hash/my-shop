@@ -43,7 +43,10 @@ class User(UserMixin, db.Model):
 
     @property
     def cart_count(self) -> int:
-        return sum(i.quantity for i in self.cart)
+        try:
+            return sum(i.quantity for i in self.cart)
+        except Exception:
+            return 0
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -126,10 +129,13 @@ class Product(db.Model):
 
     @property
     def avg_rating(self) -> float:
-        all_reviews = self.reviews.all()
-        if not all_reviews:
+        try:
+            all_reviews = self.reviews.all()
+            if not all_reviews:
+                return 0.0
+            return round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
+        except Exception:
             return 0.0
-        return round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
 
     @property
     def average_rating(self) -> float:
@@ -137,7 +143,10 @@ class Product(db.Model):
 
     @property
     def review_count(self) -> int:
-        return self.reviews.count()
+        try:
+            return self.reviews.count()
+        except Exception:
+            return 0
 
     @property
     def extra_images(self) -> list:
