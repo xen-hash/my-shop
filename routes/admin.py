@@ -5,11 +5,12 @@ Admin blueprint: dashboard, product management, order management,
 revenue analytics, stock management, user management.
 Protected – only accessible by users with is_admin=True.
 
-ADDED: GET /admin/api/orders/poll
-       Lightweight JSON endpoint that returns the current list of orders
-       (optionally filtered by status). The admin front-end polls this
-       every second so order updates appear near-instantly without a
-       full page reload.
+FIXES / ENHANCEMENTS:
+1. Customers page: robust error handling + uses pre-built order_counts dict
+2. Products: add/edit now support image_url_2 and image_url_3
+3. Dashboard: soft-delete (hide) endpoint for paid/delivered orders
+4. Email notification on order status update (already wired, kept)
+5. Large-screen / mobile improvements are CSS-only (in admin.html)
 """
 
 from flask import (
@@ -21,6 +22,9 @@ from functools import wraps
 from models import db, Product, Order, User, OrderItem, Review
 from datetime import datetime, timedelta
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -47,6 +51,7 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
+    # These counts always reflect ALL historical data (never filtered by is_deleted)
     total_products = Product.query.count()
     total_orders   = Order.query.count()
     total_users    = User.query.filter_by(is_admin=False).count()
@@ -80,33 +85,34 @@ def dashboard():
         daily_revenue.append(float(rev))
         daily_labels.append(day.strftime("%b %d"))
 
-    recent_orders  = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc()).limit(10).all()
+    # Dashboard "recent orders" table only shows non-deleted orders
+    recent_orders  = Order.query.filter_by(is_deleted=False).order_by(
+        Order.created_at.desc()
+    ).limit(10).all()
     low_stock      = Product.query.filter(Product.stock <= 5).order_by(Product.stock.asc()).all()
     pending_orders = Order.query.filter_by(status="pending", is_deleted=False).count()
 
     return render_template(
         "admin.html",
-        view            = "dashboard",
-        total_products  = total_products,
-        total_orders    = total_orders,
-        total_users     = total_users,
-        total_revenue   = float(total_revenue),
-        recent_revenue  = float(recent_revenue),
-        status_counts   = status_counts,
-        daily_revenue   = json.dumps(daily_revenue),
-        daily_labels    = json.dumps(daily_labels),
-        recent_orders   = recent_orders,
-        low_stock       = low_stock,
-        pending_orders  = pending_orders,
-        title           = "Admin Dashboard – GadgetHub PH"
+        view              = "dashboard",
+        total_products    = total_products,
+        total_orders      = total_orders,
+        total_users       = total_users,
+        total_revenue     = float(total_revenue),
+        recent_revenue    = float(recent_revenue),
+        status_counts     = status_counts,
+        daily_revenue     = json.dumps(daily_revenue),
+        daily_labels      = json.dumps(daily_labels),
+        recent_orders     = recent_orders,
+        low_stock         = low_stock,
+        pending_orders    = pending_orders,
+        deletable_statuses = DELETABLE_STATUSES,
+        title             = "Admin Dashboard – GadgetHub PH"
     )
 
 
 # ─────────────────────────────────────────────────────────────
-# REAL-TIME POLL ENDPOINT  (NEW)
-# GET /admin/api/orders/poll?status=&q=&after=<ISO-timestamp>
-# Returns a JSON snapshot of all non-deleted orders so the
-# browser can diff & update the table without a full reload.
+# REAL-TIME POLL ENDPOINT
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/api/orders/poll")
@@ -128,28 +134,21 @@ def poll_orders():
         except ValueError:
             query = query.join(User).filter(User.name.ilike(f"%{search}%"))
 
-    orders = query.all()
-
-    # Build lightweight payload – only what the table needs
+    orders  = query.all()
     payload = []
     for o in orders:
         payload.append({
-            "id":          o.id,
-            "customer":    o.user.name,
-            "email":       o.user.email,
-            "item_count":  o.item_count,
-            "total":       round(float(o.total_float), 2),
-            "status":      o.status,
-            "created_at":  o.created_at.strftime("%b %d, %Y"),
+            "id":         o.id,
+            "customer":   o.user.name,
+            "email":      o.user.email,
+            "item_count": o.item_count,
+            "total":      round(float(o.total_float), 2),
+            "status":     o.status,
+            "created_at": o.created_at.strftime("%b %d, %Y"),
         })
 
     return jsonify({"success": True, "orders": payload})
 
-
-# ─────────────────────────────────────────────────────────────
-# REAL-TIME POLL: single order status  (NEW)
-# GET /admin/api/orders/<id>/status
-# ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/api/orders/<int:order_id>/status")
 @login_required
@@ -158,11 +157,7 @@ def poll_order_status(order_id):
     order = db.session.get(Order, order_id)
     if not order:
         return jsonify({"success": False, "message": "Order not found"}), 404
-    return jsonify({
-        "success": True,
-        "id":      order.id,
-        "status":  order.status,
-    })
+    return jsonify({"success": True, "id": order.id, "status": order.status})
 
 
 # ─────────────────────────────────────────────────────────────
@@ -195,7 +190,7 @@ def products():
 
 
 # ─────────────────────────────────────────────────────────────
-# ADD PRODUCT
+# ADD PRODUCT  (supports image_url_2, image_url_3)
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/products/add", methods=["GET", "POST"])
@@ -209,13 +204,15 @@ def add_product():
         stock       = request.form.get("stock", 0)
         category    = request.form.get("category", "")
         image_url   = request.form.get("image_url", "").strip()
+        image_url_2 = request.form.get("image_url_2", "").strip() or None
+        image_url_3 = request.form.get("image_url_3", "").strip() or None
 
         errors = []
         if not name:        errors.append("Product name is required.")
         if not description: errors.append("Description is required.")
         if not price:       errors.append("Price is required.")
         if not category:    errors.append("Category is required.")
-        if not image_url:   errors.append("Image URL is required.")
+        if not image_url:   errors.append("Primary image URL is required.")
         if category and category not in Product.CATEGORIES:
             errors.append("Invalid category.")
 
@@ -231,7 +228,9 @@ def add_product():
                 price       = float(price),
                 stock       = int(stock),
                 category    = category,
-                image_url   = image_url
+                image_url   = image_url,
+                image_url_2 = image_url_2,
+                image_url_3 = image_url_3,
             )
             db.session.add(product)
             db.session.commit()
@@ -251,7 +250,7 @@ def add_product():
 
 
 # ─────────────────────────────────────────────────────────────
-# EDIT PRODUCT
+# EDIT PRODUCT  (supports image_url_2, image_url_3)
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/products/edit/<int:product_id>", methods=["GET", "POST"])
@@ -270,6 +269,8 @@ def edit_product(product_id):
         product.stock       = int(request.form.get("stock", 0))
         product.category    = request.form.get("category", "")
         product.image_url   = request.form.get("image_url", "").strip()
+        product.image_url_2 = request.form.get("image_url_2", "").strip() or None
+        product.image_url_3 = request.form.get("image_url_3", "").strip() or None
 
         try:
             db.session.commit()
@@ -346,9 +347,9 @@ def update_stock():
 @login_required
 @admin_required
 def orders():
-    status  = request.args.get("status", "")
-    search  = request.args.get("q", "")
-    query   = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc())
+    status = request.args.get("status", "")
+    search = request.args.get("q", "")
+    query  = Order.query.filter_by(is_deleted=False).order_by(Order.created_at.desc())
 
     if status and status in Order.STATUSES:
         query = query.filter_by(status=status)
@@ -361,20 +362,20 @@ def orders():
             query = query.join(User).filter(User.name.ilike(f"%{search}%"))
 
     all_orders = query.all()
-
     return render_template(
         "admin.html",
-        view           = "orders",
-        orders         = all_orders,
-        current_status = status,
-        statuses       = Order.STATUSES,
-        search         = search,
-        title          = "Manage Orders – GadgetHub PH"
+        view              = "orders",
+        orders            = all_orders,
+        current_status    = status,
+        statuses          = Order.STATUSES,
+        search            = search,
+        deletable_statuses = DELETABLE_STATUSES,
+        title             = "Manage Orders – GadgetHub PH"
     )
 
 
 # ─────────────────────────────────────────────────────────────
-# ORDER DETAIL (admin view)
+# ORDER DETAIL
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/orders/<int:order_id>")
@@ -396,7 +397,7 @@ def order_detail(order_id):
 
 
 # ─────────────────────────────────────────────────────────────
-# UPDATE ORDER STATUS
+# UPDATE ORDER STATUS  (sends email notification automatically)
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/orders/<int:order_id>/status", methods=["POST"])
@@ -410,8 +411,8 @@ def update_order_status(order_id):
 
     if order.status in TERMINAL_STATUSES:
         flash(
-            f"⛔ Order #{order_id:04d} is already '{order.status.replace('_', ' ').title()}' "
-            f"and cannot be changed.",
+            f"⛔ Order #{order_id:04d} is already "
+            f"'{order.status.replace('_', ' ').title()}' and cannot be changed.",
             "danger"
         )
         if request.form.get("from") == "detail":
@@ -419,7 +420,6 @@ def update_order_status(order_id):
         return redirect(url_for("admin.orders"))
 
     new_status = request.form.get("status")
-
     if new_status not in Order.STATUSES:
         flash("Invalid status.", "danger")
         return redirect(url_for("admin.orders"))
@@ -436,6 +436,7 @@ def update_order_status(order_id):
     db.session.commit()
     flash(f"✅ Order #{order_id:04d} updated to '{new_status}'.", "success")
 
+    # ── Email notification ────────────────────────────────────
     if old_status != new_status:
         try:
             from email_utils import send_order_status_update
@@ -444,11 +445,9 @@ def update_order_status(order_id):
                 order      = order,
                 new_status = new_status
             )
+            logger.info(f"Status-update email sent for order #{order_id} → {new_status}")
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(
-                f"Status email failed for order #{order_id}: {e}"
-            )
+            logger.warning(f"Status email failed for order #{order_id}: {e}")
 
     if request.form.get("from") == "detail":
         return redirect(url_for("admin.order_detail", order_id=order_id))
@@ -456,7 +455,9 @@ def update_order_status(order_id):
 
 
 # ─────────────────────────────────────────────────────────────
-# DELETE ORDER (soft delete)
+# SOFT-DELETE ORDER  (hide from dashboard/orders list)
+# Database values (revenue, counts) are NOT changed.
+# Only paid or delivered orders may be hidden.
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/orders/<int:order_id>/delete", methods=["POST"])
@@ -470,7 +471,7 @@ def delete_order(order_id):
 
     if order.status not in DELETABLE_STATUSES:
         flash(
-            f"⛔ Only paid or delivered orders can be removed. "
+            f"⛔ Only paid or delivered orders can be removed from view. "
             f"This order is '{order.status.replace('_', ' ').title()}'.",
             "danger"
         )
@@ -479,32 +480,49 @@ def delete_order(order_id):
     order.is_deleted = True
     db.session.commit()
     flash(f"🗑️ Order #{order_id:04d} has been removed from the list.", "success")
+
+    # Redirect to dashboard if the request came from there
+    if request.form.get("from") == "dashboard":
+        return redirect(url_for("admin.dashboard"))
     return redirect(url_for("admin.orders"))
 
 
 # ─────────────────────────────────────────────────────────────
-# USERS LIST
+# CUSTOMERS / USERS LIST  (FIX: robust, uses order_counts dict)
 # ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/users")
 @login_required
 @admin_required
 def users():
-    all_users = User.query.order_by(User.created_at.desc()).all()
+    try:
+        all_users = User.query.order_by(User.created_at.desc()).all()
 
-    from sqlalchemy import func
-    order_counts = dict(
-        db.session.query(Order.user_id, func.count(Order.id))
-        .group_by(Order.user_id).all()
-    )
+        from sqlalchemy import func
+        order_counts = dict(
+            db.session.query(Order.user_id, func.count(Order.id))
+            .group_by(Order.user_id).all()
+        )
 
-    return render_template(
-        "admin.html",
-        view         = "users",
-        users        = all_users,
-        order_counts = order_counts,
-        title        = "Manage Users – GadgetHub PH"
-    )
+        # Build per-user spend totals for richer UI
+        spend_totals = dict(
+            db.session.query(Order.user_id, func.sum(Order.total_price))
+            .filter(Order.status != "pending")
+            .group_by(Order.user_id).all()
+        )
+
+        return render_template(
+            "admin.html",
+            view         = "users",
+            users        = all_users,
+            order_counts = order_counts,
+            spend_totals = spend_totals,
+            title        = "Manage Customers – GadgetHub PH"
+        )
+    except Exception as e:
+        logger.error(f"Customers page error: {e}", exc_info=True)
+        flash(f"Error loading customers: {str(e)}", "danger")
+        return redirect(url_for("admin.dashboard"))
 
 
 # ─────────────────────────────────────────────────────────────
