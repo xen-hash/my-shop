@@ -163,7 +163,21 @@ def _maybe_init_db(db):
 def _run_migrations_once(db):
     try:
         with db.engine.connect() as conn:
-            # ── existing migrations ───────────────────────────
+            # ── users table ───────────────────────────────────
+            conn.execute(db.text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(256)"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(120)"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id VARCHAR(120)"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS picture VARCHAR(500)"
+            ))
+
+            # ── orders table ──────────────────────────────────
             conn.execute(db.text(
                 "ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT"
             ))
@@ -171,7 +185,7 @@ def _run_migrations_once(db):
                 "ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL"
             ))
 
-            # ── NEW: product multi-image columns ─────────────
+            # ── products table ────────────────────────────────
             conn.execute(db.text(
                 "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_2 VARCHAR(500)"
             ))
