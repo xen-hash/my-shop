@@ -28,6 +28,19 @@
   @media(min-width:768px){.gallery-main img{height:400px;}}
   @media(min-width:1024px){.gallery-main img{height:450px;}}
   .gallery-main:hover img{transform:scale(1.04);}
+
+  /* ── Thumbnail strip ─────────────────────────────────────── */
+  .gallery-thumbs{display:flex;gap:.55rem;margin-top:.75rem;flex-wrap:wrap;}
+  .gallery-thumb{
+    width:80px;height:80px;border-radius:10px;overflow:hidden;cursor:pointer;
+    border:2px solid rgba(72,69,85,.3);transition:all .2s;flex-shrink:0;
+    background:#22223b;
+  }
+  .gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+  .gallery-thumb:hover img{transform:scale(1.08);}
+  .gallery-thumb.active{border-color:#947dff;box-shadow:0 0 0 2px rgba(148,125,255,.35);}
+  @media(min-width:480px){.gallery-thumb{width:90px;height:90px;}}
+  @media(min-width:768px){.gallery-thumb{width:82px;height:82px;}}
   .sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     background:rgba(0,0,0,.6);font-family:'Space Grotesk',sans-serif;
     font-size:clamp(1.2rem,5vw,2rem);font-weight:800;color:#ff4d6d;letter-spacing:2px;}
@@ -96,18 +109,6 @@
   .btn-buy-now:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,159,67,.4);}
   .btn-buy-now:active{transform:scale(.97);}
   .btn-buy-now:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
-
-  /* Specs table */
-  .specs-card{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);
-    border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.25rem;}
-  .specs-title{font-weight:700;color:#fff;font-size:.95rem;margin-bottom:.85rem;
-    display:flex;align-items:center;gap:.4rem;}
-  .specs-table{width:100%;border-collapse:collapse;}
-  .specs-table tr{border-bottom:1px solid rgba(255,255,255,.06);}
-  .specs-table tr:last-child{border-bottom:none;}
-  .spec-key{color:#8888aa;font-size:.78rem;font-weight:600;text-transform:uppercase;
-    letter-spacing:.5px;padding:.45rem .9rem .45rem 0;width:38%;vertical-align:middle;}
-  .spec-val{color:#eedbff;font-size:.88rem;font-weight:500;padding:.45rem 0;vertical-align:middle;}
 
   /* Meta table */
   .product-meta{background:#1a1a2e;border:1px solid rgba(72,69,85,.2);
@@ -193,7 +194,7 @@
     <!-- Gallery -->
     <div class="gallery-col">
       <div class="gallery-main">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" id="gallery-main-img">
         <span class="gallery-cat-tag">{{ product.category|capitalize }}</span>
         {% if product.stock == 0 %}
           <div class="sold-out-overlay">SOLD OUT</div>
@@ -201,6 +202,19 @@
           <div class="low-stock-badge">⚡ Only {{ product.stock }} left!</div>
         {% endif %}
       </div>
+
+      {# Thumbnail strip — shows if product has 2+ images #}
+      {% set images = product.extra_images %}
+      {% if images|length > 1 %}
+        <div class="gallery-thumbs" id="gallery-thumbs">
+          {% for img in images %}
+            <div class="gallery-thumb {% if loop.first %}active{% endif %}"
+                 onclick="switchGalleryImage(this, '{{ img }}')">
+              <img src="{{ img }}" alt="{{ product.name }} image {{ loop.index }}" loading="lazy">
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
 
     <!-- Info -->
@@ -251,22 +265,6 @@
             <span class="material-symbols-outlined" style="font-size:1rem;">cancel</span> Out of Stock
           </button>
         </div>
-      {% endif %}
-
-      {% if product.specs %}
-      <div class="specs-card">
-        <div class="specs-title">📋 Specifications</div>
-        <table class="specs-table">
-          {% for key, val in product.specs.items() %}
-            {% if val %}
-              <tr>
-                <td class="spec-key">{{ key|capitalize }}</td>
-                <td class="spec-val">{{ val }}</td>
-              </tr>
-            {% endif %}
-          {% endfor %}
-        </table>
-      </div>
       {% endif %}
 
       <div class="product-meta">
@@ -352,6 +350,25 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
+// ── Gallery image switcher ──────────────────────────────────
+function switchGalleryImage(thumbEl, imgSrc) {
+  // Update main image
+  const mainImg = document.getElementById('gallery-main-img');
+  if (mainImg) {
+    mainImg.style.opacity = '0';
+    mainImg.style.transform = 'scale(0.97)';
+    mainImg.style.transition = 'opacity .2s, transform .2s';
+    setTimeout(() => {
+      mainImg.src = imgSrc;
+      mainImg.style.opacity = '1';
+      mainImg.style.transform = 'scale(1)';
+    }, 150);
+  }
+  // Update active thumb
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  thumbEl.classList.add('active');
+}
+
 function changeQty(delta) {
   const input = document.getElementById('qty');
   const max = parseInt(input.max);
