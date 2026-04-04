@@ -43,9 +43,9 @@
       animation:brandShift 4s linear infinite;}
     @keyframes brandShift{0%{background-position:0% center}100%{background-position:200% center}}
     .gh-brand span{-webkit-text-fill-color:transparent;}
-    .gh-links{display:none;gap:.75rem;align-items:center;}
-    @media(min-width:992px){.gh-links{display:flex;}}
-    .gh-link{font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:500;
+    .gh-links{display:none;gap:1.25rem;align-items:center;}
+    @media(min-width:768px){.gh-links{display:flex;}}
+    .gh-link{font-family:'Space Grotesk',sans-serif;font-size:.83rem;font-weight:500;
       color:rgba(202,190,255,.7);text-decoration:none;transition:color .2s;white-space:nowrap;}
     .gh-link:hover,.gh-link.active{color:#fff;}
     .gh-link.active{border-bottom:2px solid #947dff;padding-bottom:1px;}
@@ -133,9 +133,6 @@
     <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-link">Earbuds</a>
     <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-link">Chargers</a>
     <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-link">Powerbanks</a>
-    <a href="{{ url_for('shop.index', category='phones') }}" class="gh-link">Phones</a>
-    <a href="{{ url_for('shop.index', category='tablets') }}" class="gh-link">Tablets</a>
-    <a href="{{ url_for('shop.index', category='laptops') }}" class="gh-link">Laptops</a>
     <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-link">Accessories</a>
   </div>
 
@@ -202,26 +199,23 @@
     <a href="{{ url_for('cart.view_cart') }}" class="gh-drawer-link">
       🛒 My Cart {% if current_user.cart_count > 0 %}<span style="background:#ff4d6d;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;">{{ current_user.cart_count }}</span>{% endif %}
     </a>
-    {% if current_user.is_admin %}<a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>{% endif %}
+    {% if current_user.is_admin %}
+    <a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>
+    {% endif %}
+    <div class="gh-drawer-divider"></div>
+    <a href="{{ url_for('auth.logout') }}" class="gh-drawer-link"
+       style="color:#ff4d6d!important;background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);">
+      🚪 Logout
+    </a>
+    {% else %}
+    <div class="gh-drawer-divider"></div>
+    <a href="{{ url_for('auth.login') }}" class="gh-drawer-link">🔑 Login</a>
+    <a href="{{ url_for('auth.register') }}" class="gh-drawer-link"
+       style="background:rgba(148,125,255,.12);border:1px solid rgba(148,125,255,.25);color:#cabeff;">
+      ✨ Create Account
+    </a>
     {% endif %}
   </nav>
-  <div style="flex-shrink:0;padding:1rem 0 0;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('auth.logout') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:rgba(255,77,109,.12);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);
-                text-decoration:none;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Logout</a>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                border:1px solid rgba(148,125,255,.3);color:#cabeff;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Login</a>
-      <a href="{{ url_for('auth.register') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Create Account</a>
-    {% endif %}
-  </div>
 </div>
 
 <!-- PAGE BODY -->
