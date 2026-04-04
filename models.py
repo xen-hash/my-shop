@@ -82,6 +82,11 @@ class Product(db.Model):
             return 0.0
         return round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
 
+    # Alias — existing templates use average_rating
+    @property
+    def average_rating(self) -> float:
+        return self.avg_rating
+
     @property
     def review_count(self) -> int:
         return self.reviews.count()
