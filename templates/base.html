@@ -64,7 +64,7 @@
     .gh-drawer{position:fixed;top:0;left:0;width:min(300px,85vw);bottom:0;z-index:1001;
       background:#150726;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
       transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-      display:flex;flex-direction:column;padding:1.25rem;overflow:hidden;}
+      display:flex;flex-direction:column;padding:1.25rem;overflow-y:auto;}
     .gh-drawer.open{transform:translateX(0);}
     .gh-drawer-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
     .gh-drawer-link{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;
@@ -183,7 +183,7 @@
     <span class="gh-brand" style="font-size:1.1rem;">Gadget<span>Hub</span> PH</span>
     <button onclick="closeDrawer()" class="gh-hamburger" aria-label="Close"><span class="material-symbols-outlined" style="font-size:1.5rem;">close</span></button>
   </div>
-  <nav style="flex:1;overflow-y:auto;">
+  <nav style="flex:1;">
     <a href="{{ url_for('shop.index') }}" class="gh-drawer-link">🛍️ All Products</a>
     <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-drawer-link">🎧 Earbuds</a>
     <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-drawer-link">⚡ Chargers</a>
@@ -197,24 +197,25 @@
       🛒 My Cart {% if current_user.cart_count > 0 %}<span style="background:#ff4d6d;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;">{{ current_user.cart_count }}</span>{% endif %}
     </a>
     {% if current_user.is_admin %}<a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>{% endif %}
-    <div class="gh-drawer-divider"></div>
-    {# LOGOUT — placed inside nav so it is always reachable on any screen size #}
-    <a href="{{ url_for('auth.logout') }}" class="gh-drawer-link"
-       style="color:#ff4d6d!important;background:rgba(255,77,109,.08);
-              border:1px solid rgba(255,77,109,.2);margin-top:.25rem;">
-      <span class="material-symbols-outlined" style="font-size:1.1rem;vertical-align:middle;">logout</span>
-      Logout
-    </a>
-    {% else %}
-    <div class="gh-drawer-divider"></div>
-    <a href="{{ url_for('auth.login') }}" class="gh-drawer-link">🔑 Login</a>
-    <a href="{{ url_for('auth.register') }}" class="gh-drawer-link"
-       style="background:linear-gradient(135deg,rgba(202,190,255,.15),rgba(148,125,255,.15));
-              border:1px solid rgba(148,125,255,.3);color:#cabeff;">
-      ✨ Create Account
-    </a>
     {% endif %}
   </nav>
+  <div style="padding-top:1.25rem;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}"
+         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
+                background:rgba(255,77,109,.12);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);
+                text-decoration:none;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Logout</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}"
+         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
+                border:1px solid rgba(148,125,255,.3);color:#cabeff;text-decoration:none;
+                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Login</a>
+      <a href="{{ url_for('auth.register') }}"
+         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
+                background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;text-decoration:none;
+                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Create Account</a>
+    {% endif %}
+  </div>
 </div>
 
 <!-- PAGE BODY -->
@@ -236,48 +237,65 @@
   <!-- FOOTER -->
   <footer class="gh-footer">
     <div class="gh-footer-grid">
+      <!-- Brand column -->
       <div style="grid-column:1/-1;">
         <div class="gh-footer-col-title" style="font-size:.9rem;letter-spacing:-.3px;">GadgetHub PH 🇵🇭</div>
-        <p style="color:rgba(202,190,255,.45);font-size:.8rem;line-height:1.6;max-width:260px;">
-          Curated tech accessories for every Filipino. Delivered fast, everywhere.
+        <p style="color:rgba(202,190,255,.45);font-size:.8rem;line-height:1.6;max-width:280px;">
+          Curated tech accessories for every Filipino.<br>
+          Quality gadgets. Fast delivery. Honest prices.
         </p>
-        <div class="gh-footer-social">
-          <a href="#" class="gh-social-btn" title="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          </a>
-          <a href="#" class="gh-social-btn" title="Instagram">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-          </a>
-          <a href="#" class="gh-social-btn" title="TikTok">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.77 1.52V6.76a4.85 4.85 0 01-1-.07z"/></svg>
-          </a>
-          <a href="#" class="gh-social-btn" title="Shopee">
-            <span style="font-size:.7rem;font-weight:800;font-family:'Space Grotesk',sans-serif;">SPE</span>
-          </a>
+        <!-- Trust badges -->
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem;">
+          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
+                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
+                       border-radius:6px;padding:.25rem .6rem;">✅ COD Available</span>
+          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
+                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
+                       border-radius:6px;padding:.25rem .6rem;">🚚 Nationwide Delivery</span>
+          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
+                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
+                       border-radius:6px;padding:.25rem .6rem;">🔒 Secure Checkout</span>
         </div>
       </div>
+
+      <!-- Shop column -->
       <div>
-        <div class="gh-footer-col-title">Collections</div>
+        <div class="gh-footer-col-title">Shop</div>
+        <a href="{{ url_for('shop.index') }}" class="gh-footer-link">🛍️ All Products</a>
         <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-footer-link">🎧 Earbuds</a>
         <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-footer-link">⚡ Chargers</a>
         <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-footer-link">🔋 Powerbanks</a>
         <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-footer-link">📱 Accessories</a>
       </div>
+
+      <!-- Account column -->
       <div>
-        <div class="gh-footer-col-title">Support</div>
-        <a href="#" class="gh-footer-link">Warranty</a>
-        <a href="#" class="gh-footer-link">Shipping Policy</a>
-        <a href="#" class="gh-footer-link">Contact Us</a>
-        <a href="#" class="gh-footer-link">Track Order</a>
+        <div class="gh-footer-col-title">Account</div>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('auth.profile') }}" class="gh-footer-link">👤 My Profile</a>
+          <a href="{{ url_for('orders.order_history') }}" class="gh-footer-link">📦 My Orders</a>
+          <a href="{{ url_for('cart.view_cart') }}" class="gh-footer-link">🛒 My Cart</a>
+          <a href="{{ url_for('auth.logout') }}" class="gh-footer-link" style="color:#ff4d6d;">🚪 Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="gh-footer-link">🔑 Login</a>
+          <a href="{{ url_for('auth.register') }}" class="gh-footer-link">✨ Create Account</a>
+        {% endif %}
       </div>
+
+      <!-- Info column -->
       <div>
-        <div class="gh-footer-col-title">Legal</div>
-        <a href="#" class="gh-footer-link">Privacy Policy</a>
-        <a href="#" class="gh-footer-link">Terms of Service</a>
-        <a href="#" class="gh-footer-link">Returns Policy</a>
+        <div class="gh-footer-col-title">Info</div>
+        <p style="color:rgba(202,190,255,.4);font-size:.78rem;line-height:1.7;margin:0;">
+          📍 Philippines<br>
+          🕐 Mon – Sat, 9AM – 6PM<br>
+          📦 Ships via J&T / LBC<br>
+          💳 COD &amp; GCash accepted
+        </p>
       </div>
     </div>
-    <div class="gh-footer-bottom">© 2025 GadgetHub PH · Made with ❤️ for Filipinos</div>
+    <div class="gh-footer-bottom">
+      © {{ 2025 }} GadgetHub PH · Built for Filipinos 🇵🇭 · All rights reserved
+    </div>
   </footer>
 </div>
 

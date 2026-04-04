@@ -159,29 +159,17 @@
   .empty-state{text-align:center;padding:4rem 1rem;}
 
   /* ── CTA SECTION ── */
-  .cta-section{padding:2rem 1.25rem;}
-  @media(min-width:640px){.cta-section{padding:3rem 2rem;}}
-  .cta-inner{max-width:680px;margin:0 auto;border-radius:24px;padding:2.5rem 1.5rem;text-align:center;
     background:rgba(35,21,52,.7);backdrop-filter:blur(20px);
     border:1px solid rgba(148,125,255,.15);
     box-shadow:0 0 60px rgba(148,125,255,.08);position:relative;overflow:hidden;}
-  .cta-inner::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
     background:conic-gradient(from 0deg,transparent 0%,rgba(148,125,255,.04) 20%,transparent 40%);
     animation:ctaSpin 8s linear infinite;pointer-events:none;}
   @keyframes ctaSpin{to{transform:rotate(360deg)}}
-  @media(min-width:640px){.cta-inner{padding:3.5rem 3rem;border-radius:28px;}}
-  .cta-h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2.2rem);font-weight:800;margin-bottom:.75rem;position:relative;}
-  .cta-form{display:flex;gap:.5rem;max-width:400px;margin:1.5rem auto 0;flex-direction:column;position:relative;}
-  @media(min-width:480px){.cta-form{flex-direction:row;}}
-  .cta-input{flex:1;border-radius:10px;padding:.8rem 1.2rem;font-size:.88rem;outline:none;
     background:#3d2e4f;border:1px solid rgba(148,125,255,.2);color:#eedbff;
     transition:border-color .2s,box-shadow .2s;}
-  .cta-input:focus{border-color:#947dff;box-shadow:0 0 0 3px rgba(148,125,255,.15);}
-  .cta-btn{padding:.8rem 1.5rem;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;
     background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;border:none;
     font-family:'Space Grotesk',sans-serif;white-space:nowrap;
     transition:all .2s;box-shadow:0 0 20px rgba(148,125,255,.3);}
-  .cta-btn:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(148,125,255,.5);}
 </style>
 {% endblock %}
 
@@ -321,17 +309,7 @@
   {% endif %}
 </section>
 
-<!-- ── CTA NEWSLETTER ──────────────────────────────────────────────── -->
-<section class="cta-section">
-  <div class="cta-inner">
-    <h2 class="cta-h2">Stay in the Loop</h2>
-    <p style="color:#c9c4d8;font-size:clamp(.85rem,2vw,.95rem);">Get exclusive deals, new arrivals, and tech tips delivered straight to your inbox.</p>
-    <div class="cta-form">
-      <input type="email" placeholder="Enter your email" class="cta-input">
-      <button class="cta-btn">Subscribe</button>
-    </div>
-  </div>
-</section>
+
 
 {% endblock %}
 
