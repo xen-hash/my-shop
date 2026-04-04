@@ -163,12 +163,22 @@ def _maybe_init_db(db):
 def _run_migrations_once(db):
     try:
         with db.engine.connect() as conn:
+            # ── existing migrations ───────────────────────────
             conn.execute(db.text(
                 "ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT"
             ))
             conn.execute(db.text(
                 "ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL"
             ))
+
+            # ── NEW: product multi-image columns ─────────────
+            conn.execute(db.text(
+                "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_2 VARCHAR(500)"
+            ))
+            conn.execute(db.text(
+                "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_3 VARCHAR(500)"
+            ))
+
             conn.commit()
         logger.info("✅  Migrations done.")
     except Exception as e:
