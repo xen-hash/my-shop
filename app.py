@@ -4,6 +4,8 @@ app.py – GadgetHub PH
 Application factory: configures Flask, extensions, and registers blueprints.
 FIX: Added session lifetime + remember-cookie config to prevent
      permanent auto-login on mobile / shared devices.
+FIX: before_request now pings via db.session (not db.engine.connect)
+     to correctly detect and recover from stale session connections.
 """
 
 import os
@@ -33,7 +35,7 @@ def create_app():
 
     # ── FIX: Session lifetime – session expires when browser closes
     #         unless user explicitly ticks "Remember me".
-    app.config["SESSION_PERMANENT"]        = False
+    app.config["SESSION_PERMANENT"]          = False
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
     # ── FIX: Remember-me cookie – only 1 day even when ticked.
@@ -54,7 +56,7 @@ def create_app():
             supabase_url = supabase_url.replace("postgres://", "postgresql://", 1)
         db_url = supabase_url
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+    app.config["SQLALCHEMY_DATABASE_URI"]    = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     is_sqlite = db_url.startswith("sqlite")
@@ -62,18 +64,18 @@ def create_app():
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "pool_pre_ping":    True,
-            "pool_recycle":     60,    # recycle every 60s — Supabase free tier drops idle fast
-            "pool_size":        2,     # minimal pool on free tier
-            "max_overflow":     3,
-            "pool_timeout":     30,
-            "pool_use_lifo":    True,
+            "pool_pre_ping":  True,
+            "pool_recycle":   60,    # recycle every 60s — Supabase free tier drops idle fast
+            "pool_size":      2,     # minimal pool on free tier
+            "max_overflow":   3,
+            "pool_timeout":   30,
+            "pool_use_lifo":  True,
             "connect_args": {
-                "connect_timeout":        10,
-                "keepalives":             1,
-                "keepalives_idle":        5,    # keepalive after 5s idle
-                "keepalives_interval":    2,
-                "keepalives_count":       3,
+                "connect_timeout":     10,
+                "keepalives":          1,
+                "keepalives_idle":     5,    # keepalive after 5s idle
+                "keepalives_interval": 2,
+                "keepalives_count":    3,
             },
         }
 
@@ -126,18 +128,19 @@ def create_app():
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
 
-    # ── Auto-retry on SSL/connection drops ──────────────────
+    # ── Auto-retry on SSL/connection drops ────────────────────
     # Supabase free tier drops connections aggressively.
-    # This retries failed DB requests once before giving up.
+    # FIX: Ping via db.session (not db.engine.connect) so we catch
+    #      stale session connections — not just pool-level drops.
     @app.before_request
     def ensure_db_connection():
         """Ping the DB before each request; reconnect if needed."""
         from sqlalchemy import text
         try:
-            with db.engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
+            db.session.execute(text("SELECT 1"))
         except Exception:
-            db.engine.dispose()   # kill the whole pool and start fresh
+            db.session.remove()  # drop the stale session
+            db.engine.dispose()  # purge the entire connection pool
 
     logger.info("✅  GadgetHub PH app started successfully.")
     return app
