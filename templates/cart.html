@@ -1,127 +1,198 @@
-{% extends "base.html" %}
-{% block title %}My Cart – GadgetHub PH{% endblock %}
+/* ============================================================
+   cart.css – GadgetHub PH  ·  White Minimal Redesign
+   ============================================================ */
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
-{% endblock %}
+.cart-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.5px;
+  margin-bottom: 0.25rem;
+}
 
-{% block content %}
-<div class="container py-5">
+/* ── Cart Item Card ─────────────────────────────────────────── */
+.cart-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+.cart-item:hover {
+  border-color: #D1D5DB;
+  box-shadow: var(--shadow-sm);
+}
 
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <h1 class="cart-page-title mb-0">My Cart</h1>
-    <span style="background:var(--primary); color:#fff; border-radius:50px;
-                 padding:0.2rem 0.8rem; font-size:0.85rem; font-weight:700;">
-      <span id="cart-count">{{ cart_items|length }}</span> items
-    </span>
-  </div>
+.cart-item-img {
+  width: 80px; height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--bg-section);
+}
 
-  {% if cart_items %}
-    <div class="row g-4">
+.cart-item-info { flex: 1; min-width: 0; }
 
-      <!-- Cart Items -->
-      <div class="col-lg-8">
-        <div class="d-flex flex-column gap-3" id="cart-items-container">
-          {% for item in cart_items %}
-            <div class="cart-item" id="cart-item-{{ item.id }}">
+.cart-item-category {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.2rem;
+}
 
-              <!-- Image -->
-              <img
-                src="{{ item.product.image_url }}"
-                alt="{{ item.product.name }}"
-                class="cart-item-img">
+.cart-item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.25rem;
+}
 
-              <!-- Info -->
-              <div class="cart-item-info">
-                <div class="cart-item-category">{{ item.product.category }}</div>
-                <div class="cart-item-name">{{ item.product.name }}</div>
-                <div class="cart-item-price">₱{{ "%.2f"|format(item.product.price_float) }} each</div>
-              </div>
+.cart-item-price {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
 
-              <!-- Qty -->
-              <div class="cart-qty-control">
-                <button onclick="updateQty({{ item.id }}, -1)">−</button>
-                <span id="qty-{{ item.id }}">{{ item.quantity }}</span>
-                <button onclick="updateQty({{ item.id }}, 1)">+</button>
-              </div>
+/* ── Qty control ────────────────────────────────────────────── */
+.cart-qty-control {
+  display: flex;
+  align-items: center;
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cart-qty-control button {
+  background: transparent;
+  border: none;
+  color: var(--text-heading);
+  width: 34px; height: 36px;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition);
+  line-height: 1;
+}
+.cart-qty-control button:hover { background: #E5E7EB; }
+.cart-qty-control span {
+  width: 34px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-heading);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  line-height: 36px;
+}
 
-              <!-- Subtotal -->
-              <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">
-                ₱{{ "%.2f"|format(item.subtotal) }}
-              </div>
+.cart-item-subtotal {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  min-width: 80px;
+  text-align: right;
+  flex-shrink: 0;
+  letter-spacing: -0.3px;
+}
 
-              <!-- Remove -->
-              <button class="btn-remove" onclick="removeItem({{ item.id }})"
-                      title="Remove item">
-                <i class="bi bi-trash3"></i>
-              </button>
+.btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.btn-remove:hover {
+  color: #DC2626;
+  background: #FEF2F2;
+}
 
-            </div>
-          {% endfor %}
-        </div>
+/* ── Order Summary Sidebar ──────────────────────────────────── */
+.order-summary {
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  position: sticky;
+  top: 78px;
+}
+.order-summary h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: -0.3px;
+}
 
-        <!-- Continue Shopping -->
-        <div class="mt-4">
-          <a href="{{ url_for('shop.index') }}" class="btn-outline-custom">
-            <i class="bi bi-arrow-left"></i> Continue Shopping
-          </a>
-        </div>
-      </div>
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.summary-row strong { color: var(--text-heading); font-weight: 600; }
 
-      <!-- Order Summary -->
-      <div class="col-lg-4">
-        <div class="order-summary">
-          <h3>Order Summary</h3>
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0 0;
+  margin-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+.summary-total span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.summary-total strong {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.5px;
+}
 
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <strong id="cart-total">₱{{ "%.2f"|format(cart_total) }}</strong>
-          </div>
-          <div class="summary-row">
-            <span>Shipping</span>
-            <strong style="color:var(--accent2)">FREE</strong>
-          </div>
-          <div class="summary-row">
-            <span>Tax</span>
-            <strong>₱0.00</strong>
-          </div>
+/* ── Empty Cart ─────────────────────────────────────────────── */
+.empty-cart {
+  text-align: center;
+  padding: 5rem 2rem;
+}
+.empty-cart-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+.empty-cart h3 {
+  font-size: 1.3rem;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.empty-cart p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
 
-          <div class="summary-total">
-            <span>Total</span>
-            <strong>₱{{ "%.2f"|format(cart_total) }}</strong>
-          </div>
-
-          <div class="d-grid mt-4">
-            <a href="{{ url_for('orders.checkout') }}"
-               id="checkout-btn"
-               class="btn-primary-custom justify-content-center">
-              <i class="bi bi-bag-check"></i> Proceed to Checkout
-            </a>
-          </div>
-
-          <p class="text-center mt-3" style="font-size:0.78rem; color:var(--text-muted)">
-            <i class="bi bi-lock-fill"></i> Secure checkout · Free nationwide shipping
-          </p>
-        </div>
-      </div>
-
-    </div>
-
-  {% else %}
-    <!-- Empty Cart -->
-    <div class="empty-cart">
-      <div class="empty-cart-icon">🛒</div>
-      <h3>Your cart is empty</h3>
-      <p>Looks like you haven't added anything yet.</p>
-      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom mt-3 d-inline-flex">
-        <i class="bi bi-grid-fill"></i> Start Shopping
-      </a>
-    </div>
-  {% endif %}
-
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
-{% endblock %}
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .cart-item { flex-wrap: wrap; gap: 0.85rem; }
+  .cart-item-img { width: 65px; height: 65px; }
+  .cart-item-subtotal { text-align: left; min-width: unset; }
+}

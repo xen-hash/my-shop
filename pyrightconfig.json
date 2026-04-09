@@ -1,5 +1,8 @@
 {
   "pythonVersion": "3.12",
   "typeCheckingMode": "off",
-  "extraPaths": ["."]
+  "extraPaths": ["."],
+  "exclude": ["**/__pycache__"],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none"
 }

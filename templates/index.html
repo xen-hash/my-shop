@@ -3,195 +3,170 @@
 
 {% block extra_css %}
 <style>
-  /* ── HERO ── */
-  .hero-section{position:relative;overflow:hidden;padding:3rem 1.25rem 2.5rem;}
-  @media(min-width:768px){.hero-section{padding:4rem 3rem 3.5rem;}}
-  @media(min-width:1024px){.hero-section{padding:5rem 5rem 4rem;}}
+/* ── HERO ── */
+.hero-section{
+  background:#FAFAFA;
+  border-bottom:1px solid #E5E7EB;
+  padding:3.5rem 1.5rem 3rem;
+  position:relative;
+  overflow:hidden;
+}
+@media(min-width:768px){.hero-section{padding:5rem 3rem 4rem;}}
+@media(min-width:1024px){.hero-section{padding:6rem 5rem 5rem;}}
 
-  /* Animated orbs */
-  .hero-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px);}
-  .hero-orb-1{width:500px;height:500px;top:-100px;right:-80px;
-    background:radial-gradient(circle,rgba(148,125,255,.18) 0%,transparent 70%);
-    animation:orbFloat 8s ease-in-out infinite;}
-  .hero-orb-2{width:300px;height:300px;bottom:-60px;right:20%;
-    background:radial-gradient(circle,rgba(0,212,170,.1) 0%,transparent 70%);
-    animation:orbFloat 12s ease-in-out infinite reverse;}
-  .hero-orb-3{width:200px;height:200px;top:40%;left:5%;
-    background:radial-gradient(circle,rgba(255,77,109,.08) 0%,transparent 70%);
-    animation:orbFloat 10s ease-in-out 2s infinite;}
-  @keyframes orbFloat{
-    0%,100%{transform:translateY(0) scale(1);}
-    50%{transform:translateY(-30px) scale(1.05);}
-  }
+.hero-content{position:relative;z-index:1;max-width:580px;}
 
-  .hero-bg{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:flex-end;pointer-events:none;}
-  .hero-bg img{width:55vw;max-width:480px;object-fit:contain;opacity:.12;animation:heroBgFloat 6s ease-in-out infinite;}
-  @keyframes heroBgFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-  @media(max-width:600px){.hero-bg img{width:80vw;opacity:.07;}}
-  .hero-overlay{position:absolute;inset:0;z-index:0;background:linear-gradient(to right,#1a0c2b 35%,rgba(26,12,43,.8) 65%,transparent);}
-  .hero-content{position:relative;z-index:1;max-width:600px;}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.3rem .9rem;border-radius:99px;font-size:.75rem;
+  font-weight:600;letter-spacing:.02em;text-transform:uppercase;margin-bottom:1.1rem;
+  background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;
+}
+.hero-h1{
+  font-family:'Inter',sans-serif;font-weight:800;line-height:1.08;
+  letter-spacing:-1.5px;margin-bottom:.9rem;color:#111827;
+  font-size:clamp(2rem,7vw,4rem);
+}
+.hero-grad{color:#2563EB;}
+.hero-p{
+  color:#6B7280;line-height:1.7;margin-bottom:1.5rem;
+  font-size:clamp(.88rem,2vw,1rem);max-width:480px;
+}
+.hero-btns{display:flex;flex-wrap:wrap;gap:.65rem;margin-bottom:2rem;}
+.hero-stats{display:flex;gap:2rem;flex-wrap:wrap;}
 
-  /* Stagger entrance animations */
-  .hero-tag{display:inline-block;padding:.3rem 1rem;border-radius:50px;font-size:.72rem;
-    font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;
-    background:#3d2e4f;color:#cabeff;border:1px solid rgba(148,125,255,.25);
-    opacity:0;transform:translateY(16px);animation:fadeUp .6s .1s forwards;
-    box-shadow:0 0 20px rgba(148,125,255,.1);}
-  .hero-h1{font-family:'Space Grotesk',sans-serif;font-weight:800;line-height:1.08;
-    letter-spacing:-1.5px;margin-bottom:1rem;color:#fff;
-    font-size:clamp(2.2rem,8vw,5rem);
-    opacity:0;transform:translateY(20px);animation:fadeUp .6s .25s forwards;}
-  .hero-grad{background:linear-gradient(135deg,#cabeff,#947dff,#ff9f43);
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    background-size:200% auto;animation:gradShift 3s linear infinite;}
-  @keyframes gradShift{0%{background-position:0%}100%{background-position:200%}}
-  .hero-p{color:#c9c4d8;line-height:1.65;margin-bottom:1.5rem;font-size:clamp(.88rem,2.5vw,1.05rem);
-    opacity:0;transform:translateY(16px);animation:fadeUp .6s .4s forwards;}
-  .hero-btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.75rem;
-    opacity:0;transform:translateY(16px);animation:fadeUp .6s .55s forwards;}
-  .hero-stats{display:flex;gap:1.5rem;flex-wrap:wrap;
-    opacity:0;transform:translateY(16px);animation:fadeUp .6s .7s forwards;}
-  @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.btn-primary-hero{
+  padding:.72rem 1.6rem;border-radius:8px;font-weight:700;font-size:.9rem;
+  text-decoration:none;white-space:nowrap;
+  background:#111827;color:#fff;border:1px solid #111827;
+  transition:all .15s;
+}
+.btn-primary-hero:hover{background:#1F2937;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);transform:translateY(-1px);}
 
-  .btn-primary-hero{padding:.75rem 1.75rem;border-radius:10px;font-weight:700;font-size:.9rem;
-    text-decoration:none;white-space:nowrap;
-    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-    font-family:'Space Grotesk',sans-serif;
-    box-shadow:0 0 24px rgba(148,125,255,.4);
-    transition:transform .2s,box-shadow .2s;}
-  .btn-primary-hero:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 40px rgba(148,125,255,.6);}
-  .btn-outline-hero{padding:.75rem 1.75rem;border-radius:10px;font-weight:700;font-size:.9rem;
-    text-decoration:none;white-space:nowrap;
-    border:1.5px solid rgba(148,125,255,.35);color:#cabeff;font-family:'Space Grotesk',sans-serif;
-    transition:all .2s;backdrop-filter:blur(8px);}
-  .btn-outline-hero:hover{background:rgba(148,125,255,.12);border-color:#947dff;color:#fff;}
-  .hero-stat strong{display:block;font-family:'Space Grotesk',sans-serif;
-    font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;color:#fff;}
-  .hero-stat span{font-size:.75rem;color:#c9c4d8;}
+.btn-outline-hero{
+  padding:.72rem 1.6rem;border-radius:8px;font-weight:600;font-size:.9rem;
+  text-decoration:none;white-space:nowrap;
+  border:1px solid #E5E7EB;color:#374151;background:#fff;
+  transition:all .15s;
+}
+.btn-outline-hero:hover{background:#F3F4F6;border-color:#D1D5DB;color:#111827;}
 
-  /* ── FILTER BAR ── */
-  .filter-bar{padding:1rem 1.25rem;border-bottom:1px solid rgba(72,69,85,.2);}
-  @media(min-width:768px){.filter-bar{padding:1.25rem 2rem;}}
-  .pills-wrap{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch;}
-  .pills-wrap::-webkit-scrollbar{display:none;}
-  .cat-pill{flex-shrink:0;padding:.45rem 1rem;border-radius:50px;font-size:.8rem;font-weight:500;
-    text-decoration:none;transition:all .2s;border:1px solid rgba(72,69,85,.35);
-    background:#22223b;color:#8888aa;white-space:nowrap;}
-  .cat-pill.active,.cat-pill:hover{background:linear-gradient(135deg,#947dff,#cabeff);color:#1a0c2b;border-color:transparent;
-    box-shadow:0 0 16px rgba(148,125,255,.4);}
-  .search-row{display:flex;align-items:center;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;}
-  .search-input-wrap{position:relative;flex:1;min-width:140px;}
-  .search-input-wrap .si{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);
-    font-size:.95rem;color:#8888aa;pointer-events:none;}
-  .search-input{width:100%;padding:.5rem .9rem .5rem 2.4rem;border-radius:50px;
-    background:#22223b;border:1px solid rgba(72,69,85,.35);color:#eedbff;
-    font-size:.85rem;outline:none;transition:border-color .2s,box-shadow .2s;}
-  .search-input:focus{border-color:#947dff;box-shadow:0 0 0 3px rgba(148,125,255,.15);}
-  .search-btn{padding:.5rem 1rem;border-radius:50px;background:#947dff;color:#fff;
-    border:none;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap;
-    transition:all .2s;}
-  .search-btn:hover{background:#7c5cfc;box-shadow:0 0 16px rgba(148,125,255,.4);}
+.hero-stat strong{display:block;font-size:clamp(1.4rem,3vw,1.8rem);font-weight:800;color:#111827;letter-spacing:-.5px;}
+.hero-stat span{font-size:.75rem;color:#9CA3AF;font-weight:500;}
 
-  /* ── PRODUCT SECTION ── */
-  .products-section{padding:1.25rem 1.25rem 3rem;}
-  @media(min-width:768px){.products-section{padding:1.5rem 2rem 4rem;}}
-  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;}
-  .section-h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.2rem,4vw,1.6rem);font-weight:800;color:#fff;margin:0;}
+/* ── FILTER BAR ── */
+.filter-bar{
+  padding:.9rem 1.5rem;
+  border-bottom:1px solid #E5E7EB;
+  background:#fff;
+  position:sticky;top:60px;z-index:90;
+}
+.pills-wrap{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch;}
+.pills-wrap::-webkit-scrollbar{display:none;}
+.cat-pill{
+  flex-shrink:0;padding:.38rem 1rem;border-radius:99px;font-size:.8rem;font-weight:500;
+  text-decoration:none;transition:all .15s;
+  border:1px solid #E5E7EB;background:#fff;color:#6B7280;white-space:nowrap;
+}
+.cat-pill.active,.cat-pill:hover{background:#111827;color:#fff;border-color:#111827;}
 
-  /* ── PRODUCT GRID ── */
-  .product-grid{display:grid;gap:.9rem;grid-template-columns:repeat(2,1fr);}
-  @media(min-width:480px){.product-grid{gap:1rem;}}
-  @media(min-width:640px){.product-grid{grid-template-columns:repeat(3,1fr);}}
-  @media(min-width:900px){.product-grid{grid-template-columns:repeat(4,1fr);gap:1.25rem;}}
+.search-row{display:flex;align-items:center;gap:.5rem;margin-top:.65rem;flex-wrap:wrap;}
+.search-input-wrap{position:relative;flex:1;min-width:140px;}
+.search-input-wrap .si{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);font-size:.9rem;color:#9CA3AF;pointer-events:none;}
+.search-input{
+  width:100%;padding:.48rem .9rem .48rem 2.4rem;
+  border-radius:99px;background:#F9FAFB;
+  border:1px solid #E5E7EB;color:#111827;
+  font-size:.84rem;outline:none;transition:all .15s;
+}
+.search-input:focus{border-color:#2563EB;box-shadow:0 0 0 3px #DBEAFE;background:#fff;}
+.search-btn{
+  padding:.48rem 1.1rem;border-radius:99px;
+  background:#111827;color:#fff;border:none;cursor:pointer;
+  font-size:.82rem;font-weight:600;white-space:nowrap;transition:all .15s;
+}
+.search-btn:hover{background:#1F2937;box-shadow:0 2px 6px rgba(0,0,0,.1);}
 
-  /* ── PRODUCT CARD ── */
-  .product-card{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;
-    background:#1a1a2e;border:1px solid rgba(72,69,85,.2);transition:all .3s;
-    position:relative;}
-  .product-card::before{content:'';position:absolute;inset:0;border-radius:16px;
-    background:linear-gradient(135deg,rgba(148,125,255,.05),transparent);
-    opacity:0;transition:opacity .3s;pointer-events:none;z-index:0;}
-  .product-card:hover{transform:translateY(-5px);
-    box-shadow:0 20px 48px rgba(0,0,0,.45),0 0 0 1px rgba(148,125,255,.2),0 0 32px rgba(148,125,255,.08);
-    border-color:rgba(148,125,255,.3);}
-  .product-card:hover::before{opacity:1;}
-  .pc-img-wrap{position:relative;padding-top:100%;background:#22223b;overflow:hidden;z-index:1;}
-  .pc-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s;}
-  .product-card:hover .pc-img-wrap img{transform:scale(1.07);}
-  .pc-badge{position:absolute;top:8px;left:8px;padding:2px 7px;border-radius:5px;font-size:.63rem;font-weight:700;text-transform:uppercase;}
-  .badge-in{background:rgba(0,212,170,.9);color:#000;}
-  .badge-low{background:rgba(255,193,7,.9);color:#000;animation:badgePulse 2s ease-in-out infinite;}
-  .badge-out{background:rgba(255,77,109,.9);color:#fff;}
-  @keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,.4)}50%{box-shadow:0 0 0 4px rgba(255,193,7,0)}}
-  .pc-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    opacity:0;transition:opacity .3s;background:rgba(26,12,43,.45);}
-  .product-card:hover .pc-overlay{opacity:1;}
-  .pc-body{padding:.85rem .85rem 1rem;display:flex;flex-direction:column;flex:1;z-index:1;position:relative;}
-  @media(min-width:640px){.pc-body{padding:1rem 1rem 1.1rem;}}
-  .pc-cat{font-size:.65rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#947dff;margin-bottom:.25rem;}
-  .pc-name{font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:.88rem;
-    line-height:1.3;margin-bottom:.4rem;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-  @media(min-width:640px){.pc-name{font-size:.95rem;}}
-  .pc-stars{color:#ffc107;font-size:.72rem;}
-  .pc-rating-count{color:#8888aa;font-size:.68rem;}
-  .pc-footer{display:flex;align-items:center;justify-content:space-between;
-    margin-top:auto;padding-top:.65rem;border-top:1px solid rgba(72,69,85,.2);}
-  .pc-price{font-family:'Space Grotesk',sans-serif;font-weight:800;color:#fff;font-size:.95rem;}
-  .pc-price small{font-size:.7rem;color:#8888aa;font-weight:400;font-family:'Inter',sans-serif;}
-  .btn-add-cart{background:linear-gradient(135deg,#947dff,#7c5cfc);color:#fff;border:none;border-radius:8px;
-    padding:.4rem .75rem;font-size:.75rem;font-weight:600;cursor:pointer;
-    transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:.25rem;
-    box-shadow:0 0 12px rgba(148,125,255,.2);}
-  .btn-add-cart:hover{background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-    transform:scale(1.06);box-shadow:0 0 20px rgba(148,125,255,.5);}
-  .btn-add-cart:disabled{background:#22223b;color:#8888aa;cursor:not-allowed;transform:none;box-shadow:none;}
+/* ── PRODUCTS SECTION ── */
+.products-section{padding:2rem 1.5rem 4rem;}
+@media(min-width:768px){.products-section{padding:2rem 2rem 5rem;}}
 
-  /* ── PAGINATION ── */
-  .pagination-row{display:flex;justify-content:center;gap:.4rem;margin-top:2.5rem;flex-wrap:wrap;}
-  .page-btn{padding:.55rem 1rem;border-radius:8px;font-size:.82rem;text-decoration:none;transition:all .2s;
-    background:#271938;border:1px solid rgba(72,69,85,.35);color:#cabeff;}
-  .page-btn.active,.page-btn:hover{background:linear-gradient(135deg,#947dff,#cabeff);border-color:transparent;color:#1a0c2b;
-    box-shadow:0 0 16px rgba(148,125,255,.4);}
-  .page-dots{padding:.55rem .5rem;color:#8888aa;font-size:.82rem;}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.5rem;}
+.section-h2{font-size:clamp(1.1rem,3vw,1.4rem);font-weight:700;color:#111827;margin:0;letter-spacing:-.3px;}
 
-  /* ── EMPTY STATE ── */
-  .empty-state{text-align:center;padding:4rem 1rem;}
+/* ── PRODUCT GRID ── */
+.product-grid{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr);}
+@media(min-width:640px){.product-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:900px){.product-grid{grid-template-columns:repeat(4,1fr);gap:1.25rem;}}
 
-  /* ── CTA SECTION ── */
-    background:rgba(35,21,52,.7);backdrop-filter:blur(20px);
-    border:1px solid rgba(148,125,255,.15);
-    box-shadow:0 0 60px rgba(148,125,255,.08);position:relative;overflow:hidden;}
-    background:conic-gradient(from 0deg,transparent 0%,rgba(148,125,255,.04) 20%,transparent 40%);
-    animation:ctaSpin 8s linear infinite;pointer-events:none;}
-  @keyframes ctaSpin{to{transform:rotate(360deg)}}
-    background:#3d2e4f;border:1px solid rgba(148,125,255,.2);color:#eedbff;
-    transition:border-color .2s,box-shadow .2s;}
-    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;border:none;
-    font-family:'Space Grotesk',sans-serif;white-space:nowrap;
-    transition:all .2s;box-shadow:0 0 20px rgba(148,125,255,.3);}
+/* ── PRODUCT CARD ── */
+.product-card{
+  display:flex;flex-direction:column;border-radius:10px;overflow:hidden;
+  background:#fff;border:1px solid #E5E7EB;transition:all .18s;position:relative;
+}
+.product-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  border-color:#D1D5DB;
+}
+.product-card:hover .pc-img-wrap img{transform:scale(1.04);}
+.product-card::before{display:none;}
+
+.pc-img-wrap{position:relative;padding-top:100%;background:#F9FAFB;overflow:hidden;}
+.pc-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s ease;}
+
+.pc-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:5px;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.badge-in {background:#D1FAE5;color:#065F46;}
+.badge-low{background:#FEF3C7;color:#92400E;}
+.badge-out{background:#FEE2E2;color:#991B1B;}
+
+.pc-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;background:rgba(17,24,39,.04);}
+.product-card:hover .pc-overlay{opacity:1;}
+
+.pc-body{padding:.85rem .9rem 1rem;display:flex;flex-direction:column;flex:1;}
+@media(min-width:640px){.pc-body{padding:.95rem 1rem 1.1rem;}}
+.pc-cat{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2563EB;margin-bottom:.2rem;}
+.pc-name{font-weight:600;color:#111827;font-size:.88rem;line-height:1.3;margin-bottom:.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+@media(min-width:640px){.pc-name{font-size:.92rem;}}
+.pc-stars{color:#F59E0B;font-size:.7rem;}
+.pc-rating-count{color:#9CA3AF;font-size:.67rem;}
+.pc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:.65rem;border-top:1px solid #F1F5F9;}
+.pc-price{font-weight:700;color:#111827;font-size:.95rem;letter-spacing:-.2px;}
+.pc-price small{font-size:.7rem;color:#9CA3AF;font-weight:400;}
+
+.btn-add-cart{
+  background:#111827;color:#fff;border:none;border-radius:6px;
+  padding:.4rem .75rem;font-size:.75rem;font-weight:600;cursor:pointer;
+  transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:.25rem;
+}
+.btn-add-cart:hover{background:#1F2937;box-shadow:0 2px 6px rgba(0,0,0,.12);}
+.btn-add-cart:disabled{background:#F3F4F6;color:#9CA3AF;cursor:not-allowed;}
+
+/* ── PAGINATION ── */
+.pagination-row{display:flex;justify-content:center;gap:.35rem;margin-top:2.5rem;flex-wrap:wrap;}
+.page-btn{
+  padding:.5rem 1rem;border-radius:7px;font-size:.82rem;text-decoration:none;transition:all .15s;
+  background:#fff;border:1px solid #E5E7EB;color:#6B7280;
+}
+.page-btn.active,.page-btn:hover{background:#111827;border-color:#111827;color:#fff;}
+.page-dots{padding:.5rem .4rem;color:#9CA3AF;font-size:.82rem;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:4rem 1rem;}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- ── HERO ───────────────────────────────────────────────────────── -->
-<section class="hero-section" id="top">
-  <!-- Animated floating orbs -->
-  <div class="hero-orb hero-orb-1"></div>
-  <div class="hero-orb hero-orb-2"></div>
-  <div class="hero-orb hero-orb-3"></div>
-  <div class="hero-bg">
-    <img src="{{ url_for('static', filename='images/gadgethub-logo.png') }}" alt="GadgetHub PH">
-  </div>
-  <div class="hero-overlay"></div>
+<!-- ── HERO ── -->
+<section class="hero-section">
   <div class="hero-content">
-    <span class="hero-tag">🇵🇭 Free Shipping Nationwide</span>
+    <span class="hero-tag">Free Shipping Nationwide</span>
     <h1 class="hero-h1">Level Up Your<br><span class="hero-grad">Tech Setup.</span></h1>
     <p class="hero-p">Earbuds, chargers, powerbanks &amp; accessories — curated for every budget, delivered fast anywhere in the Philippines.</p>
     <div class="hero-btns">
       <a href="#products" class="btn-primary-hero">Shop Now</a>
-      <a href="{{ url_for('shop.index', category='earbuds') }}" class="btn-outline-hero">🎧 Top Picks</a>
+      <a href="{{ url_for('shop.index', category='earbuds') }}" class="btn-outline-hero">Top Picks</a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat"><strong data-count="500" data-suffix="+">500+</strong><span>Happy Customers</span></div>
@@ -201,34 +176,35 @@
   </div>
 </section>
 
-<!-- ── CATEGORY BAR + SEARCH ─────────────────────────────────────── -->
+<!-- ── FILTER BAR ── -->
 <div class="filter-bar" id="products">
   <div class="pills-wrap">
     <a href="{{ url_for('shop.index') }}" class="cat-pill{% if not current_category %} active{% endif %}">All</a>
     {% for cat in categories %}
-      <a href="{{ url_for('shop.index', category=cat) }}" class="cat-pill{% if current_category == cat %} active{% endif %}">
-        {% if cat=='earbuds' %}🎧{% elif cat=='chargers' %}⚡{% elif cat=='powerbanks' %}🔋{% elif cat=='phones' %}📲{% elif cat=='tablets' %}📟{% elif cat=='laptops' %}💻{% else %}📱{% endif %} {{ cat|capitalize }}
+      <a href="{{ url_for('shop.index', category=cat) }}"
+         class="cat-pill{% if current_category == cat %} active{% endif %}">
+        {{ cat|capitalize }}
       </a>
     {% endfor %}
   </div>
   <form method="GET" action="{{ url_for('shop.index') }}" class="search-row">
     {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
     <div class="search-input-wrap">
-      <span class="material-symbols-outlined si">search</span>
+      <i class="bi bi-search si"></i>
       <input type="text" name="q" value="{{ search }}" placeholder="Search products…" class="search-input">
     </div>
     <button type="submit" class="search-btn">Search</button>
   </form>
 </div>
 
-<!-- ── PRODUCTS ───────────────────────────────────────────────────── -->
+<!-- ── PRODUCTS ── -->
 <section class="products-section">
   <div class="section-head">
     <h2 class="section-h2">
       {% if search %}Results for "{{ search }}"
       {% elif current_category %}{{ current_category|capitalize }}
       {% else %}All Products{% endif %}
-      <span style="color:#8888aa;font-weight:400;font-size:.8em;">({{ products.total }})</span>
+      <span style="color:#9CA3AF;font-weight:400;font-size:.8em;margin-left:.3rem;">({{ products.total }})</span>
     </h2>
   </div>
 
@@ -246,11 +222,6 @@
               {% else %}
                 <span class="pc-badge badge-in">In Stock</span>
               {% endif %}
-              <div class="pc-overlay">
-                <span style="background:#322343;color:#cabeff;border-radius:50%;padding:.5rem;display:flex;">
-                  <span class="material-symbols-outlined" style="font-size:1.1rem;">visibility</span>
-                </span>
-              </div>
             </div>
           </a>
           <div class="pc-body">
@@ -259,7 +230,7 @@
               <h3 class="pc-name">{{ product.name }}</h3>
             </a>
             <div style="display:flex;align-items:center;gap:.3rem;margin-bottom:.5rem;">
-              <span class="pc-stars">{% for i in range(1,6) %}{% if i<=product.average_rating|int %}★{% else %}☆{% endif %}{% endfor %}</span>
+              <span class="pc-stars">{% for i in range(1,6) %}{% if i<=product.average_rating|int %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}</span>
               <span class="pc-rating-count">({{ product.review_count }})</span>
             </div>
             <div class="pc-footer">
@@ -267,7 +238,7 @@
               <button class="btn-add-cart" onclick="addToCart({{ product.id }}, this)"
                       {% if product.stock == 0 %}disabled{% endif %}>
                 {% if product.stock == 0 %}Sold Out
-                {% else %}<span class="material-symbols-outlined" style="font-size:.85rem;">add_shopping_cart</span> Add{% endif %}
+                {% else %}<i class="bi bi-plus" style="font-size:.75rem;"></i> Add{% endif %}
               </button>
             </div>
           </div>
@@ -275,71 +246,58 @@
       {% endfor %}
     </div>
 
-    <!-- Pagination -->
     {% if products.pages > 1 %}
       <div class="pagination-row">
         {% if products.has_prev %}
-          <a href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}" class="page-btn">‹</a>
+          <a href="{{ url_for('shop.index', page=products.prev_num, category=current_category, q=search) }}" class="page-btn">&lsaquo;</a>
         {% endif %}
         {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
           {% if p %}
             <a href="{{ url_for('shop.index', page=p, category=current_category, q=search) }}"
                class="page-btn{% if p==products.page %} active{% endif %}">{{ p }}</a>
           {% else %}
-            <span class="page-dots">…</span>
+            <span class="page-dots">&hellip;</span>
           {% endif %}
         {% endfor %}
         {% if products.has_next %}
-          <a href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}" class="page-btn">›</a>
+          <a href="{{ url_for('shop.index', page=products.next_num, category=current_category, q=search) }}" class="page-btn">&rsaquo;</a>
         {% endif %}
       </div>
     {% endif %}
 
   {% else %}
     <div class="empty-state">
-      <div style="font-size:3.5rem;margin-bottom:1rem;">🔍</div>
-      <h3 style="color:#8888aa;font-family:'Space Grotesk',sans-serif;margin-bottom:.5rem;">No products found</h3>
-      <p style="color:#8888aa;font-size:.88rem;margin-bottom:1.5rem;">Try a different search or category.</p>
-      <a href="{{ url_for('shop.index') }}"
-         style="background:#947dff;color:#fff;padding:.75rem 1.75rem;border-radius:10px;
-                text-decoration:none;font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">
-        View All Products
-      </a>
+      <div style="font-size:3rem;margin-bottom:1rem;">&#128269;</div>
+      <h3 style="color:#374151;font-weight:700;margin-bottom:.5rem;">No products found</h3>
+      <p style="color:#9CA3AF;font-size:.875rem;margin-bottom:1.5rem;">Try a different search or category.</p>
+      <a href="{{ url_for('shop.index') }}" class="btn-primary-custom">View All Products</a>
     </div>
   {% endif %}
 </section>
-
-
 
 {% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
-// ── Animated number counters ─────────────────────────────────
 function animateCounter(el) {
   const target = parseInt(el.dataset.count);
   const suffix = el.dataset.suffix || '';
-  const duration = 1400;
+  const duration = 1200;
   const start = performance.now();
-  const startVal = 0;
   function update(now) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    // ease out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(startVal + (target - startVal) * eased) + suffix;
-    if (progress < 1) requestAnimationFrame(update);
+    const p = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * eased) + suffix;
+    if (p < 1) requestAnimationFrame(update);
   }
   requestAnimationFrame(update);
 }
-
-// Trigger counters when hero stats enter view
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.querySelectorAll('[data-count]').forEach(el => animateCounter(el));
-      counterObserver.unobserve(entry.target);
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('[data-count]').forEach(el => animateCounter(el));
+      counterObserver.unobserve(e.target);
     }
   });
 }, { threshold: 0.3 });

@@ -1,132 +1,197 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>{% block title %}GadgetHub PH{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:wght@300..700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <style>
-    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;vertical-align:middle;}
+    /* ── Base overrides ── */
     *{box-sizing:border-box;}
-    body{background-color:#1a0c2b!important;color:#eedbff!important;font-family:'Inter',sans-serif;overflow-x:hidden;margin:0;}
+    body{background:#fff!important;color:#374151!important;font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden;margin:0;}
 
-    /* ── SCROLL PROGRESS BAR ── */
-    #scroll-progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:9999;
-      background:linear-gradient(90deg,#947dff,#cabeff,#ff4d6d);
-      box-shadow:0 0 10px rgba(148,125,255,.8);transition:width .1s linear;border-radius:0 2px 2px 0;}
+    /* ── Scroll progress ── */
+    #scroll-progress{position:fixed;top:0;left:0;height:2px;width:0%;z-index:9999;background:#2563EB;transition:width .1s linear;}
 
-    /* ── CURSOR GLOW ── */
-    #cursor-glow{position:fixed;width:320px;height:320px;border-radius:50%;pointer-events:none;z-index:0;
-      background:radial-gradient(circle,rgba(148,125,255,.07) 0%,transparent 70%);
-      transform:translate(-50%,-50%);transition:opacity .3s;opacity:0;}
+    /* Remove cursor glow */
+    #cursor-glow{display:none!important;}
 
     /* ── NAV ── */
-    .gh-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(35,21,52,0.85);
-      backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-      box-shadow:0 2px 24px rgba(21,7,38,0.6);padding:.7rem 1rem;
-      display:flex;align-items:center;justify-content:space-between;gap:.5rem;
-      border-bottom:1px solid rgba(148,125,255,0);
-      transition:border-color .3s,box-shadow .3s;}
-    .gh-nav.scrolled{border-bottom:1px solid rgba(148,125,255,.15);
-      box-shadow:0 4px 32px rgba(148,125,255,.12);}
-    .gh-brand{font-family:'Space Grotesk',sans-serif;font-size:1.25rem;font-weight:800;
-      text-decoration:none;letter-spacing:-.5px;white-space:nowrap;
-      background:linear-gradient(135deg,#cabeff 0%,#947dff 50%,#ff9f43 100%);
-      background-size:200% auto;
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      animation:brandShift 4s linear infinite;}
-    @keyframes brandShift{0%{background-position:0% center}100%{background-position:200% center}}
-    .gh-brand span{-webkit-text-fill-color:transparent;}
-    .gh-links{display:none;gap:1.25rem;align-items:center;}
+    .gh-nav{
+      position:fixed;top:0;left:0;right:0;z-index:1000;
+      background:rgba(255,255,255,0.97);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-bottom:1px solid #E5E7EB;
+      padding:0 1.25rem;height:60px;
+      display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+      transition:box-shadow .2s;
+    }
+    .gh-nav.scrolled{box-shadow:0 2px 8px rgba(0,0,0,.06);}
+
+    .gh-brand{
+      font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:800;
+      text-decoration:none;letter-spacing:-.6px;
+      color:#111827!important;
+      -webkit-text-fill-color:#111827!important;
+      background:none!important;
+      animation:none!important;
+    }
+    .gh-brand span{color:#2563EB!important;-webkit-text-fill-color:#2563EB!important;}
+
+    .gh-links{display:none;gap:.15rem;align-items:center;}
     @media(min-width:768px){.gh-links{display:flex;}}
-    .gh-link{font-family:'Space Grotesk',sans-serif;font-size:.83rem;font-weight:500;
-      color:rgba(202,190,255,.7);text-decoration:none;transition:color .2s;white-space:nowrap;}
-    .gh-link:hover,.gh-link.active{color:#fff;}
-    .gh-link.active{border-bottom:2px solid #947dff;padding-bottom:1px;}
-    .gh-actions{display:flex;align-items:center;gap:.5rem;}
-    .gh-icon-btn{background:transparent;border:none;color:#cabeff;cursor:pointer;
-      padding:.3rem;transition:color .2s;position:relative;line-height:1;}
-    .gh-icon-btn:hover{color:#fff;}
-    .gh-cart-badge{position:absolute;top:-4px;right:-6px;background:#ff4d6d;color:#fff;
-      font-size:.58rem;font-weight:700;min-width:16px;height:16px;padding:0 3px;
-      border-radius:50px;display:flex;align-items:center;justify-content:center;
-      border:2px solid #1a0c2b;pointer-events:none;}
-    .gh-hamburger{background:transparent;border:none;color:#cabeff;cursor:pointer;padding:.25rem;}
+
+    .gh-link{
+      font-size:.84rem;font-weight:500;
+      color:#6B7280!important;text-decoration:none;
+      padding:.4rem .75rem;border-radius:6px;
+      transition:all .15s;white-space:nowrap;
+    }
+    .gh-link:hover{color:#111827!important;background:#F3F4F6;}
+    .gh-link.active{color:#111827!important;font-weight:600;}
+
+    .gh-actions{display:flex;align-items:center;gap:.4rem;}
+
+    .gh-icon-btn{
+      background:transparent;border:none;color:#111827;
+      cursor:pointer;padding:.4rem;border-radius:6px;
+      transition:background .15s;position:relative;line-height:1;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .gh-icon-btn:hover{background:#F3F4F6;}
+
+    .gh-cart-badge{
+      position:absolute;top:-2px;right:-4px;
+      background:#2563EB;color:#fff;
+      font-size:.58rem;font-weight:700;min-width:16px;height:16px;
+      padding:0 3px;border-radius:99px;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid #fff;pointer-events:none;
+      animation:badgePop .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes badgePop{0%{transform:scale(0)}100%{transform:scale(1)}}
+
+    .gh-hamburger{background:transparent;border:none;color:#111827;cursor:pointer;padding:.3rem;border-radius:6px;display:flex;align-items:center;}
+    .gh-hamburger:hover{background:#F3F4F6;}
     @media(min-width:768px){.gh-hamburger{display:none;}}
 
+    /* ── Dropdown ── */
+    .new-dropdown-menu{
+      background:#fff!important;
+      border:1px solid #E5E7EB!important;
+      border-radius:10px!important;
+      box-shadow:0 8px 24px rgba(0,0,0,.08)!important;
+      padding:.35rem!important;min-width:190px;
+    }
+    .new-dropdown-item{
+      color:#374151!important;border-radius:6px;
+      font-size:.86rem;padding:.5rem .85rem!important;
+      transition:background .15s;
+      display:flex;align-items:center;gap:.5rem;
+    }
+    .new-dropdown-item:hover{background:#F3F4F6!important;color:#111827!important;}
+    .dropdown-divider{border-color:#E5E7EB!important;}
+
+    /* Sign up button in nav */
+    .nav-signup{
+      display:inline-flex;padding:.42rem 1rem;
+      border-radius:6px;font-size:.82rem;font-weight:600;
+      text-decoration:none;background:#111827;color:#fff!important;
+      transition:all .15s;border:1px solid #111827;
+    }
+    .nav-signup:hover{background:#1F2937;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+
     /* ── DRAWER ── */
-    .gh-drawer{position:fixed;top:0;left:0;width:min(300px,85vw);z-index:1001;
-      background:#150726;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-      transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-      display:flex;flex-direction:column;padding:1.25rem;overflow:hidden;
-      height:100vh;height:100dvh;}
+    .gh-drawer{
+      position:fixed;top:0;left:0;
+      width:min(300px,85vw);z-index:1001;
+      background:#fff;border-right:1px solid #E5E7EB;
+      transform:translateX(-100%);
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+      display:flex;flex-direction:column;padding:1.25rem;
+      height:100vh;height:100dvh;
+    }
     .gh-drawer.open{transform:translateX(0);}
-    .gh-drawer-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
-    .gh-drawer-link{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;
-      color:rgba(202,190,255,.85);text-decoration:none;padding:.7rem .9rem;
-      border-radius:10px;transition:all .2s;display:block;border:1px solid transparent;}
-    .gh-drawer-link:hover{background:rgba(148,125,255,.12);color:#fff;border-color:rgba(148,125,255,.2);}
-    .gh-drawer-divider{border-top:1px solid rgba(72,69,85,.3);margin:1rem 0;}
-    .gh-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);}
+
+    .gh-drawer-hdr{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #E5E7EB;
+    }
+    .gh-drawer-link{
+      font-size:.92rem;font-weight:500;color:#374151;
+      text-decoration:none;padding:.65rem .75rem;
+      border-radius:6px;transition:all .15s;display:block;
+    }
+    .gh-drawer-link:hover{background:#F3F4F6;color:#111827;}
+    .gh-drawer-divider{border-top:1px solid #E5E7EB;margin:.75rem 0;}
+
+    .gh-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.25);backdrop-filter:blur(2px);}
     .gh-overlay.open{display:block;}
 
-    /* ── DROPDOWNS ── */
-    .new-dropdown-menu{background:#271938!important;border:1px solid rgba(72,69,85,.4)!important;
-      border-radius:12px!important;box-shadow:0 20px 60px rgba(0,0,0,.5)!important;padding:.4rem!important;min-width:190px;}
-    .new-dropdown-item{color:#c9c4d8!important;border-radius:8px;font-size:.86rem;
-      padding:.5rem .9rem!important;transition:all .2s;display:flex;align-items:center;gap:.5rem;}
-    .new-dropdown-item:hover{background:rgba(148,125,255,.15)!important;color:#fff!important;}
+    /* ── Alerts ── */
+    .alert-success{background:#F0FDF4!important;border-color:#BBF7D0!important;color:#15803D!important;}
+    .alert-danger{background:#FEF2F2!important;border-color:#FECACA!important;color:#DC2626!important;}
+    .alert-warning{background:#FFFBEB!important;border-color:#FDE68A!important;color:#D97706!important;}
+    .alert-info{background:#EFF6FF!important;border-color:#BFDBFE!important;color:#2563EB!important;}
+    .btn-close{filter:none;opacity:.5;}
+    .btn-close:hover{opacity:1;}
 
-    /* ── ALERTS ── */
-    .alert-success{background:rgba(0,212,170,.1)!important;border-color:rgba(0,212,170,.3)!important;color:#00d4aa!important;}
-    .alert-danger{background:rgba(255,77,109,.1)!important;border-color:rgba(255,77,109,.3)!important;color:#ff4d6d!important;}
-    .alert-warning{background:rgba(255,193,7,.1)!important;border-color:rgba(255,193,7,.3)!important;color:#ffc107!important;}
-    .alert-info{background:rgba(148,125,255,.1)!important;border-color:rgba(148,125,255,.3)!important;color:#cabeff!important;}
-    .btn-close{filter:invert(1);}
-
-    /* ── LAYOUT ── */
-    .page-wrap{padding-top:58px;}
+    /* ── Layout ── */
+    .page-wrap{padding-top:60px;}
     .flash-area{padding:.75rem 1rem 0;}
-    @media(min-width:768px){.page-wrap{padding-top:62px;}}
 
-    /* ── FOOTER ── */
-    .gh-footer{background:#150726;border-top:1px solid rgba(72,69,85,.15);margin-top:4rem;position:relative;overflow:hidden;}
-    .gh-footer::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);
-      width:600px;height:160px;background:radial-gradient(ellipse,rgba(148,125,255,.06) 0%,transparent 70%);pointer-events:none;}
-    .gh-footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:2.5rem 1.25rem 1.5rem;}
+    /* ── Footer ── */
+    .gh-footer{background:#FAFAFA;border-top:1px solid #E5E7EB;margin-top:4rem;}
+    .gh-footer::before{display:none;}
+
+    .gh-footer-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+      padding:3rem 1.5rem 2rem;max-width:1200px;margin:0 auto;
+    }
     @media(min-width:640px){.gh-footer-grid{grid-template-columns:repeat(4,1fr);}}
-    .gh-footer-col-title{color:#cabeff;font-size:.68rem;font-weight:700;letter-spacing:2px;
-      text-transform:uppercase;margin-bottom:.65rem;font-family:'Space Grotesk',sans-serif;}
-    .gh-footer-link{color:rgba(202,190,255,.45);text-decoration:none;font-size:.82rem;
-      display:block;margin-bottom:.45rem;transition:color .2s;}
-    .gh-footer-link:hover{color:#947dff;}
-    .gh-footer-social{display:flex;gap:.6rem;margin-top:.75rem;}
-    .gh-social-btn{display:flex;align-items:center;justify-content:center;
-      width:34px;height:34px;border-radius:8px;background:rgba(148,125,255,.1);
-      border:1px solid rgba(148,125,255,.2);color:#cabeff;text-decoration:none;
-      font-size:.95rem;transition:all .2s;}
-    .gh-social-btn:hover{background:rgba(148,125,255,.25);color:#fff;transform:translateY(-2px);
-      box-shadow:0 4px 16px rgba(148,125,255,.3);}
-    .gh-footer-bottom{text-align:center;padding:.9rem 1rem;border-top:1px solid rgba(72,69,85,.1);
-      color:rgba(202,190,255,.35);font-size:.73rem;}
 
-    /* ── GLASS ── */
-    .glass-panel{background:rgba(35,21,52,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+    .gh-footer-col-title{color:#111827;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;}
+    .gh-footer-link{color:#6B7280;text-decoration:none;font-size:.84rem;display:block;margin-bottom:.5rem;transition:color .15s;}
+    .gh-footer-link:hover{color:#111827;}
+
+    .gh-footer-bottom{
+      text-align:center;padding:.9rem 1.5rem;
+      border-top:1px solid #E5E7EB;color:#9CA3AF;font-size:.76rem;
+      max-width:1200px;margin:0 auto;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary-custom{
+      display:inline-flex;align-items:center;gap:.4rem;
+      background:#111827;color:#fff;border:1px solid #111827;
+      border-radius:8px;padding:.62rem 1.4rem;
+      font-size:.875rem;font-weight:600;cursor:pointer;
+      transition:all .15s;text-decoration:none;white-space:nowrap;
+    }
+    .btn-primary-custom:hover{background:#1F2937;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1);transform:translateY(-1px);}
+    .btn-primary-custom:active{transform:scale(.98);}
+
+    .btn-outline-custom{
+      display:inline-flex;align-items:center;gap:.4rem;
+      background:#fff;color:#374151;border:1px solid #E5E7EB;
+      border-radius:8px;padding:.62rem 1.4rem;
+      font-size:.875rem;font-weight:500;cursor:pointer;
+      transition:all .15s;text-decoration:none;white-space:nowrap;
+    }
+    .btn-outline-custom:hover{background:#F3F4F6;border-color:#D1D5DB;color:#111827;}
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 <div id="scroll-progress"></div>
-<div id="cursor-glow"></div>
 
 <!-- NAV -->
-<nav class="gh-nav">
+<nav class="gh-nav" id="main-nav">
   <a href="{{ url_for('shop.index') }}" class="gh-brand">Gadget<span>Hub</span>&nbsp;PH</a>
 
   <div class="gh-links">
@@ -140,39 +205,48 @@
   <div class="gh-actions">
     {% if current_user.is_authenticated %}
       <a href="{{ url_for('cart.view_cart') }}" class="gh-icon-btn" style="text-decoration:none;">
-        <span class="material-symbols-outlined" style="font-size:1.45rem;">shopping_cart</span>
-        {% if current_user.cart_count > 0 %}<span class="gh-cart-badge">{{ current_user.cart_count }}</span>{% endif %}
+        <i class="bi bi-bag" style="font-size:1.15rem;"></i>
+        {% if current_user.cart_count > 0 %}
+          <span class="gh-cart-badge">{{ current_user.cart_count }}</span>
+        {% endif %}
       </a>
       <div class="dropdown d-none d-md-block">
-        <button class="gh-icon-btn dropdown-toggle d-flex align-items-center gap-1"
-                type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                style="font-family:'Space Grotesk',sans-serif;font-size:.83rem;font-weight:500;">
-          <span class="material-symbols-outlined" style="font-size:1.3rem;">person</span>
-          <span>{{ current_user.name.split()[0] }}</span>
-          {% if current_user.is_admin %}<span class="badge bg-warning text-dark ms-1" style="font-size:.5rem;">ADMIN</span>{% endif %}
+        <button class="btn-outline-custom dropdown-toggle"
+                type="button" data-bs-toggle="dropdown"
+                style="padding:.42rem .9rem;font-size:.82rem;gap:.35rem;">
+          <i class="bi bi-person" style="font-size:.9rem;"></i>
+          {{ current_user.name.split()[0] }}
+          {% if current_user.is_admin %}
+            <span style="background:#FEF3C7;color:#92400E;font-size:.58rem;font-weight:700;
+                         padding:2px 6px;border-radius:4px;letter-spacing:.3px;">ADMIN</span>
+          {% endif %}
         </button>
         <ul class="dropdown-menu dropdown-menu-end new-dropdown-menu">
           <li><a class="dropdown-item new-dropdown-item" href="{{ url_for('auth.profile') }}">
-            <span class="material-symbols-outlined" style="font-size:.95rem;">person</span> My Profile</a></li>
+            <i class="bi bi-person" style="font-size:.9rem;"></i> My Profile</a></li>
           <li><a class="dropdown-item new-dropdown-item" href="{{ url_for('orders.order_history') }}">
-            <span class="material-symbols-outlined" style="font-size:.95rem;">shopping_bag</span> My Orders</a></li>
+            <i class="bi bi-bag" style="font-size:.9rem;"></i> My Orders</a></li>
           {% if current_user.is_admin %}
-          <li><hr class="dropdown-divider" style="border-color:rgba(72,69,85,.4)"></li>
-          <li><a class="dropdown-item new-dropdown-item" href="/admin" style="color:#ffc107!important;">
-            <span class="material-symbols-outlined" style="font-size:.95rem;">dashboard</span> Admin Panel</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item new-dropdown-item" href="/admin"
+                   style="color:#D97706!important;">
+              <i class="bi bi-speedometer2" style="font-size:.9rem;"></i> Admin Panel</a></li>
           {% endif %}
-          <li><hr class="dropdown-divider" style="border-color:rgba(72,69,85,.4)"></li>
-          <li><a class="dropdown-item new-dropdown-item" href="{{ url_for('auth.logout') }}" style="color:#ff4d6d!important;">
-            <span class="material-symbols-outlined" style="font-size:.95rem;">logout</span> Logout</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item new-dropdown-item" href="{{ url_for('auth.logout') }}"
+                 style="color:#DC2626!important;">
+            <i class="bi bi-box-arrow-right" style="font-size:.9rem;"></i> Logout</a></li>
         </ul>
       </div>
     {% else %}
-      <a href="{{ url_for('auth.login') }}" class="gh-link d-none d-md-inline" style="color:rgba(202,190,255,.7);">Login</a>
-      <a href="{{ url_for('auth.register') }}"
-         style="display:inline;padding:.45rem .9rem;border-radius:.5rem;font-size:.8rem;font-weight:700;text-decoration:none;background:#947dff;color:#fff;font-family:'Space Grotesk',sans-serif;">Sign Up</a>
+      <a href="{{ url_for('auth.login') }}"
+         class="btn-outline-custom d-none d-md-inline-flex"
+         style="padding:.42rem .9rem;font-size:.82rem;">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="nav-signup">Sign Up</a>
     {% endif %}
-    <button class="gh-hamburger" onclick="openDrawer()" aria-label="Open menu">
-      <span class="material-symbols-outlined" style="font-size:1.6rem;">menu</span>
+
+    <button class="gh-hamburger" onclick="openDrawer()" aria-label="Menu">
+      <i class="bi bi-list" style="font-size:1.4rem;"></i>
     </button>
   </div>
 </nav>
@@ -181,40 +255,54 @@
 <div id="gh-overlay" class="gh-overlay" onclick="closeDrawer()"></div>
 <div class="gh-drawer" id="gh-drawer" role="dialog" aria-modal="true">
   <div class="gh-drawer-hdr">
-    <span class="gh-brand" style="font-size:1.1rem;">Gadget<span>Hub</span> PH</span>
-    <button onclick="closeDrawer()" class="gh-hamburger" aria-label="Close"><span class="material-symbols-outlined" style="font-size:1.5rem;">close</span></button>
+    <a href="{{ url_for('shop.index') }}" class="gh-brand" onclick="closeDrawer()">
+      Gadget<span>Hub</span> PH
+    </a>
+    <button onclick="closeDrawer()" class="gh-hamburger" aria-label="Close">
+      <i class="bi bi-x-lg" style="font-size:1.1rem;"></i>
+    </button>
   </div>
   <nav style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px);">
-    <a href="{{ url_for('shop.index') }}" class="gh-drawer-link">🛍️ All Products</a>
-    <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-drawer-link">🎧 Earbuds</a>
-    <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-drawer-link">⚡ Chargers</a>
-    <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-drawer-link">🔋 Powerbanks</a>
-    <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-drawer-link">📱 Accessories</a>
+    <a href="{{ url_for('shop.index') }}" class="gh-drawer-link">All Products</a>
+    <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-drawer-link">Earbuds</a>
+    <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-drawer-link">Chargers</a>
+    <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-drawer-link">Powerbanks</a>
+    <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-drawer-link">Accessories</a>
     {% if current_user.is_authenticated %}
-    <div class="gh-drawer-divider"></div>
-    <a href="{{ url_for('auth.profile') }}" class="gh-drawer-link">👤 My Profile</a>
-    <a href="{{ url_for('orders.order_history') }}" class="gh-drawer-link">📦 My Orders</a>
-    <a href="{{ url_for('cart.view_cart') }}" class="gh-drawer-link">
-      🛒 My Cart {% if current_user.cart_count > 0 %}<span style="background:#ff4d6d;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;">{{ current_user.cart_count }}</span>{% endif %}
-    </a>
-    {% if current_user.is_admin %}<a href="/admin" class="gh-drawer-link" style="color:#ffc107;">⚡ Admin Panel</a>{% endif %}
+      <div class="gh-drawer-divider"></div>
+      <a href="{{ url_for('auth.profile') }}" class="gh-drawer-link">My Profile</a>
+      <a href="{{ url_for('orders.order_history') }}" class="gh-drawer-link">My Orders</a>
+      <a href="{{ url_for('cart.view_cart') }}" class="gh-drawer-link">
+        Cart
+        {% if current_user.cart_count > 0 %}
+          <span style="background:#2563EB;color:#fff;font-size:.65rem;font-weight:700;
+                       padding:1px 7px;border-radius:99px;margin-left:5px;">
+            {{ current_user.cart_count }}
+          </span>
+        {% endif %}
+      </a>
+      {% if current_user.is_admin %}
+        <a href="/admin" class="gh-drawer-link" style="color:#D97706;">Admin Panel</a>
+      {% endif %}
     {% endif %}
   </nav>
-  <div style="padding-top:1.25rem;border-top:1px solid rgba(72,69,85,.3);display:flex;flex-direction:column;gap:.6rem;">
+  <div style="padding-top:1rem;border-top:1px solid #E5E7EB;display:flex;flex-direction:column;gap:.5rem;">
     {% if current_user.is_authenticated %}
       <a href="{{ url_for('auth.logout') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:rgba(255,77,109,.12);color:#ff4d6d;border:1px solid rgba(255,77,109,.25);
-                text-decoration:none;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Logout</a>
+         style="display:block;text-align:center;padding:.7rem;border-radius:8px;
+                font-weight:600;background:#FEF2F2;color:#DC2626;
+                border:1px solid #FECACA;text-decoration:none;font-size:.88rem;">
+        Log out
+      </a>
     {% else %}
       <a href="{{ url_for('auth.login') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                border:1px solid rgba(148,125,255,.3);color:#cabeff;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Login</a>
+         style="display:block;text-align:center;padding:.7rem;border-radius:8px;
+                font-weight:600;border:1px solid #E5E7EB;color:#374151;
+                text-decoration:none;font-size:.88rem;">Login</a>
       <a href="{{ url_for('auth.register') }}"
-         style="display:block;text-align:center;padding:.75rem;border-radius:12px;font-weight:700;
-                background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;text-decoration:none;
-                font-family:'Space Grotesk',sans-serif;font-size:.9rem;">Create Account</a>
+         style="display:block;text-align:center;padding:.7rem;border-radius:8px;
+                font-weight:700;background:#111827;color:#fff;
+                text-decoration:none;font-size:.88rem;">Create Account</a>
     {% endif %}
   </div>
 </div>
@@ -225,8 +313,10 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show mb-2" role="alert" style="border-radius:10px;font-size:.87rem;">
-            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-2"
+               role="alert" style="border-radius:8px;font-size:.875rem;">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endfor %}
       {% endif %}
@@ -238,107 +328,100 @@
   <!-- FOOTER -->
   <footer class="gh-footer">
     <div class="gh-footer-grid">
-      <!-- Brand column -->
+      <!-- Brand -->
       <div style="grid-column:1/-1;">
-        <div class="gh-footer-col-title" style="font-size:.9rem;letter-spacing:-.3px;">GadgetHub PH 🇵🇭</div>
-        <p style="color:rgba(202,190,255,.45);font-size:.8rem;line-height:1.6;max-width:280px;">
+        <div style="font-size:1.05rem;font-weight:800;color:#111827;letter-spacing:-.4px;margin-bottom:.5rem;">
+          GadgetHub <span style="color:#2563EB;">PH</span>
+        </div>
+        <p style="color:#6B7280;font-size:.82rem;line-height:1.65;max-width:260px;">
           Curated tech accessories for every Filipino.<br>
           Quality gadgets. Fast delivery. Honest prices.
         </p>
-        <!-- Trust badges -->
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem;">
-          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
-                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
-                       border-radius:6px;padding:.25rem .6rem;">✅ COD Available</span>
-          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
-                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
-                       border-radius:6px;padding:.25rem .6rem;">🚚 Nationwide Delivery</span>
-          <span style="font-size:.7rem;font-weight:600;color:rgba(202,190,255,.5);
-                       background:rgba(148,125,255,.08);border:1px solid rgba(148,125,255,.15);
-                       border-radius:6px;padding:.25rem .6rem;">🔒 Secure Checkout</span>
+          <span style="font-size:.7rem;font-weight:600;color:#6B7280;
+                       background:#fff;border:1px solid #E5E7EB;
+                       border-radius:6px;padding:.25rem .65rem;">COD Available</span>
+          <span style="font-size:.7rem;font-weight:600;color:#6B7280;
+                       background:#fff;border:1px solid #E5E7EB;
+                       border-radius:6px;padding:.25rem .65rem;">Nationwide Delivery</span>
+          <span style="font-size:.7rem;font-weight:600;color:#6B7280;
+                       background:#fff;border:1px solid #E5E7EB;
+                       border-radius:6px;padding:.25rem .65rem;">Secure Checkout</span>
         </div>
       </div>
 
-      <!-- Shop column -->
+      <!-- Shop -->
       <div>
         <div class="gh-footer-col-title">Shop</div>
-        <a href="{{ url_for('shop.index') }}" class="gh-footer-link">🛍️ All Products</a>
-        <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-footer-link">🎧 Earbuds</a>
-        <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-footer-link">⚡ Chargers</a>
-        <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-footer-link">🔋 Powerbanks</a>
-        <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-footer-link">📱 Accessories</a>
+        <a href="{{ url_for('shop.index') }}" class="gh-footer-link">All Products</a>
+        <a href="{{ url_for('shop.index', category='earbuds') }}" class="gh-footer-link">Earbuds</a>
+        <a href="{{ url_for('shop.index', category='chargers') }}" class="gh-footer-link">Chargers</a>
+        <a href="{{ url_for('shop.index', category='powerbanks') }}" class="gh-footer-link">Powerbanks</a>
+        <a href="{{ url_for('shop.index', category='accessories') }}" class="gh-footer-link">Accessories</a>
       </div>
 
-      <!-- Account column -->
+      <!-- Account -->
       <div>
         <div class="gh-footer-col-title">Account</div>
         {% if current_user.is_authenticated %}
-          <a href="{{ url_for('auth.profile') }}" class="gh-footer-link">👤 My Profile</a>
-          <a href="{{ url_for('orders.order_history') }}" class="gh-footer-link">📦 My Orders</a>
-          <a href="{{ url_for('cart.view_cart') }}" class="gh-footer-link">🛒 My Cart</a>
-          <a href="{{ url_for('auth.logout') }}" class="gh-footer-link" style="color:#ff4d6d;">🚪 Logout</a>
+          <a href="{{ url_for('auth.profile') }}" class="gh-footer-link">My Profile</a>
+          <a href="{{ url_for('orders.order_history') }}" class="gh-footer-link">My Orders</a>
+          <a href="{{ url_for('cart.view_cart') }}" class="gh-footer-link">My Cart</a>
+          <a href="{{ url_for('auth.logout') }}" class="gh-footer-link"
+             style="color:#DC2626;">Logout</a>
         {% else %}
-          <a href="{{ url_for('auth.login') }}" class="gh-footer-link">🔑 Login</a>
-          <a href="{{ url_for('auth.register') }}" class="gh-footer-link">✨ Create Account</a>
+          <a href="{{ url_for('auth.login') }}" class="gh-footer-link">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="gh-footer-link">Create Account</a>
         {% endif %}
       </div>
 
-      <!-- Info column -->
+      <!-- Info -->
       <div>
         <div class="gh-footer-col-title">Info</div>
-        <p style="color:rgba(202,190,255,.4);font-size:.78rem;line-height:1.7;margin:0;">
-          📍 Philippines<br>
-          🕐 Mon – Sat, 9AM – 6PM<br>
-          📦 Ships via J&T / LBC<br>
-          💳 COD &amp; GCash accepted
+        <p style="color:#9CA3AF;font-size:.8rem;line-height:1.8;margin:0;">
+          Philippines<br>
+          Mon – Sat, 9AM – 6PM<br>
+          Ships via J&amp;T / LBC<br>
+          COD &amp; GCash accepted
         </p>
       </div>
     </div>
     <div class="gh-footer-bottom">
-      © {{ 2025 }} GadgetHub PH · Built for Filipinos 🇵🇭 · All rights reserved
+      &copy; 2025 GadgetHub PH &middot; Built for Filipinos &middot; All rights reserved
     </div>
   </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 <script>
-  // ── Scroll progress bar ──────────────────────────────────────
   const progressBar = document.getElementById('scroll-progress');
   window.addEventListener('scroll', () => {
-    const scrollTop = document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    progressBar.style.width = (scrollTop / scrollHeight * 100) + '%';
-    document.querySelector('.gh-nav').classList.toggle('scrolled', scrollTop > 20);
+    const st = document.documentElement.scrollTop;
+    const sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    progressBar.style.width = (st / sh * 100) + '%';
+    document.getElementById('main-nav').classList.toggle('scrolled', st > 10);
   }, { passive: true });
-
-  // ── Cursor glow ──────────────────────────────────────────────
-  const cursorGlow = document.getElementById('cursor-glow');
-  let glowVisible = false;
-  document.addEventListener('mousemove', (e) => {
-    cursorGlow.style.left = e.clientX + 'px';
-    cursorGlow.style.top  = e.clientY + 'px';
-    if (!glowVisible) { cursorGlow.style.opacity = '1'; glowVisible = true; }
-  }, { passive: true });
-  document.addEventListener('mouseleave', () => { cursorGlow.style.opacity = '0'; glowVisible = false; });
 
   function openDrawer(){
     document.getElementById('gh-drawer').classList.add('open');
     document.getElementById('gh-overlay').classList.add('open');
-    document.body.style.overflow='hidden';
+    document.body.style.overflow = 'hidden';
   }
   function closeDrawer(){
     document.getElementById('gh-drawer').classList.remove('open');
     document.getElementById('gh-overlay').classList.remove('open');
-    document.body.style.overflow='';
+    document.body.style.overflow = '';
   }
-  window.addEventListener('resize',()=>{ if(window.innerWidth>=768) closeDrawer(); });
-  setTimeout(()=>{
-    document.querySelectorAll('.alert').forEach(a=>{
-      a.style.transition='opacity .5s,transform .5s';
-      a.style.opacity='0';a.style.transform='translateY(-10px)';
-      setTimeout(()=>a.remove(),500);
+  window.addEventListener('resize', () => { if(window.innerWidth >= 768) closeDrawer(); });
+
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(a => {
+      a.style.transition = 'opacity .4s, transform .4s';
+      a.style.opacity = '0';
+      a.style.transform = 'translateY(-8px)';
+      setTimeout(() => a.remove(), 400);
     });
-  },4000);
+  }, 4000);
 </script>
 {% block extra_js %}{% endblock %}
 </body>
