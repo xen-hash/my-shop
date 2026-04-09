@@ -6,6 +6,8 @@ FIX: Added session lifetime + remember-cookie config to prevent
      permanent auto-login on mobile / shared devices.
 FIX: before_request now pings via db.session (not db.engine.connect)
      to correctly detect and recover from stale session connections.
+FIX: _maybe_init_db is now fully non-fatal — a Supabase timeout at
+     startup no longer kills the deploy.
 """
 
 import os
@@ -33,14 +35,11 @@ def create_app():
     # ── Configuration ─────────────────────────────────────────
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
 
-    # ── FIX: Session lifetime – session expires when browser closes
-    #         unless user explicitly ticks "Remember me".
+    # Session lifetime – expires when browser closes unless "Remember me" ticked
     app.config["SESSION_PERMANENT"]          = False
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
-    # ── FIX: Remember-me cookie – only 1 day even when ticked.
-    #         Default Flask-Login value is 365 days which caused the
-    #         "mobile always shows admin" bug.
+    # Remember-me cookie – 1 day max
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=1)
     app.config["REMEMBER_COOKIE_SECURE"]   = os.environ.get("FLASK_ENV") == "production"
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
@@ -56,7 +55,7 @@ def create_app():
             supabase_url = supabase_url.replace("postgres://", "postgresql://", 1)
         db_url = supabase_url
 
-    app.config["SQLALCHEMY_DATABASE_URI"]    = db_url
+    app.config["SQLALCHEMY_DATABASE_URI"]        = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     is_sqlite = db_url.startswith("sqlite")
@@ -65,15 +64,15 @@ def create_app():
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_pre_ping":  True,
-            "pool_recycle":   60,    # recycle every 60s — Supabase free tier drops idle fast
-            "pool_size":      2,     # minimal pool on free tier
+            "pool_recycle":   60,
+            "pool_size":      2,
             "max_overflow":   3,
             "pool_timeout":   30,
             "pool_use_lifo":  True,
             "connect_args": {
-                "connect_timeout":     10,
+                "connect_timeout":     10,   # short timeout so startup doesn't hang
                 "keepalives":          1,
-                "keepalives_idle":     5,    # keepalive after 5s idle
+                "keepalives_idle":     5,
                 "keepalives_interval": 2,
                 "keepalives_count":    3,
             },
@@ -99,7 +98,7 @@ def create_app():
     from models import db, User
     from email_utils import mail
     db.init_app(app)
-    mail.init_app(app)   # ← Flask-Mail must be initialized or emails silently fail
+    mail.init_app(app)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -111,9 +110,17 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # ── DB setup ─────────────────────────────────────────────
+    # ── DB setup (non-fatal) ──────────────────────────────────
+    # Wrapped in a top-level try/except so a Supabase timeout at
+    # boot time cannot prevent the app from starting on Render.
     with app.app_context():
-        _maybe_init_db(db)
+        try:
+            _maybe_init_db(db)
+        except Exception as e:
+            logger.warning(
+                f"⚠️  DB init skipped at startup (will retry on first request): {e}"
+            )
+            db.engine.dispose()
 
     # ── Blueprints ────────────────────────────────────────────
     from routes.shop   import shop_bp
@@ -130,8 +137,8 @@ def create_app():
 
     # ── Auto-retry on SSL/connection drops ────────────────────
     # Supabase free tier drops connections aggressively.
-    # FIX: Ping via db.session (not db.engine.connect) so we catch
-    #      stale session connections — not just pool-level drops.
+    # Pings via db.session so stale session connections are caught,
+    # not just pool-level drops.
     @app.before_request
     def ensure_db_connection():
         """Ping the DB before each request; reconnect if needed."""
@@ -174,6 +181,7 @@ def _maybe_init_db(db):
             _run_migrations_once(db)
         except Exception as e2:
             logger.error(f"❌  DB init error: {e2}")
+            raise   # re-raise so the outer try/except in create_app can catch it
     finally:
         _migrations_done = True
 
@@ -186,7 +194,7 @@ def _run_migrations_once(db):
             conn.execute(db.text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(256)"
             ))
-            # Make password nullable so OAuth users (Google/Facebook) can have NULL password
+            # Make password nullable so OAuth users can have NULL password
             conn.execute(db.text(
                 "ALTER TABLE users ALTER COLUMN password DROP NOT NULL"
             ))
