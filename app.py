@@ -2,16 +2,14 @@
 app.py – GadgetHub PH
 ======================
 Application factory: configures Flask, extensions, and registers blueprints.
-FIX: Removed all DB operations from startup so gunicorn binds instantly
-     and Render's port scanner never times out. Migrations are already
-     applied — no need to run them on every boot.
-FIX: before_request pings via db.session with one retry before giving up.
+FIX: Removed manual before_request DB ping — it was blocking every request
+     for 40s on cold start. pool_pre_ping=True handles reconnection automatically.
 """
 
 import os
 import logging
 from datetime import timedelta
-from flask import Flask, abort
+from flask import Flask
 from flask_login import LoginManager
 
 logging.basicConfig(
@@ -57,7 +55,7 @@ def create_app():
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
     else:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "pool_pre_ping":  True,
+            "pool_pre_ping":  True,   # automatically tests connections before use
             "pool_recycle":   60,
             "pool_size":      2,
             "max_overflow":   3,
@@ -116,24 +114,6 @@ def create_app():
     app.register_blueprint(cart_bp)
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
-
-    # ── Auto-retry on SSL/connection drops ────────────────────
-    # Pings via db.session before each request.
-    # On failure: dispose the pool and retry once.
-    # On second failure: return 503 so the user gets a clean error.
-    @app.before_request
-    def ensure_db_connection():
-        from sqlalchemy import text
-        for attempt in range(2):
-            try:
-                db.session.execute(text("SELECT 1"))
-                return  # healthy — proceed with the request
-            except Exception as e:
-                logger.warning(f"⚠️  DB ping failed (attempt {attempt + 1}): {e}")
-                db.session.remove()
-                db.engine.dispose()
-        logger.error("❌  DB unreachable after 2 attempts — returning 503")
-        abort(503)
 
     logger.info("✅  GadgetHub PH app started successfully.")
     return app
