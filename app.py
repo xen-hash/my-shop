@@ -4,16 +4,17 @@ app.py – GadgetHub PH
 Application factory: configures Flask, extensions, and registers blueprints.
 FIX: Added session lifetime + remember-cookie config to prevent
      permanent auto-login on mobile / shared devices.
-FIX: before_request now pings via db.session (not db.engine.connect)
-     to correctly detect and recover from stale session connections.
-FIX: _maybe_init_db is now fully non-fatal — a Supabase timeout at
-     startup no longer kills the deploy.
+FIX: before_request pings via db.session with a retry loop — if the
+     first ping fails it disposes the pool and tries once more before
+     allowing the request through, preventing 500s on stale connections.
+FIX: _maybe_init_db is fully non-fatal — a Supabase timeout at startup
+     no longer kills the deploy.
 """
 
 import os
 import logging
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, abort
 from flask_login import LoginManager
 
 logging.basicConfig(
@@ -35,11 +36,9 @@ def create_app():
     # ── Configuration ─────────────────────────────────────────
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
 
-    # Session lifetime – expires when browser closes unless "Remember me" ticked
     app.config["SESSION_PERMANENT"]          = False
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
-    # Remember-me cookie – 1 day max
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=1)
     app.config["REMEMBER_COOKIE_SECURE"]   = os.environ.get("FLASK_ENV") == "production"
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
@@ -70,7 +69,7 @@ def create_app():
             "pool_timeout":   30,
             "pool_use_lifo":  True,
             "connect_args": {
-                "connect_timeout":     10,   # short timeout so startup doesn't hang
+                "connect_timeout":     10,
                 "keepalives":          1,
                 "keepalives_idle":     5,
                 "keepalives_interval": 2,
@@ -111,15 +110,11 @@ def create_app():
         return db.session.get(User, int(user_id))
 
     # ── DB setup (non-fatal) ──────────────────────────────────
-    # Wrapped in a top-level try/except so a Supabase timeout at
-    # boot time cannot prevent the app from starting on Render.
     with app.app_context():
         try:
             _maybe_init_db(db)
         except Exception as e:
-            logger.warning(
-                f"⚠️  DB init skipped at startup (will retry on first request): {e}"
-            )
+            logger.warning(f"⚠️  DB init skipped at startup (non-fatal): {e}")
             db.engine.dispose()
 
     # ── Blueprints ────────────────────────────────────────────
@@ -136,18 +131,24 @@ def create_app():
     app.register_blueprint(admin_bp)
 
     # ── Auto-retry on SSL/connection drops ────────────────────
-    # Supabase free tier drops connections aggressively.
-    # Pings via db.session so stale session connections are caught,
-    # not just pool-level drops.
+    # Pings via db.session before each request.
+    # If the ping fails: dispose the pool and retry once.
+    # If the retry also fails: return 503 so the user sees a clean
+    # error instead of a raw 500 traceback.
     @app.before_request
     def ensure_db_connection():
-        """Ping the DB before each request; reconnect if needed."""
         from sqlalchemy import text
-        try:
-            db.session.execute(text("SELECT 1"))
-        except Exception:
-            db.session.remove()  # drop the stale session
-            db.engine.dispose()  # purge the entire connection pool
+        for attempt in range(2):
+            try:
+                db.session.execute(text("SELECT 1"))
+                return  # connection is healthy — proceed
+            except Exception as e:
+                logger.warning(f"⚠️  DB ping failed (attempt {attempt + 1}): {e}")
+                db.session.remove()
+                db.engine.dispose()
+        # Both attempts failed — Supabase is genuinely unreachable right now
+        logger.error("❌  DB unreachable after 2 attempts — returning 503")
+        abort(503)
 
     logger.info("✅  GadgetHub PH app started successfully.")
     return app
@@ -181,7 +182,7 @@ def _maybe_init_db(db):
             _run_migrations_once(db)
         except Exception as e2:
             logger.error(f"❌  DB init error: {e2}")
-            raise   # re-raise so the outer try/except in create_app can catch it
+            raise
     finally:
         _migrations_done = True
 
@@ -190,11 +191,9 @@ def _run_migrations_once(db):
     try:
         with db.engine.connect() as conn:
             # ── users table ───────────────────────────────────
-            # Live DB uses 'password' column (not password_hash)
             conn.execute(db.text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(256)"
             ))
-            # Make password nullable so OAuth users can have NULL password
             conn.execute(db.text(
                 "ALTER TABLE users ALTER COLUMN password DROP NOT NULL"
             ))
