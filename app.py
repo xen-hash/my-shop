@@ -2,13 +2,10 @@
 app.py – GadgetHub PH
 ======================
 Application factory: configures Flask, extensions, and registers blueprints.
-FIX: Added session lifetime + remember-cookie config to prevent
-     permanent auto-login on mobile / shared devices.
-FIX: before_request pings via db.session with a retry loop — if the
-     first ping fails it disposes the pool and tries once more before
-     allowing the request through, preventing 500s on stale connections.
-FIX: _maybe_init_db is fully non-fatal — a Supabase timeout at startup
-     no longer kills the deploy.
+FIX: Removed all DB operations from startup so gunicorn binds instantly
+     and Render's port scanner never times out. Migrations are already
+     applied — no need to run them on every boot.
+FIX: before_request pings via db.session with one retry before giving up.
 """
 
 import os
@@ -22,8 +19,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-_migrations_done = False
 
 
 def create_app():
@@ -109,14 +104,6 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # ── DB setup (non-fatal) ──────────────────────────────────
-    with app.app_context():
-        try:
-            _maybe_init_db(db)
-        except Exception as e:
-            logger.warning(f"⚠️  DB init skipped at startup (non-fatal): {e}")
-            db.engine.dispose()
-
     # ── Blueprints ────────────────────────────────────────────
     from routes.shop   import shop_bp
     from routes.auth   import auth_bp
@@ -132,101 +119,21 @@ def create_app():
 
     # ── Auto-retry on SSL/connection drops ────────────────────
     # Pings via db.session before each request.
-    # If the ping fails: dispose the pool and retry once.
-    # If the retry also fails: return 503 so the user sees a clean
-    # error instead of a raw 500 traceback.
+    # On failure: dispose the pool and retry once.
+    # On second failure: return 503 so the user gets a clean error.
     @app.before_request
     def ensure_db_connection():
         from sqlalchemy import text
         for attempt in range(2):
             try:
                 db.session.execute(text("SELECT 1"))
-                return  # connection is healthy — proceed
+                return  # healthy — proceed with the request
             except Exception as e:
                 logger.warning(f"⚠️  DB ping failed (attempt {attempt + 1}): {e}")
                 db.session.remove()
                 db.engine.dispose()
-        # Both attempts failed — Supabase is genuinely unreachable right now
         logger.error("❌  DB unreachable after 2 attempts — returning 503")
         abort(503)
 
     logger.info("✅  GadgetHub PH app started successfully.")
     return app
-
-
-def _maybe_init_db(db):
-    global _migrations_done
-    if _migrations_done:
-        return
-
-    try:
-        with db.engine.connect() as conn:
-            result = conn.execute(db.text(
-                "SELECT to_regclass('public.users')"
-            ))
-            table_exists = result.scalar() is not None
-
-        if not table_exists:
-            logger.info("🔧  First run — creating tables...")
-            db.create_all()
-            logger.info("✅  Tables created.")
-        else:
-            logger.info("✅  Tables already exist — skipping create_all.")
-
-        _run_migrations_once(db)
-
-    except Exception as e:
-        logger.warning(f"⚠️  Schema check failed ({e}), running create_all as fallback.")
-        try:
-            db.create_all()
-            _run_migrations_once(db)
-        except Exception as e2:
-            logger.error(f"❌  DB init error: {e2}")
-            raise
-    finally:
-        _migrations_done = True
-
-
-def _run_migrations_once(db):
-    try:
-        with db.engine.connect() as conn:
-            # ── users table ───────────────────────────────────
-            conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(256)"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE users ALTER COLUMN password DROP NOT NULL"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(120)"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id VARCHAR(120)"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS picture VARCHAR(500)"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT"
-            ))
-
-            # ── orders table ──────────────────────────────────
-            conn.execute(db.text(
-                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL"
-            ))
-
-            # ── products table ────────────────────────────────
-            conn.execute(db.text(
-                "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_2 VARCHAR(500)"
-            ))
-            conn.execute(db.text(
-                "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_3 VARCHAR(500)"
-            ))
-
-            conn.commit()
-        logger.info("✅  Migrations done.")
-    except Exception as e:
-        logger.warning(f"⚠️  Migration warning (non-fatal): {e}")
