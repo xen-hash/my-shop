@@ -1,37 +1,42 @@
-# gunicorn.conf.py – GadgetHub PH
-# Place this file in your project root.
-# Render will use it automatically when you set the start command to:
-#   gunicorn wsgi:app -c gunicorn.conf.py
+# gunicorn_conf.py – GadgetHub PH
 
-import multiprocessing
+import os
 
 # ── Workers ───────────────────────────────────────────────────
-# Render free tier gives 0.1 CPU / 512 MB RAM.
-# 2 workers is the sweet spot — enough for concurrency without
-# exceeding Supabase's free-tier connection limit.
-workers     = 2
-worker_class = "gthread"   # threaded workers handle I/O better than sync
-threads      = 2           # 2 threads per worker = 4 total concurrent requests
+workers      = 2
+worker_class = "gthread"
+threads      = 2
 
 # ── Timeouts ──────────────────────────────────────────────────
-timeout      = 120   # Render's health check allows up to 120 s on cold start
-keepalive    = 5     # Keep HTTP connections alive for 5 s (reduces TCP overhead)
+timeout          = 120
+keepalive        = 5
 graceful_timeout = 30
 
 # ── Binding ───────────────────────────────────────────────────
-# Render sets the PORT env var automatically.
-import os
 bind = f"0.0.0.0:{os.environ.get('PORT', '10000')}"
 
 # ── Logging ───────────────────────────────────────────────────
-accesslog   = "-"   # stdout so Render captures it
-errorlog    = "-"
-loglevel    = "info"
+accesslog         = "-"
+errorlog          = "-"
+loglevel          = "info"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s %(D)sµs'
 
 # ── Performance ───────────────────────────────────────────────
-worker_tmp_dir  = "/dev/shm"   # use RAM for worker heartbeat files (faster)
-max_requests    = 1000         # restart workers after 1000 requests (prevents memory leaks)
-max_requests_jitter = 50       # stagger restarts so not all workers restart at once
-preload_app     = True         # load app once before forking — faster cold start
-                               # + workers share memory (lower RAM usage)
+worker_tmp_dir      = "/dev/shm"
+max_requests        = 1000
+max_requests_jitter = 50
+preload_app         = True   # load app once before forking (saves RAM)
+
+# ── CRITICAL FIX ─────────────────────────────────────────────
+# After forking, child workers inherit the parent's SQLAlchemy
+# connection pool. Those inherited connections are invalid in the
+# child process and cause every query to hang for 16-25 seconds.
+# Disposing the engine immediately after fork forces each worker
+# to open fresh connections — this is the standard fix.
+def post_fork(server, worker):
+    try:
+        from models import db
+        db.engine.dispose()
+        server.log.info(f"[gunicorn] Worker {worker.pid} — engine disposed after fork ✓")
+    except Exception as e:
+        server.log.warning(f"[gunicorn] Engine dispose failed: {e}")
