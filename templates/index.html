@@ -58,8 +58,16 @@
 .filter-bar{
   padding:.9rem 1.5rem;
   border-bottom:1px solid #E5E7EB;
-  background:#fff;
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
   position:sticky;top:60px;z-index:90;
+  box-shadow:none;
+  transition:box-shadow .2s ease, border-color .2s ease;
+}
+.filter-bar.scrolled{
+  box-shadow:0 4px 16px rgba(0,0,0,0.07);
+  border-bottom-color:transparent;
 }
 .pills-wrap{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch;}
 .pills-wrap::-webkit-scrollbar{display:none;}
@@ -177,7 +185,7 @@
 </section>
 
 <!-- ── FILTER BAR ── -->
-<div class="filter-bar" id="products">
+<div class="filter-bar" id="filter-bar">
   <div class="pills-wrap">
     <a href="{{ url_for('shop.index') }}" class="cat-pill{% if not current_category %} active{% endif %}">All</a>
     {% for cat in categories %}
@@ -280,6 +288,16 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
+// ── Filter bar shadow on scroll ──────────────────────────────
+(function() {
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  const observer = new IntersectionObserver(
+    ([e]) => bar.classList.toggle('scrolled', e.intersectionRatio < 1),
+    { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+  );
+  observer.observe(bar);
+})();
 function animateCounter(el) {
   const target = parseInt(el.dataset.count);
   const suffix = el.dataset.suffix || '';
