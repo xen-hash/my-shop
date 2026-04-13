@@ -1,198 +1,279 @@
-/* ============================================================
-   cart.css – GadgetHub PH  ·  White Minimal Redesign
-   ============================================================ */
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Cart Page – White Theme ── */
 .cart-page-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  letter-spacing: -0.5px;
-  margin-bottom: 0.25rem;
+  font-size: 1.75rem; font-weight: 800;
+  color: #111827; letter-spacing: -0.5px;
 }
 
-/* ── Cart Item Card ─────────────────────────────────────────── */
+/* Cart item card */
 .cart-item {
   background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  transition: box-shadow var(--transition), border-color var(--transition);
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
-.cart-item:hover {
-  border-color: #D1D5DB;
-  box-shadow: var(--shadow-sm);
-}
+.cart-item:hover { border-color: #D1D5DB; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
 .cart-item-img {
-  width: 80px; height: 80px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  background: var(--bg-section);
+  width: 80px; height: 80px; border-radius: 10px;
+  object-fit: cover; flex-shrink: 0;
+  border: 1px solid #E5E7EB; background: #F9FAFB;
 }
-
 .cart-item-info { flex: 1; min-width: 0; }
-
 .cart-item-category {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: #2563EB; margin-bottom: 0.15rem;
+}
+.cart-item-name {
+  font-size: 0.95rem; font-weight: 700; color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 0.2rem;
 }
+.cart-item-price { font-size: 0.83rem; color: #6B7280; }
 
-.cart-item-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-heading);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 0.25rem;
-}
-
-.cart-item-price {
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-}
-
-/* ── Qty control ────────────────────────────────────────────── */
+/* Qty control */
 .cart-qty-control {
-  display: flex;
-  align-items: center;
-  background: var(--bg-section);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  flex-shrink: 0;
+  display: flex; align-items: center;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  border-radius: 8px; overflow: hidden; flex-shrink: 0;
 }
 .cart-qty-control button {
-  background: transparent;
-  border: none;
-  color: var(--text-heading);
-  width: 34px; height: 36px;
+  background: transparent; border: none;
+  color: #374151; width: 34px; height: 36px;
   font-size: 1rem; font-weight: 700;
-  cursor: pointer;
-  transition: background var(--transition);
-  line-height: 1;
+  cursor: pointer; transition: background 0.15s;
 }
-.cart-qty-control button:hover { background: #E5E7EB; }
+.cart-qty-control button:hover { background: #F3F4F6; }
 .cart-qty-control span {
-  width: 34px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--text-heading);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  width: 34px; text-align: center;
+  font-weight: 700; font-size: 0.9rem; color: #111827;
+  border-left: 1px solid #E5E7EB;
+  border-right: 1px solid #E5E7EB;
   line-height: 36px;
 }
 
 .cart-item-subtotal {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  min-width: 80px;
-  text-align: right;
-  flex-shrink: 0;
-  letter-spacing: -0.3px;
+  font-size: 1rem; font-weight: 800; color: #111827;
+  min-width: 80px; text-align: right; flex-shrink: 0;
 }
 
 .btn-remove {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 5px 6px;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition);
-  flex-shrink: 0;
-  line-height: 1;
+  background: transparent; border: none;
+  color: #9CA3AF; font-size: 1rem;
+  cursor: pointer; padding: 5px 6px;
+  border-radius: 6px; transition: all 0.15s; flex-shrink: 0;
 }
-.btn-remove:hover {
-  color: #DC2626;
-  background: #FEF2F2;
-}
+.btn-remove:hover { color: #DC2626; background: #FEF2F2; }
 
-/* ── Order Summary Sidebar ──────────────────────────────────── */
+/* Order summary */
 .order-summary {
-  background: var(--bg-section);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  position: sticky;
-  top: 78px;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  border-radius: 12px; padding: 1.5rem;
+  position: sticky; top: 78px;
 }
 .order-summary h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  margin-bottom: 1.1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-  letter-spacing: -0.3px;
+  font-size: 1.05rem; font-weight: 700; color: #111827;
+  margin-bottom: 1rem; padding-bottom: 0.75rem;
+  border-bottom: 1px solid #E5E7EB;
 }
-
 .summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.45rem 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 0.4rem 0;
+  font-size: 0.875rem; color: #6B7280;
 }
-.summary-row strong { color: var(--text-heading); font-weight: 600; }
-
+.summary-row strong { color: #111827; font-weight: 600; }
 .summary-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.85rem 0 0;
-  margin-top: 0.4rem;
-  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 0.85rem 0 0;
+  margin-top: 0.4rem; border-top: 1px solid #E5E7EB;
 }
-.summary-total span {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-heading);
-}
-.summary-total strong {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  letter-spacing: -0.5px;
-}
+.summary-total span { font-size: 0.95rem; font-weight: 600; color: #374151; }
+.summary-total strong { font-size: 1.4rem; font-weight: 800; color: #111827; }
 
-/* ── Empty Cart ─────────────────────────────────────────────── */
-.empty-cart {
-  text-align: center;
-  padding: 5rem 2rem;
+/* Out of stock section */
+.out-of-stock-section {
+  background: #FEF2F2; border: 1px solid #FECACA;
+  border-radius: 12px; padding: 1rem 1.25rem;
 }
-.empty-cart-icon {
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
-  opacity: 0.6;
-}
-.empty-cart h3 {
-  font-size: 1.3rem;
-  color: var(--text-heading);
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-}
-.empty-cart p {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
+.cart-item.out-of-stock { opacity: 0.6; }
 
-/* ── Responsive ─────────────────────────────────────────────── */
+/* Empty cart */
+.empty-cart { text-align: center; padding: 5rem 2rem; }
+.empty-cart-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.5; }
+.empty-cart h3 { font-size: 1.3rem; color: #111827; margin-bottom: 0.5rem; font-weight: 700; }
+.empty-cart p { color: #6B7280; font-size: 0.9rem; }
+
 @media (max-width: 576px) {
-  .cart-item { flex-wrap: wrap; gap: 0.85rem; }
-  .cart-item-img { width: 65px; height: 65px; }
-  .cart-item-subtotal { text-align: left; min-width: unset; }
+  .cart-item { flex-wrap: wrap; gap: 0.75rem; }
+  .cart-item-img { width: 64px; height: 64px; }
+  .cart-item-subtotal { min-width: unset; }
 }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h1 class="cart-page-title mb-0">
+      My Cart
+      {% set total_items = (in_stock_items | length) + (out_stock_items | length) %}
+      {% if total_items > 0 %}
+      <span style="font-size:1rem; font-weight:500; color:#6B7280;">({{ total_items }} item{{ 's' if total_items != 1 else '' }})</span>
+      {% endif %}
+    </h1>
+    <a href="{{ url_for('shop.index') }}" style="color:#2563EB; font-size:0.875rem; text-decoration:none;">
+      ← Continue Shopping
+    </a>
+  </div>
+
+  {% if in_stock_items or out_stock_items %}
+  <div class="row g-4">
+
+    <!-- ── Cart Items ── -->
+    <div class="col-lg-8">
+      <div id="cart-items-container" class="d-flex flex-column gap-3">
+
+        <!-- In stock items -->
+        {% for item in in_stock_items %}
+        <div class="cart-item" id="cart-item-{{ item.id }}">
+          <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-img">
+          <div class="cart-item-info">
+            <div class="cart-item-category">{{ item.product.category or 'Product' }}</div>
+            <a href="{{ url_for('shop.product_detail', product_id=item.product.id) }}"
+               class="cart-item-name d-block" style="text-decoration:none; color:#111827;">
+              {{ item.product.name }}
+            </a>
+            <div class="cart-item-price">₱{{ "%.2f" | format(item.product.price) }} each</div>
+          </div>
+          <div class="cart-qty-control">
+            <button onclick="updateQty({{ item.id }}, -1)" type="button">−</button>
+            <span id="qty-{{ item.id }}">{{ item.quantity }}</span>
+            <button onclick="updateQty({{ item.id }}, 1)" type="button">+</button>
+          </div>
+          <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">
+            ₱{{ "%.2f" | format(item.subtotal) }}
+          </div>
+          <button class="btn-remove" onclick="removeItem({{ item.id }})" title="Remove">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+        {% endfor %}
+
+        <!-- Out of stock items -->
+        {% if out_stock_items %}
+        <div class="out-of-stock-section">
+          <div style="font-size:0.8rem; font-weight:700; color:#DC2626; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">
+            ⚠️ Out of Stock — These items won't be included in checkout
+          </div>
+          <div class="d-flex flex-column gap-2">
+            {% for item in out_stock_items %}
+            <div class="cart-item out-of-stock" id="cart-item-{{ item.id }}">
+              <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-img">
+              <div class="cart-item-info">
+                <div class="cart-item-category">{{ item.product.category or 'Product' }}</div>
+                <div class="cart-item-name">{{ item.product.name }}</div>
+                <div style="font-size:0.8rem; color:#DC2626; font-weight:600;">Out of Stock</div>
+              </div>
+              <button class="btn-remove" onclick="removeItem({{ item.id }})" title="Remove">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- ── Order Summary ── -->
+    <div class="col-lg-4">
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+
+        <div class="summary-row">
+          <span>Items ({{ in_stock_items | length }})</span>
+          <strong id="cart-total">₱{{ "%.2f" | format(cart_total) }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <strong style="color:#059669;">FREE</strong>
+        </div>
+        <div class="summary-row">
+          <span>Tax</span>
+          <strong>₱0.00</strong>
+        </div>
+
+        <div class="summary-total">
+          <span>Total</span>
+          <strong id="cart-total-display">₱{{ "%.2f" | format(cart_total) }}</strong>
+        </div>
+
+        <div style="font-size:0.75rem; color:#9CA3AF; text-align:center; margin-top:0.5rem;">
+          Nationwide delivery · COD available
+        </div>
+
+        {% if in_stock_items %}
+        <a href="{{ url_for('orders.checkout') }}"
+           id="checkout-btn"
+           class="btn btn-dark w-100 fw-bold mt-3"
+           style="border-radius:10px; padding:0.85rem;">
+          <i class="bi bi-bag-check me-1"></i> Proceed to Checkout
+        </a>
+        {% else %}
+        <button class="btn btn-secondary w-100 fw-bold mt-3" disabled style="border-radius:10px; padding:0.85rem;">
+          No items available for checkout
+        </button>
+        {% endif %}
+
+        <div style="display:flex; justify-content:center; gap:1.5rem; margin-top:1rem; opacity:0.5;">
+          <i class="bi bi-shield-lock" style="font-size:1.2rem;"></i>
+          <i class="bi bi-truck" style="font-size:1.2rem;"></i>
+          <i class="bi bi-cash-coin" style="font-size:1.2rem;"></i>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {% else %}
+  <!-- Empty cart -->
+  <div class="empty-cart" id="cart-items-container">
+    <div class="empty-cart-icon">🛒</div>
+    <h3>Your cart is empty</h3>
+    <p>Looks like you haven't added anything yet.</p>
+    <a href="{{ url_for('shop.index') }}" class="btn btn-dark mt-3 px-4 fw-bold">
+      <i class="bi bi-grid-fill me-1"></i> Start Shopping
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+<script>
+// Fix checkout button URL
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('checkout-btn');
+  if (btn) btn.href = "{{ url_for('orders.order_history') }}".replace('/orders/', '/orders/checkout').replace('order_history', 'checkout');
+});
+
+// Override refreshTotals to update both total displays
+const _origRefresh = refreshTotals;
+function refreshTotals(total, count) {
+  _origRefresh(total, count);
+  const d = document.getElementById('cart-total-display');
+  if (d) d.textContent = `₱${parseFloat(total).toFixed(2)}`;
+}
+</script>
+{% endblock %}

@@ -23,6 +23,33 @@
   --radius:    12px;
 }
 
+/* Override base.html white body for admin pages */
+body {
+  background: #0e0e1f !important;
+  color: #eedbff !important;
+}
+
+/* Fix Bootstrap form controls that show white-on-white */
+.form-control, .form-select {
+  background: #17112b !important;
+  border-color: rgba(72,69,85,.5) !important;
+  color: #eedbff !important;
+}
+.form-control::placeholder { color: #8888aa !important; }
+.form-control:focus, .form-select:focus {
+  background: #1a1230 !important;
+  border-color: #7c5cfc !important;
+  color: #eedbff !important;
+  box-shadow: 0 0 0 3px rgba(124,92,252,.15) !important;
+}
+.form-select option { background: #1a1230; color: #eedbff; }
+
+/* Fix any remaining white text on white bg */
+h1,h2,h3,h4,h5,h6,p,span,label,td,th,li { color: inherit; }
+.text-muted { color: #8888aa !important; }
+.breadcrumb-item, .breadcrumb-item a { color: #8888aa; }
+.breadcrumb-item.active { color: #cabeff; }
+
 html, body { overflow-x: hidden; }
 
 /* ── Wrapper ─────────────────────────────────────────────── */

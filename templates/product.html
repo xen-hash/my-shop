@@ -3,183 +3,207 @@
 
 {% block extra_css %}
 <style>
-/* ============================================================
-   product.css – GadgetHub PH · White Minimal Redesign
-   ============================================================ */
+/* ── Product Detail – Light/White Theme ── */
+
 .product-detail-img {
   position: relative;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 .product-detail-img img {
   width: 100%; height: 420px;
   object-fit: cover; display: block;
+  transition: transform 0.3s ease;
 }
+.product-detail-img:hover img { transform: scale(1.02); }
+
 .sold-out-overlay {
   position: absolute; inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.5);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.8rem; font-weight: 800;
-  color: var(--accent); letter-spacing: 2px;
+  color: #fff; letter-spacing: 3px;
 }
 .low-stock-badge {
   position: absolute; bottom: 12px; left: 12px;
-  background: rgba(255,193,7,0.9);
-  color: #000; font-weight: 700;
-  font-size: 0.8rem; padding: 4px 12px;
-  border-radius: 50px;
+  background: #FEF3C7; color: #92400E;
+  font-weight: 700; font-size: 0.78rem;
+  padding: 4px 12px; border-radius: 50px;
+  border: 1px solid #FDE68A;
 }
-.thumbnail-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+
+/* Thumbnail gallery */
+.thumbnail-row {
+  display: flex; gap: 0.5rem;
+  margin-top: 0.75rem; flex-wrap: wrap;
+}
 .thumbnail-row img {
-  width: 80px; height: 70px; object-fit: cover;
-  border-radius: 10px; cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
+  width: 80px; height: 72px; object-fit: cover;
+  border-radius: 8px; cursor: pointer;
+  border: 2px solid #E5E7EB;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #F3F4F6;
 }
 .thumbnail-row img.active,
-.thumbnail-row img:hover { border-color: var(--primary); }
+.thumbnail-row img:hover {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
 
+/* Category tag */
 .product-category-tag {
-  background: rgba(124,92,252,0.15);
-  color: var(--primary);
-  border: 1px solid rgba(124,92,252,0.3);
+  background: #EFF6FF; color: #2563EB;
+  border: 1px solid #BFDBFE;
   border-radius: 50px;
-  padding: 0.2rem 0.8rem;
-  font-size: 0.75rem; font-weight: 600;
+  padding: 0.2rem 0.85rem;
+  font-size: 0.72rem; font-weight: 700;
   letter-spacing: 1px; text-transform: uppercase;
-  display: inline-block; margin-bottom: 0.8rem;
+  display: inline-block; margin-bottom: 0.75rem;
 }
+
 .product-detail-title {
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 800; letter-spacing: -0.5px;
-  margin-bottom: 0.8rem; line-height: 1.2;
+  margin-bottom: 0.75rem; line-height: 1.2;
+  color: #111827;
 }
-.stars-large { color: #ffc107; font-size: 1.1rem; letter-spacing: 2px; }
+
+.stars-large { color: #F59E0B; font-size: 1rem; letter-spacing: 1px; }
+
 .product-detail-price {
-  font-size: 2.2rem; font-weight: 800;
-  color: #fff; margin-bottom: 1.2rem;
+  font-size: 2rem; font-weight: 800;
+  color: #111827; margin-bottom: 1rem;
 }
+
 .product-detail-desc {
-  color: var(--text-muted);
-  line-height: 1.8; font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  color: #6B7280; line-height: 1.8;
+  font-size: 0.95rem; margin-bottom: 1.25rem;
 }
+
+/* Stock status */
 .stock-status {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  border-radius: 8px; padding: 0.5rem 1rem;
-  font-size: 0.88rem; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  border-radius: 8px; padding: 0.4rem 0.9rem;
+  font-size: 0.85rem; font-weight: 600;
 }
-.stock-status.in  { background: rgba(0,212,170,0.1); color: var(--accent2); border: 1px solid rgba(0,212,170,0.25); }
-.stock-status.low { background: rgba(255,193,7,0.1);  color: #ffc107;        border: 1px solid rgba(255,193,7,0.25); }
-.stock-status.out { background: rgba(255,77,109,0.1); color: var(--accent);  border: 1px solid rgba(255,77,109,0.25); }
+.stock-status.in  { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+.stock-status.low { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.stock-status.out { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+/* Quantity control */
 .qty-control {
   display: flex; align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  border-radius: 8px; overflow: hidden;
 }
 .qty-control button {
   background: transparent; border: none;
-  color: #fff; width: 40px; height: 44px;
+  color: #374151; width: 40px; height: 44px;
   font-size: 1.2rem; font-weight: 700;
-  cursor: pointer; transition: background var(--transition);
+  cursor: pointer; transition: background 0.15s;
 }
-.qty-control button:hover { background: rgba(124,92,252,0.2); }
+.qty-control button:hover { background: #F3F4F6; }
 .qty-control input {
   width: 52px; height: 44px;
   background: transparent; border: none;
-  color: #fff; text-align: center;
+  color: #111827; text-align: center;
   font-weight: 700; font-size: 1rem;
   -moz-appearance: textfield;
 }
 .qty-control input::-webkit-inner-spin-button,
 .qty-control input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* Specs / Meta table */
 .product-meta {
-  display: flex; flex-direction: column; gap: 0.6rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1.2rem;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  overflow: hidden;
 }
 .product-meta > div {
   display: flex; justify-content: space-between;
-  font-size: 0.88rem; padding: 0.65rem 1rem;
-  border-bottom: 1px solid var(--divider);
+  align-items: center;
+  font-size: 0.875rem; padding: 0.7rem 1rem;
+  border-bottom: 1px solid #F3F4F6;
 }
 .product-meta > div:last-child { border-bottom: none; }
-.product-meta span { color: var(--text-muted); }
-.product-meta strong { color: var(--text-heading); }
-.reviews-section { border-top: 1px solid var(--border); padding-top: 2.5rem; }
+.product-meta > div:hover { background: #F3F4F6; }
+.product-meta .meta-key { color: #6B7280; font-weight: 500; }
+.product-meta .meta-val { color: #111827; font-weight: 600; text-align: right; }
+
+/* Reviews */
+.reviews-section { border-top: 1px solid #E5E7EB; padding-top: 2.5rem; }
 .review-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1.2rem;
-  transition: border-color var(--transition);
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px; padding: 1.2rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.review-card:hover { border-color: rgba(124,92,252,0.3); }
+.review-card:hover {
+  border-color: #BFDBFE;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.06);
+}
 .empty-reviews {
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 2rem; text-align: center;
-  color: var(--text-muted);
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  border-radius: 12px; padding: 2.5rem;
+  text-align: center; color: #6B7280;
 }
 
 /* Related products */
 .related-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px; overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  display: block;
+  text-decoration: none; display: block;
 }
 .related-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border-color: #BFDBFE;
 }
-.related-card img {
-  width: 100%; height: 160px; object-fit: cover;
-}
-.related-card-body { padding: 0.9rem; }
+.related-card img { width: 100%; height: 160px; object-fit: cover; }
+.related-card-body { padding: 0.85rem; }
 .related-card-title {
-  font-size: 0.9rem; font-weight: 700;
-  color: var(--text-heading); margin-bottom: 0.3rem;
+  font-size: 0.875rem; font-weight: 700;
+  color: #111827; margin-bottom: 0.25rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.related-card-price {
-  font-size: 1rem; font-weight: 800;
-  color: var(--primary);
-}
+.related-card-price { font-size: 1rem; font-weight: 800; color: #2563EB; }
+
+/* Breadcrumb */
+.breadcrumb-item + .breadcrumb-item::before { color: #9CA3AF; }
+.breadcrumb-item a { color: #2563EB; text-decoration: none; }
+.breadcrumb-item a:hover { text-decoration: underline; }
+.breadcrumb-item.active { color: #6B7280; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-4 py-md-5">
 
-  <!-- ── Breadcrumb ── -->
-  <nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb" style="font-size:0.85rem;">
-      <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}" style="color:var(--primary);">Home</a></li>
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4" style="font-size:0.85rem;">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">Home</a></li>
       {% if product.category %}
       <li class="breadcrumb-item">
-        <a href="{{ url_for('shop.index', category=product.category) }}" style="color:var(--primary);">
+        <a href="{{ url_for('shop.index', category=product.category) }}">
           {{ product.category.title() }}
         </a>
       </li>
       {% endif %}
-      <li class="breadcrumb-item active" style="color:var(--text-muted);">{{ product.name }}</li>
+      <li class="breadcrumb-item active">{{ product.name }}</li>
     </ol>
   </nav>
 
-  <!-- ── Main product section ── -->
+  <!-- Main product section -->
   <div class="row g-4 g-lg-5 mb-5">
 
-    <!-- Image column -->
+    <!-- ── Image column ── -->
     <div class="col-md-6">
       <div class="product-detail-img">
         <img src="{{ product.image_url }}" alt="{{ product.name }}" id="mainProductImg">
@@ -191,7 +215,10 @@
       </div>
 
       <!-- Thumbnails -->
-      {% set images = [product.image_url, product.image_url_2, product.image_url_3] | select | list %}
+      {% set images = [] %}
+      {% if product.image_url %}{% set _ = images.append(product.image_url) %}{% endif %}
+      {% if product.image_url_2 %}{% set _ = images.append(product.image_url_2) %}{% endif %}
+      {% if product.image_url_3 %}{% set _ = images.append(product.image_url_3) %}{% endif %}
       {% if images | length > 1 %}
       <div class="thumbnail-row">
         {% for img in images %}
@@ -203,7 +230,7 @@
       {% endif %}
     </div>
 
-    <!-- Info column -->
+    <!-- ── Info column ── -->
     <div class="col-md-6">
       {% if product.category %}
       <span class="product-category-tag">{{ product.category }}</span>
@@ -211,17 +238,15 @@
 
       <h1 class="product-detail-title">{{ product.name }}</h1>
 
-      <!-- Stars -->
+      <!-- Star rating -->
       {% set reviews = product.reviews | list %}
       {% set avg = (reviews | map(attribute='rating') | sum / reviews | length) if reviews else 0 %}
-      <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="d-flex align-items-center gap-2 mb-3">
         <span class="stars-large">
-          {% for i in range(1, 6) %}
-            {% if i <= avg | round %}★{% else %}☆{% endif %}
-          {% endfor %}
+          {% for i in range(1, 6) %}{{ '★' if i <= avg | round else '☆' }}{% endfor %}
         </span>
-        <span style="color:var(--text-muted); font-size:0.85rem;">
-          {{ "%.1f" | format(avg) if reviews else "No" }} rating{{ 's' if reviews | length != 1 else '' }}
+        <span style="color:#6B7280; font-size:0.85rem;">
+          {% if reviews %}{{ "%.1f" | format(avg) }}{% else %}No{% endif %} rating
           ({{ reviews | length }} review{{ 's' if reviews | length != 1 else '' }})
         </span>
       </div>
@@ -243,43 +268,61 @@
         {% endif %}
       </div>
 
-      <!-- Add to cart -->
+      <!-- Add to cart + Buy Now -->
       {% if product.stock > 0 %}
-      <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
         <div class="qty-control">
           <button onclick="changeQty(-1)" type="button">−</button>
           <input type="number" id="qtyInput" value="1" min="1" max="{{ product.stock }}" readonly>
           <button onclick="changeQty(1)" type="button">+</button>
         </div>
-        <button class="btn btn-primary fw-bold px-4"
-                style="height:44px; border-radius:var(--radius-sm);"
-                onclick="addToCartQty({{ product.id }}, this, event)"
-                id="addToCartBtn">
+        <button class="btn btn-outline-dark fw-bold px-3"
+                style="height:44px; border-radius:8px; font-size:0.875rem;"
+                onclick="addToCartQty({{ product.id }}, this, event)">
           <i class="bi bi-cart-plus me-1"></i> Add to Cart
+        </button>
+        <button class="btn btn-dark fw-bold px-3"
+                style="height:44px; border-radius:8px; font-size:0.875rem;"
+                onclick="buyNow({{ product.id }}, this, event)">
+          <i class="bi bi-lightning-fill me-1"></i> Buy Now
         </button>
       </div>
       {% else %}
-      <button class="btn btn-secondary fw-bold px-4 mb-4" disabled>Out of Stock</button>
+      <button class="btn btn-secondary fw-bold px-4 mb-4" disabled style="height:44px;">
+        Out of Stock
+      </button>
       {% endif %}
 
       <!-- Specs -->
       {% if product.specs %}
+      <h6 class="fw-700 mb-2" style="color:#111827; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+        Specifications
+      </h6>
       <div class="product-meta mb-4">
         {% for key, val in product.specs.items() %}
         <div>
-          <span>{{ key.replace('_', ' ').title() }}</span>
-          <strong>{{ val }}</strong>
+          <span class="meta-key">{{ key.replace('_', ' ').title() }}</span>
+          <span class="meta-val">{{ val }}</span>
         </div>
         {% endfor %}
       </div>
       {% endif %}
 
-      <!-- Meta info -->
+      <!-- Product info -->
       <div class="product-meta">
-        <div><span>Category</span><strong>{{ product.category.title() if product.category else '—' }}</strong></div>
-        <div><span>SKU</span><strong>GH-{{ '%04d' | format(product.id) }}</strong></div>
-        <div><span>Availability</span>
-          <strong>{{ 'In Stock (' + product.stock|string + ' units)' if product.stock > 0 else 'Out of Stock' }}</strong>
+        <div>
+          <span class="meta-key">Category</span>
+          <span class="meta-val">{{ product.category.title() if product.category else '—' }}</span>
+        </div>
+        <div>
+          <span class="meta-key">SKU</span>
+          <span class="meta-val">GH-{{ '%04d' | format(product.id) }}</span>
+        </div>
+        <div>
+          <span class="meta-key">Availability</span>
+          <span class="meta-val" style="color:{{ '#065F46' if product.stock > 0 else '#991B1B' }};">
+            {{ 'In Stock (' + product.stock|string + ' units)' if product.stock > 0 else 'Out of Stock' }}
+          </span>
         </div>
       </div>
     </div>
@@ -287,12 +330,10 @@
 
   <!-- ── Reviews ── -->
   <div class="reviews-section mb-5">
-    <h3 class="fw-800 mb-4" style="font-size:1.4rem;">
+    <h3 class="fw-800 mb-4" style="font-size:1.3rem; color:#111827;">
       Customer Reviews
       {% if reviews %}
-      <span style="font-size:0.9rem; font-weight:400; color:var(--text-muted);">
-        ({{ reviews | length }})
-      </span>
+      <span style="font-size:0.9rem; font-weight:400; color:#6B7280;">({{ reviews | length }})</span>
       {% endif %}
     </h3>
 
@@ -303,21 +344,19 @@
         <div class="review-card">
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
-              <div class="fw-700" style="font-size:0.92rem; color:var(--text-heading);">
+              <div class="fw-700" style="font-size:0.92rem; color:#111827;">
                 {{ review.user.name if review.user else 'Anonymous' }}
               </div>
-              <div style="color:#ffc107; font-size:0.9rem;">
-                {% for i in range(1, 6) %}
-                  {{ '★' if i <= review.rating else '☆' }}
-                {% endfor %}
+              <div class="stars-large" style="font-size:0.85rem;">
+                {% for i in range(1, 6) %}{{ '★' if i <= review.rating else '☆' }}{% endfor %}
               </div>
             </div>
-            <span style="font-size:0.78rem; color:var(--text-muted);">
+            <span style="font-size:0.78rem; color:#9CA3AF;">
               {{ review.created_at.strftime('%b %d, %Y') if review.created_at else '' }}
             </span>
           </div>
           {% if review.comment %}
-          <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">{{ review.comment }}</p>
+          <p style="font-size:0.875rem; color:#374151; margin:0;">{{ review.comment }}</p>
           {% endif %}
         </div>
       </div>
@@ -326,8 +365,10 @@
     {% else %}
     <div class="empty-reviews">
       <div style="font-size:2rem; margin-bottom:0.5rem;">⭐</div>
-      <div class="fw-600">No reviews yet</div>
-      <div style="font-size:0.85rem; margin-top:0.3rem;">Be the first to review this product after purchasing.</div>
+      <div class="fw-600" style="color:#374151;">No reviews yet</div>
+      <div style="font-size:0.85rem; margin-top:0.3rem; color:#6B7280;">
+        Be the first to review this product after purchasing.
+      </div>
     </div>
     {% endif %}
   </div>
@@ -335,7 +376,7 @@
   <!-- ── Related products ── -->
   {% if related %}
   <div class="mb-5">
-    <h3 class="fw-800 mb-4" style="font-size:1.4rem;">You May Also Like</h3>
+    <h3 class="fw-800 mb-4" style="font-size:1.3rem; color:#111827;">You May Also Like</h3>
     <div class="row g-3">
       {% for p in related %}
       <div class="col-6 col-md-3">
@@ -357,29 +398,55 @@
 
 {% block extra_js %}
 <script>
-// ── Image switcher ──
 function switchImage(thumb, src) {
   document.getElementById('mainProductImg').src = src;
   document.querySelectorAll('.thumbnail-row img').forEach(t => t.classList.remove('active'));
   thumb.classList.add('active');
 }
 
-// ── Quantity control ──
 function changeQty(delta) {
   const input = document.getElementById('qtyInput');
   const max   = parseInt(input.max);
   let val = parseInt(input.value) + delta;
-  if (val < 1)   val = 1;
+  if (val < 1) val = 1;
   if (val > max) val = max;
   input.value = val;
 }
 
-// ── Add to cart with quantity ──
+async function buyNow(productId, btn, event) {
+  if (!btn || btn.disabled) return;
+  const quantity = parseInt(document.getElementById('qtyInput').value) || 1;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing…';
+
+  try {
+    const res  = await fetch('/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      window.location.href = '/orders/checkout';
+    } else if (res.status === 401) {
+      window.location.href = '/login';
+    } else {
+      btn.innerHTML = original;
+      btn.disabled  = false;
+      alert(data.message || 'Could not process. Please try again.');
+    }
+  } catch {
+    btn.innerHTML = original;
+    btn.disabled  = false;
+  }
+}
+
 async function addToCartQty(productId, btn, event) {
   if (!btn || btn.disabled) return;
   const quantity = parseInt(document.getElementById('qtyInput').value) || 1;
-
   const original = btn.innerHTML;
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding…';
 
@@ -393,13 +460,15 @@ async function addToCartQty(productId, btn, event) {
 
     if (res.ok && data.success) {
       btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Added!';
-      btn.style.background = 'linear-gradient(135deg,#00d4aa,#00a884)';
+      btn.style.background = '#059669';
+      btn.style.borderColor = '#059669';
       if (typeof updateCartBadge === 'function') updateCartBadge(data.cart_count);
       if (typeof burstConfetti  === 'function') burstConfetti(btn);
       setTimeout(() => {
-        btn.innerHTML        = original;
+        btn.innerHTML    = original;
         btn.style.background = '';
-        btn.disabled         = false;
+        btn.style.borderColor = '';
+        btn.disabled     = false;
       }, 1500);
     } else if (res.status === 401) {
       window.location.href = '/login';

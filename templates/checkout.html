@@ -6,75 +6,75 @@
   .checkout-wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem 3rem;}
   @media(min-width:768px){.checkout-wrap{padding:2rem 2rem 4rem;}}
 
-  .checkout-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2rem);font-weight:800;color:#fff;margin-bottom:.25rem;}
-  .checkout-sub{color:#c9c4d8;font-size:.88rem;margin-bottom:1.5rem;}
+  .checkout-title{font-size:clamp(1.5rem,5vw,2rem);font-weight:800;color:#111827;margin-bottom:.25rem;}
+  .checkout-sub{color:#6B7280;font-size:.88rem;margin-bottom:1.5rem;}
 
   /* Progress */
   .progress-bar-wrap{display:flex;align-items:center;max-width:320px;margin-bottom:2rem;}
   .prog-step{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
   .prog-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
     justify-content:center;font-weight:700;font-size:.88rem;font-family:'Space Grotesk',sans-serif;}
-  .prog-num.active{background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;box-shadow:0 0 18px rgba(202,190,255,.35);}
-  .prog-num.inactive{background:#271938;border:1px solid rgba(72,69,85,.3);color:#c9c4d8;}
+  .prog-num.active{background:#111827;color:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.08);}
+  .prog-num.inactive{background:#F3F4F6;border:1px solid #E5E7EB;color:#9CA3AF;}
   .prog-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-  .prog-label.active{color:#cabeff;}
-  .prog-label.inactive{color:#8888aa;}
+  .prog-label.active{color:#111827;}
+  .prog-label.inactive{color:#9CA3AF;}
   .prog-line{flex:1;height:2px;margin:0 .5rem;margin-bottom:.9rem;}
-  .prog-line.active{background:rgba(202,190,255,.25);}
-  .prog-line.inactive{background:#271938;}
+  .prog-line.active{background:#D1D5DB;}
+  .prog-line.inactive{background:#F3F4F6;}
 
   /* Two-col layout */
   .checkout-grid{display:flex;flex-direction:column;gap:1.5rem;}
   @media(min-width:900px){.checkout-grid{flex-direction:row;align-items:flex-start;gap:2rem;}}
 
   /* Form card */
-  .form-card{flex:1;background:#1a1a2e;border:1px solid rgba(72,69,85,.2);border-radius:16px;padding:1.5rem;}
+  .form-card{flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:1.5rem;}
   @media(min-width:640px){.form-card{padding:2rem;}}
-  .form-section-title{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;
-    color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;}
+  .form-section-title{font-size:1.05rem;font-weight:700;
+    color:#111827;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;}
 
-  .form-label{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;
-    letter-spacing:1.2px;color:#947dff;margin-bottom:.45rem;}
-  .form-input{width:100%;border-radius:12px;padding:.75rem 1rem;font-size:.88rem;outline:none;
-    transition:all .2s;background:#3d2e4f;border:1px solid rgba(72,69,85,.3);color:#eedbff;
-    display:block;margin-bottom:.9rem;}
-  .form-input:focus{border-color:#947dff;box-shadow:0 0 0 3px rgba(148,125,255,.15);}
-  .form-input[readonly]{background:#271938;color:rgba(238,219,255,.55);cursor:default;}
+  .form-label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:1px;color:#374151;margin-bottom:.45rem;}
+  .form-input{width:100%;border-radius:10px;padding:.75rem 1rem;font-size:.88rem;outline:none;
+    transition:all .2s;background:#F9FAFB;border:1px solid #E5E7EB;color:#111827;
+    display:block;margin-bottom:.9rem;font-family:inherit;}
+  .form-input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff;}
+  .form-input[readonly]{background:#F3F4F6;color:#6B7280;cursor:default;}
   .form-textarea{resize:vertical;min-height:80px;}
 
   /* Payment option */
-  .payment-opt{background:#271938;border:1px solid rgba(148,125,255,.25);border-radius:12px;
+  .payment-opt{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;
     padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.9rem;cursor:pointer;}
   .payment-opt input{margin-top:.15rem;accent-color:#947dff;width:16px;height:16px;flex-shrink:0;}
 
-  .btn-place-order{width:100%;padding:1rem;border-radius:14px;font-weight:800;font-size:1rem;
-    border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;
-    background:linear-gradient(135deg,#cabeff,#947dff);color:#2b0088;
-    box-shadow:0 12px 28px rgba(148,125,255,.3);transition:all .2s;
+  .btn-place-order{width:100%;padding:1rem;border-radius:12px;font-weight:800;font-size:1rem;
+    border:none;cursor:pointer;
+    background:#111827;color:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,.12);transition:all .2s;
     display:flex;align-items:center;justify-content:center;gap:.6rem;}
-  .btn-place-order:hover{transform:translateY(-1px);box-shadow:0 16px 32px rgba(148,125,255,.4);}
+  .btn-place-order:hover{background:#1F2937;transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.18);}
   .btn-place-order:active{transform:scale(.98);}
 
   /* Order summary sidebar */
-  .order-summary-card{background:rgba(35,21,52,.65);backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);border:1px solid rgba(72,69,85,.18);
+  .order-summary-card{background:#F9FAFB;
+    border:1px solid #E5E7EB;
     border-radius:16px;padding:1.5rem;}
   @media(min-width:900px){.order-summary-card{position:sticky;top:80px;width:380px;flex-shrink:0;}}
 
-  .os-title{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:700;
-    color:#cabeff;margin-bottom:1.25rem;}
+  .os-title{font-size:1.05rem;font-weight:700;
+    color:#111827;margin-bottom:1.25rem;}
   .os-items{display:flex;flex-direction:column;gap:.9rem;max-height:300px;overflow-y:auto;margin-bottom:1.25rem;}
   @media(min-width:900px){.os-items{max-height:380px;}}
   .os-item{display:flex;gap:.8rem;align-items:flex-start;}
-  .os-item-img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#3d2e4f;}
+  .os-item-img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#E5E7EB;border:1px solid #E5E7EB;}
   @media(min-width:480px){.os-item-img{width:64px;height:64px;}}
 
-  .os-row{display:flex;justify-content:space-between;font-size:.85rem;color:#8888aa;padding:.35rem 0;}
+  .os-row{display:flex;justify-content:space-between;font-size:.85rem;color:#6B7280;padding:.35rem 0;}
   .os-total-row{display:flex;justify-content:space-between;align-items:flex-end;
-    padding-top:.85rem;margin-top:.5rem;border-top:1px solid rgba(72,69,85,.2);}
-  .os-total-label{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:#fff;}
-  .os-total-amount{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:800;color:#cabeff;}
-  .os-total-sub{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#8888aa;text-align:right;}
+    padding-top:.85rem;margin-top:.5rem;border-top:1px solid #E5E7EB;}
+  .os-total-label{font-size:1rem;font-weight:700;color:#111827;}
+  .os-total-amount{font-size:1.5rem;font-weight:800;color:#111827;}
+  .os-total-sub{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#9CA3AF;text-align:right;}
 
   .trust-row{display:flex;justify-content:center;gap:1rem;opacity:.4;padding-top:.75rem;}
 
@@ -91,7 +91,7 @@
   .success-checkmark.pop{transform:scale(1);}
   .overlay-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,5vw,2rem);
     font-weight:800;color:#fff;text-align:center;position:relative;z-index:1;padding:0 1rem;}
-  .overlay-sub{color:#8888aa;font-size:.9rem;position:relative;z-index:1;text-align:center;padding:0 1rem;margin-top:-.75rem;}
+  .overlay-sub{color:#6B7280;font-size:.9rem;position:relative;z-index:1;text-align:center;padding:0 1rem;margin-top:-.75rem;}
   .truck-road-wrap{position:relative;width:100vw;overflow:hidden;height:60px;z-index:1;}
   .checkout-truck{position:absolute;left:-200px;bottom:0;display:flex;flex-direction:column;align-items:center;}
   .truck-body-svg{animation:bounce .5s linear infinite;}
@@ -154,7 +154,7 @@
                   onblur="this.style.borderColor='rgba(72,69,85,.3)';this.style.boxShadow='none'"
                   >{{ current_user.address or '' }}</textarea>
 
-        <label class="form-label" style="color:rgba(148,125,255,.7);">Order Notes <span style="color:#8888aa;">(optional)</span></label>
+        <label class="form-label" style="color:rgba(148,125,255,.7);">Order Notes <span style="color:#6B7280;">(optional)</span></label>
         <textarea rows="2" class="form-input form-textarea" placeholder="Special instructions…"
                   onfocus="this.style.borderColor='#947dff'" onblur="this.style.borderColor='rgba(72,69,85,.3)'"></textarea>
 
@@ -164,8 +164,8 @@
         <div class="payment-opt">
           <input type="radio" name="payment" value="cod" checked>
           <div>
-            <strong style="color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.9rem;">💵 Cash on Delivery (COD)</strong>
-            <p style="color:#8888aa;font-size:.8rem;margin:.2rem 0 0;">Pay when your order arrives. No extra charges.</p>
+            <strong style="color:#111827;font-weight:700,sans-serif;font-size:.9rem;">💵 Cash on Delivery (COD)</strong>
+            <p style="color:#6B7280;font-size:.8rem;margin:.2rem 0 0;">Pay when your order arrives. No extra charges.</p>
           </div>
         </div>
 
@@ -185,13 +185,13 @@
             <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="os-item-img">
             <div style="flex:1;min-width:0;">
               <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.85rem;
-                        color:#eedbff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 .15rem;">
+                        color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 .15rem;">
                 {{ item.product.name }}
               </p>
-              <p style="font-size:.75rem;color:#8888aa;margin:0 0 .25rem;">{{ item.product.category|capitalize }}</p>
+              <p style="font-size:.75rem;color:#6B7280;margin:0 0 .25rem;">{{ item.product.category|capitalize }}</p>
               <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:.75rem;color:#8888aa;">Qty: {{ item.quantity }}</span>
-                <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.88rem;color:#cabeff;">₱{{ "%.2f"|format(item.subtotal) }}</span>
+                <span style="font-size:.75rem;color:#6B7280;">Qty: {{ item.quantity }}</span>
+                <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.88rem;color:#2563EB;">₱{{ "%.2f"|format(item.subtotal) }}</span>
               </div>
             </div>
           </div>
@@ -199,9 +199,9 @@
       </div>
 
       <div style="border-top:1px solid rgba(72,69,85,.2);padding-top:.75rem;">
-        <div class="os-row"><span>Subtotal</span><span style="color:#eedbff;font-weight:500;">₱{{ "%.2f"|format(cart_total) }}</span></div>
-        <div class="os-row"><span>Shipping</span><span style="color:#00d4aa;font-weight:600;">FREE 🎁</span></div>
-        <div class="os-row"><span>Tax</span><span style="color:#eedbff;font-weight:500;">₱0.00</span></div>
+        <div class="os-row"><span>Subtotal</span><span style="color:#111827;font-weight:500;">₱{{ "%.2f"|format(cart_total) }}</span></div>
+        <div class="os-row"><span>Shipping</span><span style="color:#059669;font-weight:600;">FREE 🎁</span></div>
+        <div class="os-row"><span>Tax</span><span style="color:#111827;font-weight:500;">₱0.00</span></div>
         <div class="os-total-row">
           <span class="os-total-label">Total</span>
           <div>
@@ -216,7 +216,7 @@
         <span class="material-symbols-outlined" style="font-size:1.3rem;">verified_user</span>
         <span class="material-symbols-outlined" style="font-size:1.3rem;">shield</span>
       </div>
-      <p style="text-align:center;font-size:.7rem;color:#8888aa;margin-top:.4rem;">
+      <p style="text-align:center;font-size:.7rem;color:#6B7280;margin-top:.4rem;">
         Secure checkout · Free nationwide shipping
       </p>
     </div>
@@ -252,7 +252,7 @@
     </div>
     <div class="truck-road"></div>
   </div>
-  <div style="color:#8888aa;font-size:.8rem;position:relative;z-index:1;text-align:center;padding:0 1rem;">Redirecting to your order…</div>
+  <div style="color:#6B7280;font-size:.8rem;position:relative;z-index:1;text-align:center;padding:0 1rem;">Redirecting to your order…</div>
 </div>
 <script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
 {% endblock %}
