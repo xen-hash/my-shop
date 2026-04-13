@@ -292,11 +292,11 @@
 (function() {
   const bar = document.getElementById('filter-bar');
   if (!bar) return;
-  const observer = new IntersectionObserver(
-    ([e]) => bar.classList.toggle('scrolled', e.intersectionRatio < 1),
-    { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
-  );
-  observer.observe(bar);
+  function onScroll() {
+    bar.classList.toggle('scrolled', window.scrollY > bar.offsetTop - 70);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 function animateCounter(el) {
   const target = parseInt(el.dataset.count);
